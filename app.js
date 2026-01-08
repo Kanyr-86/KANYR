@@ -20,7 +20,8 @@ app.get('/', (req, res) => {
 
 // API végpontok
 app.use('/api/diaks', require('./routes/DiakRoutes'));
-// app.use('/api/szulos', require('./routes/szuloRoutes'));
+app.use('/api/szulos', require('./routes/SzuloRoutes'));
+app.use('/api/lakcims', require('./routes/LakcimRoutes'));
 // app.use('/api/szobak', require('./routes/szobaRoutes'));
 // app.use('/api/bekoltozesek', require('./routes/bekoltozesRoutes'));
 

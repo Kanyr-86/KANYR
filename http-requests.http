@@ -10,37 +10,37 @@ Content-Type: application/json
   "szemelyi_igazolvany_szam": "111222333",
   "taj_szam": "444555666",
   "diakigazolvany_szam": "777888999",
-  "szulo_id": null,
+  "szulo_id": 1,
   "kapcsolat_tipusa": "anya",
-  "cim_id": null
+  "cim_id": 1
 }
 
 ### ========================================
 ### 4. CREATE PARENT AND ADDRESS (SEPARATELY)
 ### ========================================
 
-### Create a new parent (when separate endpoints are available)
-### POST http://localhost:3000/api/szulos
-### Content-Type: application/json
-### 
-### {
-###   "nev": "Új Szülő Anna",
-###   "email": "uj.szulo.anna@email.hu",
-###   "telefonszam": "06-70-888-9999",
-###   "szemelyi_igazolvany_szam": "111111111",
-###   "cim_id": 1
-### }
+### Create a new address
+POST http://localhost:3000/api/lakcims
+Content-Type: application/json
 
-### Create a new address (when separate endpoints are available)
-### POST http://localhost:3000/api/lakcims
-### Content-Type: application/json
-### 
-### {
-###   "orszag": "Magyarország",
-###   "iranyitoszam": "7621",
-###   "varos": "Pécs",
-###   "utca_hazszam": "Új utca 25."
-### }
+{
+  "orszag": "Magyarország",
+  "iranyitoszam": "7621",
+  "varos": "Pécs",
+  "utca_hazszam": "Új utca 25."
+}
+
+### Create a new parent
+POST http://localhost:3000/api/szulos
+Content-Type: application/json
+
+{
+  "nev": "Új Szülő Anna",
+  "email": "uj.szulo.anna@email.hu",
+  "telefonszam": "06-70-888-9999",
+  "szemelyi_igazolvany_szam": "111111111",
+  "cim_id": 1
+}
 
 ### ========================================
 ### 5. ENROLL STUDENT (COMPLETE PROCESS)

@@ -1,5 +1,10 @@
 class SzuloRepository {
   constructor(db) {
+    console.log('SzuloRepository constructor called with db:', db ? 'db object exists' : 'db is null/undefined');
+    console.log('Szulo model available:', db && db.Szulo ? 'yes' : 'no');
+    console.log('Diak model available:', db && db.Diak ? 'yes' : 'no');
+    console.log('Lakcim model available:', db && db.Lakcim ? 'yes' : 'no');
+
     this.db = db;
     this.Szulo = db.Szulo;
     this.Diak = db.Diak;
