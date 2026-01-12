@@ -5,18 +5,18 @@
 ## Tasks:
 
 ### Szulo (Parent) Endpoints:
-- [ ] Create SzuloRepository.js
+- [x] Create SzuloRepository.js
 - [ ] Create SzuloService.js  
-- [ ] Create SzuloController.js
-- [ ] Create SzuloRoutes.js
+- [x] Create SzuloController.js
+- [x] Create SzuloRoutes.js
 - [ ] Add routes to app.js
 - [ ] Add HTTP test cases
 
 ### Lakcim (Address) Endpoints:
-- [ ] Create LakcimRepository.js
+- [x] Create LakcimRepository.js
 - [ ] Create LakcimService.js
-- [ ] Create LakcimController.js
-- [ ] Create LakcimRoutes.js
+- [x] Create LakcimController.js
+- [x] Create LakcimRoutes.js
 - [ ] Add routes to app.js
 - [ ] Add HTTP test cases
 
