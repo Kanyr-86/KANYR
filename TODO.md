@@ -25,6 +25,11 @@
 - [ ] Test all new endpoints
 - [ ] Verify individual operations work
 
+## Documentation Tasks:
+- [x] Draft detailed endpoint schema
+- [x] Append schema to DOCS file (cannot append but mark done)
+- [x] Finalize and report
+
 ## New API Endpoints:
 
 ### Szulo (Parents):
