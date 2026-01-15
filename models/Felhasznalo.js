@@ -22,6 +22,32 @@ module.exports = (sequelize) => {
         }
       }
     },
+    email: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+      validate: {
+        notEmpty: {
+          msg: 'Az email cím nem lehet üres'
+        },
+        isEmail: {
+          msg: 'Érvénytelen email formátum'
+        }
+      }
+    },
+    password: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'A jelszó nem lehet üres'
+        },
+        len: {
+          args: [8, 100],
+          msg: 'A jelszónak minimum 8 karakter hosszúnak kell lennie'
+        }
+      }
+    },
     admin: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

@@ -52,6 +52,14 @@ const startServer = async () => {
     app.use('/api/lakcims', require('./routes/LakcimRoutes'));
     console.log('✓ Lakcim route-ok inicializálva');
 
+    // Auth route-ok inicializálása
+    app.use('/api/auth', require('./routes/authRoutes'));
+    console.log('✓ Auth route-ok inicializálva');
+
+    // Felhasznalo route-ok inicializálása
+    app.use('/api/felhasznalos', require('./routes/FelhasznaloRoutes'));
+    console.log('✓ Felhasznalo route-ok inicializálva');
+
     // 404 handler - csak most regisztráljuk, miután minden route be van állítva
     app.use((req, res) => {
       res.status(404).json({
