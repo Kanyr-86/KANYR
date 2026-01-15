@@ -65,6 +65,9 @@ Alap URL: `/api`
   - POST `/api/szoba` – új szoba létrehozása
   - PUT `/api/szoba/:id` – frissítés
   - DELETE `/api/szoba/:id` – törlés
+  - POST `/api/szoba/bekoltozes` – új beköltözés létrehozása (body: `diak_id`, `szoba_id`, `bekoltozes_datum`)
+  - GET `/api/szoba/:id/occupants` – szobában tartózkodó diákok listázása
+  - GET `/api/szoba/statistics` – szoba statisztikák lekérdezése
 
   - Szobák szint/szint-tartomány szerint (példa):
     - Ha a `szoba_szama` struktúrája tartalmazza a szintet (pl. "A101", vagy a prefix jelzi az épületszárnyat), két opció:
@@ -204,15 +207,60 @@ Minden végpontnál megadott: HTTP metódus, útvonal, fontos query/body paramé
     - Response 201: created szoba
 
 - SzobaBekoltozes
-  - POST `/api/szobabekoltozes`
+  - POST `/api/szobabekoltozes` (MEGVALÓSÍTVA: `/api/szobas/bekoltozes`)
     - Body: `{ "diak_id":1, "szoba_id":2, "bekoltozes_datum":"YYYY-MM-DD" }`
     - Response 201: created bekoltozes record
+    - Validációk: diák és szoba létezés, szoba elérhetőség, duplikáció ellenőrzés
 
-  - GET `/api/szoba/:id/occupants` (javasolt)
+  - GET `/api/szoba/:id/occupants` (MEGVALÓSÍTVA)
     - Leírja a szobában tartózkodó diákokat és státuszukat
     - Response 200 sample:
       ```json
       [ { "diak_id": 1, "nev": "Kiss János", "bekoltozes_datum": "2025-09-01" } ]
+      ```
+
+  - POST `/api/szobas/bekoltozes` (ÚJ VÉGPONT - MEGVALÓSÍTVA)
+    - Body (JSON):
+      ```json
+      {
+        "diak_id": 1,
+        "szoba_id": 1,
+        "bekoltozes_datum": "2024-09-01"
+      }
+      ```
+    - Response 201 (sikeres eset):
+      ```json
+      {
+        "success": true,
+        "message": "Beköltözés sikeresen létrehozva",
+        "data": {
+          "bekoltozes_id": 1,
+          "diak_id": 1,
+          "szoba_id": 1,
+          "bekoltozes_datum": "2024-09-01",
+          "kikoltozes_datum": null
+        }
+      }
+      ```
+    - Response 400 (validációs hiba):
+      ```json
+      {
+        "success": false,
+        "errors": [
+          {
+            "msg": "A diák ID pozitív egész számnak kell lennie",
+            "param": "diak_id",
+            "location": "body"
+          }
+        ]
+      }
+      ```
+    - Response 400 (üzleti logika hiba):
+      ```json
+      {
+        "success": false,
+        "message": "A szoba tele van! Maximális férőhely: 2"
+      }
       ```
 
 **Válasz státuszok és hibakezelés (összefoglaló)**
