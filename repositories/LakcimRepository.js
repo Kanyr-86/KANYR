@@ -199,7 +199,7 @@ class LakcimRepository {
       return await this.Lakcim.findAll({
         where: {
           varos: {
-            [this.db.Sequelize.Op.like]: `%${varos}%`
+            [this.db.sequelize.Sequelize.Op.like]: `%${varos}%`
           }
         },
         include: [

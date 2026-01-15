@@ -1,10 +1,12 @@
 const { validationResult } = require('express-validator');
 const DiakService = require('../services/DiakService');
+const DiakRepository = require('../repositories/DiakRepository');
 
 class DiakController {
   constructor(db) {
     this.db = db;
-    this.diakService = new DiakService(db);
+    this.diakRepository = new DiakRepository(db);
+    this.diakService = new DiakService(db, { repository: this.diakRepository });
   }
 
   /**

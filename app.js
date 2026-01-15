@@ -20,27 +20,8 @@ app.get('/', (req, res) => {
 
 // API végpontok
 app.use('/api/diaks', require('./routes/DiakRoutes'));
-app.use('/api/szulos', require('./routes/SzuloRoutes'));
-app.use('/api/lakcims', require('./routes/LakcimRoutes'));
-// app.use('/api/szobak', require('./routes/szobaRoutes'));
-// app.use('/api/bekoltozesek', require('./routes/bekoltozesRoutes'));
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Endpoint nem található',
-    path: req.path
-  });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Hiba:', err);
-  res.status(err.status || 500).json({
-    error: err.message || 'Szerver hiba',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
+// Szoba route-ok inicializálása csak az adatbázis elérés után
+let szobaRoutes;
 
 // Szerver indítása
 const startServer = async () => {
@@ -57,7 +38,37 @@ const startServer = async () => {
     // Database available to routes via app.locals
     app.locals.db = db;
     console.log('✓ Adatbázis elérhető a route-ok számára');
-    
+
+    // Szoba route-ok inicializálása
+    const SzobaRoutes = require('./routes/SzobaRoutes');
+    app.use('/api/szobas', SzobaRoutes(app.locals.db));
+    console.log('✓ Szoba route-ok inicializálva');
+
+    // Szulo route-ok inicializálása
+    app.use('/api/szulos', require('./routes/SzuloRoutes'));
+    console.log('✓ Szulo route-ok inicializálva');
+
+    // Lakcim route-ok inicializálása
+    app.use('/api/lakcims', require('./routes/LakcimRoutes'));
+    console.log('✓ Lakcim route-ok inicializálva');
+
+    // 404 handler - csak most regisztráljuk, miután minden route be van állítva
+    app.use((req, res) => {
+      res.status(404).json({
+        error: 'Endpoint nem található',
+        path: req.path
+      });
+    });
+
+    // Error handler - csak most regisztráljuk, miután minden route be van állítva
+    app.use((err, req, res, next) => {
+      console.error('Hiba:', err);
+      res.status(err.status || 500).json({
+        error: err.message || 'Szerver hiba',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      });
+    });
+
     // Szerver indítása
     app.listen(PORT, () => {
       console.log(`✓ Szerver fut a http://localhost:${PORT} címen`);

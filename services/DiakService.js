@@ -9,6 +9,7 @@ class DiakService {
     this.SzobaBekoltozes = db.SzobaBekoltozes;
     this.Szoba = db.Szoba;
     this.transaction = options.transaction || null;
+    this.repository = options.repository;
   }
 
   /**
