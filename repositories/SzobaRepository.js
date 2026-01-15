@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 
 class SzobaRepository {
   constructor(db) {
+    this.db = db;
     this.Szoba = db.Szoba;
     this.SzobaBekoltozes = db.SzobaBekoltozes;
   }

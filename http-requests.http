@@ -1,4 +1,16 @@
-### Create a new student (requires existing parent and address IDs)
+# KANYR API - HTTP Requests Collection
+# ======================================
+
+## Tartalomjegyzék
+1. Diák végpontok
+2. Szülő végpontok
+3. Lakcím végpontok
+4. Szoba végpontok
+
+## 1. DIÁK VÉGPONTOK
+### ======================
+
+### Új diák létrehozása (szülő és cím ID-t igényel)
 POST http://localhost:3000/api/diaks
 Content-Type: application/json
 
@@ -15,22 +27,16 @@ Content-Type: application/json
   "cim_id": 1
 }
 
-### ========================================
-### 4. CREATE PARENT AND ADDRESS (SEPARATELY)
-### ========================================
+## 2. SZŰLŐ VÉGPONTOK
+### =======================
 
-### Create a new address
-POST http://localhost:3000/api/lakcims
-Content-Type: application/json
+### Összes szülő lekérdezése
+GET http://localhost:3000/api/szulos
 
-{
-  "orszag": "Magyarország",
-  "iranyitoszam": "7621",
-  "varos": "Pécs",
-  "utca_hazszam": "Új utca 25."
-}
+### Szülő lekérdezése ID alapján
+GET http://localhost:3000/api/szulos/1
 
-### Create a new parent
+### Új szülő létrehozása
 POST http://localhost:3000/api/szulos
 Content-Type: application/json
 
@@ -42,13 +48,7 @@ Content-Type: application/json
   "cim_id": 1
 }
 
-### Get all parents
-GET http://localhost:3000/api/szulos
-
-### Get parent by ID
-GET http://localhost:3000/api/szulos/1
-
-### Update parent
+### Szülő frissítése
 PUT http://localhost:3000/api/szulos/1
 Content-Type: application/json
 
@@ -57,20 +57,30 @@ Content-Type: application/json
   "telefonszam": "06-70-888-0000"
 }
 
-### Delete parent
+### Szülő törlése
 DELETE http://localhost:3000/api/szulos/1
 
-### ========================================
-### LAKCIM (ADDRESS) ENDPOINTS
-### ========================================
+## 3. LAKCÍM VÉGPONTOK
+### ======================
 
-### Get all addresses
+### Összes cím lekérdezése
 GET http://localhost:3000/api/lakcims
 
-### Get address by ID
+### Cím lekérdezése ID alapján
 GET http://localhost:3000/api/lakcims/1
 
-### Update address
+### Új cím létrehozása
+POST http://localhost:3000/api/lakcims
+Content-Type: application/json
+
+{
+  "orszag": "Magyarország",
+  "iranyitoszam": "7621",
+  "varos": "Pécs",
+  "utca_hazszam": "Új utca 25."
+}
+
+### Cím frissítése
 PUT http://localhost:3000/api/lakcims/1
 Content-Type: application/json
 
@@ -78,41 +88,27 @@ Content-Type: application/json
   "utca_hazszam": "Frissített utca 26."
 }
 
-### Delete address
+### Cím törlése
 DELETE http://localhost:3000/api/lakcims/1
 
-### Get addresses by city
+### Címek lekérdezése város alapján
 GET http://localhost:3000/api/lakcims/city/Pécs
 
-### ========================================
-### SZULO (PARENT) ENDPOINTS
-### ========================================
+## 4. SZOBA VÉGPONTOK
+### ====================
 
-### Get all parents
-GET http://localhost:3000/api/szulos
+### Összes szoba lekérdezése
+GET http://localhost:3000/api/szobas
 
-### Get parent by ID
-GET http://localhost:3000/api/szulos/1
-
-### Update parent
-PUT http://localhost:3000/api/szulos/1
-Content-Type: application/json
-
-{
-  "nev": "Frissített Szülő Anna",
-  "telefonszam": "06-70-888-0000"
-}
-
-### Delete parent
-DELETE http://localhost:3000/api/szulos/1
-
+### Szoba lekérdezése ID alapján
+GET http://localhost:3000/api/szobas/1
 
 ### Új szoba létrehozása
 POST http://localhost:3000/api/szobas
 Content-Type: application/json
 
 {
-  "szoba_szama": "A101",
+  "szoba_szama": "B101",
   "osszes_hely": 2
 }
 
@@ -125,3 +121,15 @@ Content-Type: application/json
   "szoba_id": 1,
   "bekoltozes_datum": "2024-09-01"
 }
+
+### Szoba frissítése
+PUT http://localhost:3000/api/szobas/1
+Content-Type: application/json
+
+{
+  "szoba_szama": "A102",
+  "osszes_hely": 3
+}
+
+### Szoba törlése
+DELETE http://localhost:3000/api/szobas/1
