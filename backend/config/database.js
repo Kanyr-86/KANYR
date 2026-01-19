@@ -4,7 +4,7 @@ const path = require('path');
 // SQLite adatbázis konfiguráció
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, '..', 'database.sqlite'),
+  storage: path.join(__dirname, 'database.sqlite'),
   logging: console.log, // SQL lekérdezések naplózása (fejlesztéshez hasznos)
   define: {
     // Alapértelmezett beállítások minden modellhez
