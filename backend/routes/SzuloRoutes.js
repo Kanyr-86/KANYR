@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, param, query } = require('express-validator');
 const SzuloController = require('../controllers/SzuloController');
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -44,27 +45,29 @@ const initializeController = (db) => {
 };
 
 // Route definitions
-router.get('/', validatePagination, (req, res) => {
+// Admin-only routes (require admin authentication)
+router.get('/', authenticate, isAdmin, validatePagination, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAllSzulos(req, res);
 });
 
-router.get('/:id', validateId, (req, res) => {
+router.get('/:id', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getSzuloById(req, res);
 });
 
-router.post('/', validateCreateSzulo, (req, res) => {
+// Protected routes (require authentication)
+router.post('/', authenticate, validateCreateSzulo, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.createSzulo(req, res);
 });
 
-router.put('/:id', validateId, validateUpdateSzulo, (req, res) => {
+router.put('/:id', authenticate, validateId, validateUpdateSzulo, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateSzulo(req, res);
 });
 
-router.delete('/:id', validateId, (req, res) => {
+router.delete('/:id', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.deleteSzulo(req, res);
 });

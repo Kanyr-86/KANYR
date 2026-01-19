@@ -66,8 +66,11 @@ const initializeController = (db) => {
     (req, res) => initializeController(req.app.locals.db).createUser(req, res)
   );
 
+  // Protected routes (require admin authentication)
   router.get(
     '/:id',
+    authenticate,
+    isAdmin,
     idValidationRule,
     (req, res) => initializeController(req.app.locals.db).getUserById(req, res)
   );

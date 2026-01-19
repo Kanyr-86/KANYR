@@ -2,12 +2,40 @@
 # ======================================
 
 ## Tartalomjegyzék
-1. Diák végpontok
-2. Szülő végpontok
-3. Lakcím végpontok
-4. Szoba végpontok
+1. Hitelesítés végpontok
+2. Diák végpontok
+3. Szülő végpontok
+4. Lakcím végpontok
+5. Szoba végpontok
 
-## 1. DIÁK VÉGPONTOK
+## 1. HITELESÍTÉS VÉGPONTOK
+### =========================
+
+### Teszt admin token generálása (1 óra érvényes)
+POST http://localhost:3000/api/auth/test-admin-token
+
+### Felhasználó bejelentkezés
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "admin123"
+}
+
+### Felhasználó kijelentkezés
+POST http://localhost:3000/api/auth/logout
+Authorization: Bearer {{token}}
+
+### Aktuális felhasználó adatai
+GET http://localhost:3000/api/auth/me
+Authorization: Bearer {{token}}
+
+### Admin jogok ellenőrzése
+GET http://localhost:3000/api/auth/check-admin
+Authorization: Bearer {{token}}
+
+## 2. DIÁK VÉGPONTOK
 ### ======================
 
 ### Új diák létrehozása (szülő és cím ID-t igényel)

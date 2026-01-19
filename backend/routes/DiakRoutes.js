@@ -104,73 +104,78 @@ const initializeController = (db) => {
   return diakController;
 };
 
+// Import authentication middleware
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+
 // Route definitions
-router.get('/', validatePagination, (req, res) => {
+// Admin-only routes (require admin authentication)
+router.get('/', authenticate, isAdmin, validatePagination, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAllDiaks(req, res);
 });
 
-router.get('/active', (req, res) => {
+router.get('/active', authenticate, isAdmin, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getActiveStudents(req, res);
 });
 
-router.get('/search', validateSearch, (req, res) => {
+router.get('/search', authenticate, isAdmin, validateSearch, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.searchStudents(req, res);
 });
 
-router.get('/statistics', (req, res) => {
+router.get('/statistics', authenticate, isAdmin, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getStatistics(req, res);
 });
 
-router.get('/:id', validateId, (req, res) => {
+router.get('/:id', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getDiakById(req, res);
 });
 
-router.get('/:id/report', validateId, (req, res) => {
+router.get('/:id/report', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.generateStudentReport(req, res);
 });
 
-router.get('/:id/room', validateId, (req, res) => {
+router.get('/:id/room', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getStudentRoom(req, res);
 });
 
-router.post('/', validateCreateDiak, (req, res) => {
+// Protected routes (require authentication)
+router.post('/', authenticate, validateCreateDiak, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.createDiak(req, res);
 });
 
-router.post('/enroll', validateEnrollStudent, (req, res) => {
+router.post('/enroll', authenticate, validateEnrollStudent, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.enrollStudent(req, res);
 });
 
-router.post('/bulk-enroll', validateBulkEnroll, (req, res) => {
+router.post('/bulk-enroll', authenticate, validateBulkEnroll, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.bulkEnrollStudents(req, res);
 });
 
-router.put('/:id', validateId, validateUpdateDiak, (req, res) => {
+router.put('/:id', authenticate, validateId, validateUpdateDiak, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateDiak(req, res);
 });
 
-router.delete('/:id', validateId, (req, res) => {
+router.delete('/:id', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.deleteDiak(req, res);
 });
 
-router.post('/:id/transfer', validateId, validateTransferStudent, (req, res) => {
+router.post('/:id/transfer', authenticate, validateId, validateTransferStudent, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.transferStudent(req, res);
 });
 
-router.post('/:id/move-out', validateId, validateMoveOut, (req, res) => {
+router.post('/:id/move-out', authenticate, validateId, validateMoveOut, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.moveOutStudent(req, res);
 });

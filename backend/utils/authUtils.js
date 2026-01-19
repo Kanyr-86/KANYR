@@ -39,12 +39,13 @@ async function comparePassword(password, hashedPassword) {
 /**
  * Generate JWT token
  * @param {Object} payload - User data to include in token
+ * @param {string} expiresIn - Custom expiration time (optional)
  * @returns {string} - JWT token
  */
-function generateToken(payload) {
+function generateToken(payload, expiresIn = JWT_EXPIRES_IN) {
   try {
     const token = jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN
+      expiresIn: expiresIn
     });
     return token;
   } catch (error) {

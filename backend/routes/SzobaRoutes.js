@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 
 // Szoba controller inicializálása
 let SzobaController;
@@ -78,50 +79,65 @@ const validateCreateBekoltozes = [
 ];
 
 // Útvonalak
+// Protected routes (require authentication)
 router.post(
   '/',
+  authenticate,
   validateCreateSzoba,
   async (req, res) => SzobaController.createSzoba(req, res)
 );
 
+// Admin-only routes (require admin authentication)
 router.get(
   '/',
+  authenticate,
+  isAdmin,
   validateQueryParams,
   async (req, res) => SzobaController.getAllSzobas(req, res)
 );
 
 router.get(
   '/:id',
+  authenticate,
+  isAdmin,
   validateIdParam,
   async (req, res) => SzobaController.getSzobaById(req, res)
 );
 
-router.put(
-  '/:id',
-  validateUpdateSzoba,
-  async (req, res) => SzobaController.updateSzoba(req, res)
-);
-
-router.delete(
-  '/:id',
-  validateIdParam,
-  async (req, res) => SzobaController.deleteSzoba(req, res)
-);
-
 router.get(
   '/:id/occupants',
+  authenticate,
+  isAdmin,
   validateIdParam,
   async (req, res) => SzobaController.getStudentsInRoom(req, res)
 );
 
 router.get(
   '/statistics',
+  authenticate,
+  isAdmin,
   async (req, res) => SzobaController.getRoomStatistics(req, res)
 );
 
-// Új beköltözés végpont
+// Protected routes (require authentication)
+router.put(
+  '/:id',
+  authenticate,
+  validateUpdateSzoba,
+  async (req, res) => SzobaController.updateSzoba(req, res)
+);
+
+router.delete(
+  '/:id',
+  authenticate,
+  validateIdParam,
+  async (req, res) => SzobaController.deleteSzoba(req, res)
+);
+
+// Új beköltözés végpont (require authentication)
 router.post(
   '/bekoltozes',
+  authenticate,
   validateCreateBekoltozes,
   async (req, res) => SzobaController.createBekoltozes(req, res)
 );

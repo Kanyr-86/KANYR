@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
 const { authenticate } = require('../middleware/authMiddleware');
+const { generateToken } = require('../utils/authUtils');
 
 const router = express.Router();
 
@@ -120,6 +121,39 @@ router.get(
         isAdmin: req.user.admin
       }
     });
+  }
+);
+
+/**
+ * POST /api/auth/test-admin-token
+ * Generate test admin token (1 hour expiration) - FOR TESTING ONLY
+ */
+router.post(
+  '/test-admin-token',
+  (req, res) => {
+    try {
+      // Generate test admin token with 1 hour expiration
+      const testToken = generateToken({
+        userId: 1, // Test admin user ID
+        admin: true
+      }, '1h'); // 1 hour expiration for testing
+
+      res.json({
+        success: true,
+        data: {
+          token: testToken,
+          expiresIn: '1h',
+          userId: 1,
+          admin: true
+        },
+        message: 'Teszt admin token generálva (1 óra érvényes)'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Hiba a teszt token generálása közben'
+      });
+    }
   }
 );
 
