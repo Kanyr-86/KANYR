@@ -1,5 +1,33 @@
 {
+  "name": "kanyr",
+  "version": "1.0.0",
+  "description": "Ez a Ganz Ábrahám Szakközép és Technikum diákjainak a csoport projektje",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd backend && node app.js",
+    "start-frontend": "cd frontend && npm start",
+    "start-all": "concurrently \"npm run start\" \"npm run start-frontend\"",
+    "build-frontend": "cd frontend && npm run build",
+    "dev": "concurrently \"cd backend && nodemon app.js\" \"cd frontend && npm start\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kanyr-86/KANYR.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kanyr-86/KANYR/issues"
+  },
+  "homepage": "https://github.com/Kanyr-86/KANYR#readme",
   "dependencies": {
     "first_backend": "file:backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.11",
+    "react-scripts": "^5.0.1"
   }
 }
