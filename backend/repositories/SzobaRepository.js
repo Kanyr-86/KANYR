@@ -194,6 +194,61 @@ class SzobaRepository {
   }
 
   /**
+   * Elérhető szobák listázása
+   * @param {Object} options - Lekérdezési paraméterek
+   * @param {number} options.limit - Korlát
+   * @param {number} options.offset - Eltolás
+   * @param {string} options.sort - Rendezési mező
+   * @param {string} options.order - Rendezési irány (ASC/DESC)
+   * @param {string} options.prefix - Szoba szám prefix (pl. 'A')
+   * @returns {Promise<Array>} - Elérhető szobák listája
+   */
+  async getAvailableRooms(options = {}) {
+    try {
+      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
+
+      const where = {};
+      if (prefix) {
+        where.szoba_szama = {
+          [Op.startsWith]: prefix
+        };
+      }
+
+      // Szobák lekérdezése a kapacitás ellenőrzésével
+      const szobas = await this.Szoba.findAll({
+        where,
+        order: [[sort, order]],
+        limit,
+        offset
+      });
+
+      // Ellenőrizzük minden szoba elérhetőségét
+      const availableRooms = [];
+      
+      for (const szoba of szobas) {
+        const currentOccupancy = await this.SzobaBekoltozes.count({
+          where: {
+            szoba_id: szoba.szoba_id,
+            kikoltozes_datum: null
+          }
+        });
+
+        if (currentOccupancy < szoba.osszes_hely) {
+          availableRooms.push({
+            ...szoba.toJSON(),
+            aktualis_szam: currentOccupancy,
+            szabad_helyek: szoba.osszes_hely - currentOccupancy
+          });
+        }
+      }
+
+      return availableRooms;
+    } catch (error) {
+      throw new Error(`Hiba az elérhető szobák listázásakor: ${error.message}`);
+    }
+  }
+
+  /**
    * Új beköltözés létrehozása
    * @param {Object} bekoltozesData - Beköltözés adatok
    * @param {number} bekoltozesData.diak_id - Diák ID

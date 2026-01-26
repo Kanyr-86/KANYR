@@ -233,6 +233,37 @@ class SzobaController {
   }
 
   /**
+   * Elérhető szobák listázása
+   * @param {Object} req - Express request objektum
+   * @param {Object} res - Express response objektum
+   */
+  async getAvailableRooms(req, res) {
+    try {
+      const { limit, offset, sort, order, prefix } = req.query;
+
+      const options = {
+        limit: limit ? parseInt(limit) : 10,
+        offset: offset ? parseInt(offset) : 0,
+        sort: sort || 'szoba_id',
+        order: order || 'ASC',
+        prefix: prefix
+      };
+
+      const availableRooms = await this.SzobaService.getAvailableRooms(options);
+
+      res.json({
+        success: true,
+        data: availableRooms
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
    * Új beköltözés létrehozása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum

@@ -1,4 +1,4 @@
-const { Transaction } = require('sequelize');
+const { Transaction, Op } = require('sequelize');
 
 class DiakService {
   constructor(db, options = {}) {
@@ -303,14 +303,17 @@ class DiakService {
       }));
 
       // Kapcsolat típusok eloszlása
-      const kapcsolatTipusok = await this.Diak.group('kapcsolat_tipusa', {
-        attributes: ['kapcsolat_tipusa'],
-        type: 'COUNT'
+      const kapcsolatTipusok = await this.Diak.findAll({
+        attributes: [
+          'kapcsolat_tipusa',
+          [this.db.sequelize.fn('COUNT', this.db.sequelize.col('kapcsolat_tipusa')), 'count']
+        ],
+        group: ['kapcsolat_tipusa']
       });
 
       const kapcsolatStats = {};
       kapcsolatTipusok.forEach(item => {
-        kapcsolatStats[item.kapcsolat_tipusa] = item.count;
+        kapcsolatStats[item.kapcsolat_tipusa] = parseInt(item.dataValues.count);
       });
 
       return {
@@ -355,11 +358,11 @@ class DiakService {
       const whereConditions = {};
 
       if (nev) {
-        whereConditions.nev = { [this.db.Sequelize.Op.like]: `%${nev}%` };
+        whereConditions.nev = { [Op.like]: `%${nev}%` };
       }
 
       if (email) {
-        whereConditions.email = { [this.db.Sequelize.Op.like]: `%${email}%` };
+        whereConditions.email = { [Op.like]: `%${email}%` };
       }
 
       if (kapcsolat_tipusa) {

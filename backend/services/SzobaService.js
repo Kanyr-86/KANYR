@@ -135,6 +135,24 @@ class SzobaService {
   }
 
   /**
+   * Elérhető szobák listázása
+   * @param {Object} options - Lekérdezési paraméterek
+   * @param {number} options.limit - Korlát
+   * @param {number} options.offset - Eltolás
+   * @param {string} options.sort - Rendezési mező
+   * @param {string} options.order - Rendezési irány (ASC/DESC)
+   * @param {string} options.prefix - Szoba szám prefix (pl. 'A')
+   * @returns {Promise<Array>} - Elérhető szobák listája
+   */
+  async getAvailableRooms(options = {}) {
+    try {
+      return await this.SzobaRepository.getAvailableRooms(options);
+    } catch (error) {
+      throw new Error(`Hiba az elérhető szobák listázásakor: ${error.message}`);
+    }
+  }
+
+  /**
    * Új beköltözés létrehozása
    * @param {Object} bekoltozesData - Beköltözés adatok
    * @param {number} bekoltozesData.diak_id - Diák ID

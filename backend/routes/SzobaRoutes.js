@@ -142,4 +142,13 @@ router.post(
   async (req, res) => SzobaController.createBekoltozes(req, res)
 );
 
+// Admin-only route for available rooms (require admin authentication)
+router.get(
+  '/available',
+  authenticate,
+  isAdmin,
+  validateQueryParams,
+  async (req, res) => SzobaController.getAvailableRooms(req, res)
+);
+
 module.exports = initController;
