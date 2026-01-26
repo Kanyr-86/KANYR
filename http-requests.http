@@ -35,6 +35,12 @@ Authorization: Bearer {{token}}
 GET http://localhost:3000/api/auth/check-admin
 Authorization: Bearer {{token}}
 
+### 1.1 Admin token beszerzése (először ezt futtasd!)
+POST http://localhost:3000/api/auth/test-admin-token
+
+### 1.2 Token frissítése (ha lejárt vagy érvénytelen)
+POST http://localhost:3000/api/auth/test-admin-token
+
 ## 2. DIÁK VÉGPONTOK
 ### ======================
 
@@ -121,6 +127,66 @@ DELETE http://localhost:3000/api/lakcims/1
 
 ### Címek lekérdezése város alapján
 GET http://localhost:3000/api/lakcims/city/Pécs
+
+## 5. USER STORY DEMO - Kollégiumi Titkár Diák Kezelése
+### =========================================================
+
+### 5.1 Diák keresése a rendszerben (Titkár azonosítja a diákot)
+GET http://localhost:3000/api/diaks/search?nev=Teszt Diák
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkbWluIjp0cnVlLCJpYXQiOjE3Njk0Mjg1MTEsImV4cCI6MTc2OTQzMjExMX0.Wi5CSJzSD92LI7lYxIpP22Uiljm9a99qZWj2JlnfKbo
+
+### 5.2 Diák aktuális szobájának lekérdezése
+GET http://localhost:3000/api/diaks/1/room
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkbWluIjp0cnVlLCJpYXQiOjE3Njk0Mjg1MTEsImV4cCI6MTc2OTQzMjExMX0.Wi5CSJzSD92LI7lYxIpP22Uiljm9a99qZWj2JlnfKbo
+
+### 5.3 Elérhető szobák listázása (Titkár ellenőrzi a szabad szobákat)
+GET http://localhost:3000/api/szoba/available?prefix=B&limit=5
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkbWluIjp0cnVlLCJpYXQiOjE3Njk0Mjg1MTEsImV4cCI6MTc2OTQzMjExMX0.Wi5CSJzSD92LI7lYxIpP22Uiljm9a99qZWj2JlnfKbo
+
+### 5.4 Diák áthelyezése új szobába (Szobaátcsatolás)
+POST http://localhost:3000/api/diaks/1/transfer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "uj_szoba_id": 2,
+  "atcsatolas_datum": "2024-01-15"
+}
+
+### 5.5 Diák új szobájának ellenőrzése (Áthelyezés megerősítése)
+GET http://localhost:3000/api/diaks/1/room
+Authorization: Bearer {{token}}
+
+### 5.6 Elérhető szobák friss listája (Áthelyezés után)
+GET http://localhost:3000/api/szoba/available?prefix=B&limit=5
+Authorization: Bearer {{token}}
+
+## 6. USER STORY HIBAELHÁRÍTÁS PÉLDÁK
+### ======================================
+
+### 6.1 Diák nem található (E1: Diák nem található)
+GET http://localhost:3000/api/diaks/search?nev=NemLetezo Diák
+
+### 6.2 Diák szobájának lekérdezése, ha nincs aktív beköltözése (E2: Aktív beköltözés hiányzik)
+GET http://localhost:3000/api/diaks/999/room
+
+### 6.3 Szobaátcsatolás, ha a cél szoba tele van (E3: Szoba elérhetetlen)
+POST http://localhost:3000/api/diaks/1/transfer
+Content-Type: application/json
+
+{
+  "uj_szoba_id": 999,
+  "atcsatolas_datum": "2024-01-15"
+}
+
+### 6.4 Érvénytelen szoba ID-vel történő áthelyezés
+POST http://localhost:3000/api/diaks/1/transfer
+Content-Type: application/json
+
+{
+  "uj_szoba_id": 0,
+  "atcsatolas_datum": "2024-01-15"
+}
 
 ## 4. SZOBA VÉGPONTOK
 ### ====================
