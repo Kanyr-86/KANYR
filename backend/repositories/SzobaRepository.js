@@ -309,6 +309,120 @@ class SzobaRepository {
       throw new Error(`Hiba a beköltözés létrehozásakor: ${error.message}`);
     }
   }
+
+  /**
+   * Tömeges beköltözés létrehozása
+   * @param {Object} bulkData - Tömeges beköltözés adatok
+   * @param {number} bulkData.szoba_id - Szoba ID
+   * @param {string} bulkData.bekoltozes_datum - Beköltözés dátuma
+   * @param {Array<number>} bulkData.diak_ids - Diák ID-k listája
+   * @returns {Promise<Object>} - Létrehozott beköltözések eredménye
+   */
+  async createBulkBekoltozes(bulkData) {
+    const { szoba_id, bekoltozes_datum, diak_ids } = bulkData;
+    
+    return await this.db.sequelize.transaction(async (transaction) => {
+      // 1. Szoba létezésének ellenőrzése
+      const szoba = await this.Szoba.findByPk(szoba_id, { transaction });
+      if (!szoba) {
+        throw new Error(`A ${szoba_id} ID-jú szoba nem található!`);
+      }
+
+      // 2. Szoba kapacitás ellenőrzése
+      const currentOccupancy = await this.SzobaBekoltozes.count({
+        where: {
+          szoba_id: szoba_id,
+          kikoltozes_datum: null
+        },
+        transaction
+      });
+
+      const availableCapacity = szoba.osszes_hely - currentOccupancy;
+      
+      if (diak_ids.length > availableCapacity) {
+        throw new Error(`A szoba kapacitása nem elegendő! Szabad helyek: ${availableCapacity}, de ${diak_ids.length} diákot próbál átköltöztetni.`);
+      }
+
+      // 3. Diákok létezésének és egyediségének ellenőrzése
+      const uniqueDiakIds = [...new Set(diak_ids)];
+      const diakok = await this.db.Diak.findAll({
+        where: {
+          diak_id: uniqueDiakIds
+        },
+        transaction
+      });
+
+      const foundDiakIds = diakok.map(d => d.diak_id);
+      const missingDiakIds = uniqueDiakIds.filter(id => !foundDiakIds.includes(id));
+      
+      if (missingDiakIds.length > 0) {
+        throw new Error(`A következő diák ID-k nem találhatók: ${missingDiakIds.join(', ')}`);
+      }
+
+      // 4. Ellenőrizzük, hogy a diákok már nincsenek-e ebben a szobában
+      const existingBekoltozesek = await this.SzobaBekoltozes.findAll({
+        where: {
+          diak_id: uniqueDiakIds,
+          szoba_id: szoba_id,
+          kikoltozes_datum: null
+        },
+        transaction
+      });
+
+      const existingDiakIds = existingBekoltozesek.map(b => b.diak_id);
+      if (existingDiakIds.length > 0) {
+        throw new Error(`A következő diák ID-k már be vannak költözve ebbe a szobába: ${existingDiakIds.join(', ')}`);
+      }
+
+      // 5. Ellenőrizzük, hogy a diákok más szobákban vannak-e aktívan
+      const activeBekoltozesek = await this.SzobaBekoltozes.findAll({
+        where: {
+          diak_id: uniqueDiakIds,
+          kikoltozes_datum: null
+        },
+        include: [{
+          model: this.Szoba,
+          as: 'szoba'
+        }],
+        transaction
+      });
+
+      const activeDiakIds = activeBekoltozesek.map(b => b.diak_id);
+      const activeRoomInfo = activeBekoltozesek.map(b => ({
+        diak_id: b.diak_id,
+        szoba_szama: b.szoba.szoba_szama
+      }));
+
+      if (activeDiakIds.length > 0) {
+        const activeInfo = activeRoomInfo.map(info => 
+          `Diák ID: ${info.diak_id}, Szoba: ${info.szoba_szama}`
+        ).join('; ');
+        throw new Error(`A következő diákok más szobákban aktívak: ${activeInfo}`);
+      }
+
+      // 6. Tömeges beköltözés létrehozása
+      const bekoltozesekData = uniqueDiakIds.map(diak_id => ({
+        diak_id,
+        szoba_id,
+        bekoltozes_datum
+      }));
+
+      const createdBekoltozesek = await this.SzobaBekoltozes.bulkCreate(bekoltozesekData, { transaction });
+
+      // 7. Részletes eredmény visszaadása
+      return {
+        szoba_id: szoba_id,
+        szoba_szama: szoba.szoba_szama,
+        bekoltozes_datum: bekoltozes_datum,
+        total_students: uniqueDiakIds.length,
+        transfers: createdBekoltozesek.map(bekoltozes => ({
+          diak_id: bekoltozes.diak_id,
+          bekoltozes_id: bekoltozes.bekoltozes_id,
+          status: 'success'
+        }))
+      };
+    });
+  }
 }
 
 module.exports = SzobaRepository;

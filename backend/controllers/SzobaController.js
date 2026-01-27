@@ -299,6 +299,43 @@ class SzobaController {
       });
     }
   }
+
+  /**
+   * Tömeges beköltözés létrehozása
+   * @param {Object} req - Express request objektum
+   * @param {Object} res - Express response objektum
+   */
+  async createBulkBekoltozes(req, res) {
+    try {
+      // Validációs hibák ellenőrzése
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array()
+        });
+      }
+
+      const { szoba_id, bekoltozes_datum, diak_ids } = req.body;
+
+      const result = await this.SzobaService.createBulkBekoltozes({
+        szoba_id,
+        bekoltozes_datum,
+        diak_ids
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Tömeges beköltözés sikeresen végrehajtva',
+        data: result
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = SzobaController;

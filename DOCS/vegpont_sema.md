@@ -66,6 +66,7 @@ Alap URL: `/api`
   - PUT `/api/szoba/:id` – frissítés
   - DELETE `/api/szoba/:id` – törlés
   - POST `/api/szoba/bekoltozes` – új beköltözés létrehozása (body: `diak_id`, `szoba_id`, `bekoltozes_datum`)
+  - POST `/api/szoba/bulk-bekoltozes` – tömeges beköltözés létrehozása (body: `szoba_id`, `bekoltozes_datum`, `diak_ids`)
   - GET `/api/szoba/:id/occupants` – szobában tartózkodó diákok listázása
   - GET `/api/szoba/statistics` – szoba statisztikák lekérdezése
 
@@ -260,6 +261,69 @@ Minden végpontnál megadott: HTTP metódus, útvonal, fontos query/body paramé
       {
         "success": false,
         "message": "A szoba tele van! Maximális férőhely: 2"
+      }
+      ```
+
+  - POST `/api/szobas/bulk-bekoltozes` (ÚJ VÉGPONT - TÖMEGES BEKÖLTÖZÉS)
+    - Body (JSON):
+      ```json
+      {
+        "szoba_id": 1,
+        "bekoltozes_datum": "2024-09-01",
+        "diak_ids": [1, 2, 3, 4]
+      }
+      ```
+    - Response 201 (sikeres eset):
+      ```json
+      {
+        "success": true,
+        "message": "Tömeges beköltözés sikeresen végrehajtva",
+        "data": {
+          "szoba_id": 1,
+          "szoba_szama": "A101",
+          "bekoltozes_datum": "2024-09-01",
+          "total_students": 4,
+          "transfers": [
+            { "diak_id": 1, "bekoltozes_id": 10, "status": "success" },
+            { "diak_id": 2, "bekoltozes_id": 11, "status": "success" },
+            { "diak_id": 3, "bekoltozes_id": 12, "status": "success" },
+            { "diak_id": 4, "bekoltozes_id": 13, "status": "success" }
+          ]
+        }
+      }
+      ```
+    - Response 400 (validációs hiba):
+      ```json
+      {
+        "success": false,
+        "errors": [
+          {
+            "msg": "A szoba ID pozitív egész számnak kell lennie",
+            "param": "szoba_id",
+            "location": "body"
+          }
+        ]
+      }
+      ```
+    - Response 400 (üzleti logika hiba - kapacitás túllépés):
+      ```json
+      {
+        "success": false,
+        "message": "A szoba kapacitása nem elegendő! Szabad helyek: 2, de 4 diákot próbál átköltöztetni."
+      }
+      ```
+    - Response 400 (üzleti logika hiba - nem létező diák):
+      ```json
+      {
+        "success": false,
+        "message": "A következő diák ID-k nem találhatók: 999, 888"
+      }
+      ```
+    - Response 400 (üzleti logika hiba - már a szobában):
+      ```json
+      {
+        "success": false,
+        "message": "A következő diák ID-k már be vannak költözve ebbe a szobába: 1, 2"
       }
       ```
 

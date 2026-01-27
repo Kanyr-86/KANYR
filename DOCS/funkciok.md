@@ -19,6 +19,7 @@ Az alkalmazás célja a kollégiumi adminisztráció támogatása az alábbi fun
 
 ## Beköltözés és kiköltözés kezelése
 - Diák beköltöztetése szobába
+- **Tömeges beköltözés** - több diák egyidejű beköltöztetése ugyanabba a szobába
 - Diák kiköltöztetésének rögzítése
 - Beköltözési előzmények nyomon követése
 

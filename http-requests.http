@@ -145,7 +145,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkb
 
 ### 5.4 Diák áthelyezése új szobába (Szobaátcsatolás)
 POST http://localhost:3000/api/diaks/1/transfer
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkbWluIjp0cnVlLCJpYXQiOjE3Njk0Mjg1MTEsImV4cCI6MTc2OTQzMjExMX0.Wi5CSJzSD92LI7lYxIpP22Uiljm9a99qZWj2JlnfKbo
 Content-Type: application/json
 
 {
@@ -155,11 +155,11 @@ Content-Type: application/json
 
 ### 5.5 Diák új szobájának ellenőrzése (Áthelyezés megerősítése)
 GET http://localhost:3000/api/diaks/1/room
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkbWluIjp0cnVlLCJpYXQiOjE3Njk0Mjg1MTEsImV4cCI6MTc2OTQzMjExMX0.Wi5CSJzSD92LI7lYxIpP22Uiljm9a99qZWj2JlnfKbo
 
 ### 5.6 Elérhető szobák friss listája (Áthelyezés után)
 GET http://localhost:3000/api/szoba/available?prefix=B&limit=5
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImFkbWluIjp0cnVlLCJpYXQiOjE3Njk0Mjg1MTEsImV4cCI6MTc2OTQzMjExMX0.Wi5CSJzSD92LI7lYxIpP22Uiljm9a99qZWj2JlnfKbo
 
 ## 6. USER STORY HIBAELHÁRÍTÁS PÉLDÁK
 ### ======================================
@@ -227,3 +227,71 @@ Content-Type: application/json
 
 ### Szoba törlése
 DELETE http://localhost:3000/api/szobas/1
+
+## 7. TÖMEGES BEKÖLTÖZÉS VÉGPONTOK
+### ==================================
+
+### 7.1 Sikeres tömeges beköltözés
+POST http://localhost:3000/api/szobas/bulk-bekoltozes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "szoba_id": 1,
+  "bekoltozes_datum": "2024-09-01",
+  "diak_ids": [1, 2, 3, 4]
+}
+
+### 7.2 Tömeges beköltözés különböző szobába
+POST http://localhost:3000/api/szobas/bulk-bekoltozes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "szoba_id": 2,
+  "bekoltozes_datum": "2024-09-01",
+  "diak_ids": [5, 6, 7]
+}
+
+### 7.3 Tömeges beköltözés duplikált diák ID-kkal (egyedieként feldolgozva)
+POST http://localhost:3000/api/szobas/bulk-bekoltozes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "szoba_id": 3,
+  "bekoltozes_datum": "2024-09-01",
+  "diak_ids": [1, 1, 2, 2, 3]
+}
+
+### 7.4 Hibás kérés - hiányzó szoba ID
+POST http://localhost:3000/api/szobas/bulk-bekoltozes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "bekoltozes_datum": "2024-09-01",
+  "diak_ids": [1, 2, 3]
+}
+
+### 7.5 Hibás kérés - üres diák lista
+POST http://localhost:3000/api/szobas/bulk-bekoltozes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "szoba_id": 1,
+  "bekoltozes_datum": "2024-09-01",
+  "diak_ids": []
+}
+
+### 7.6 Hibás kérés - nem létező diák ID-k
+POST http://localhost:3000/api/szobas/bulk-bekoltozes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "szoba_id": 1,
+  "bekoltozes_datum": "2024-09-01",
+  "diak_ids": [999, 888, 777]
+}

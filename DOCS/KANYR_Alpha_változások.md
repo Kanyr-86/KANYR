@@ -193,8 +193,96 @@ A KANYR projekt 1.10 verziója sikeresen megvalósított egy átfogó szoba bek�
 
 A megvalósítás követi az API tervezés legjobb gyakorlatát, tartalmaz átfogó dokumentációt, és részletes hiba kezelést biztosít minden forgatókönyvhez. A rendszer kész a termelési használatra és szilárd alapot biztosít jövőbeni bővítésekhez, mint például hitelesítés és szerepkör alapú hozzáférés kezelés.
 
+## 6. Tömeges Beköltözési Funkció Hozzáadva ✅ BEFEJEZVE
+
+### Új Végpont: `POST /api/szobas/bulk-bekoltozes`
+- **Cél**: Több diák egyidejű beköltöztetése ugyanabba a szobába
+- **Kérés Test**:
+  ```json
+  {
+    "szoba_id": 1,
+    "bekoltozes_datum": "2024-09-01",
+    "diak_ids": [1, 2, 3, 4]
+  }
+  ```
+- **Validációs Szabályok**:
+  - `szoba_id`: Kötelező, pozitív egész szám
+  - `bekoltozes_datum`: Kötelező, ISO8601 dátum formátum
+  - `diak_ids`: Kötelező, nem üres tömb pozitív egész számokkal
+
+### Továbbfejlesztett Üzleti Logika
+A tömeges beköltözési rendszer kiterjesztette az eredeti validációs logikát:
+
+1. **Tömeges Diák Létezés Ellenőrzése**: Ellenőrzi, hogy minden diák létezik az adatbázisban
+2. **Duplikátumok Kezelése**: Automatikusan eltávolítja a duplikált diák ID-kat
+3. **Kapacitás Ellenőrzés**: Biztosítja, hogy a szoba befogadja az összes diákot
+4. **Tömeges Duplikáció Megelőzése**: Megakadályozza, hogy bármely diákot már beköltözöttként próbáljanak beköltöztetni
+5. **Aktív Beköltözések Ellenőrzése**: Ellenőrzi, hogy a diákok ne legyenek más szobákban aktívan
+
+### Tranzakciós Biztonság
+- **Atomicitás**: Vagy minden diák sikeresen beköltözik, vagy egyik sem
+- **Adatbázis Tranzakció**: Sequelize tranzakció használata a konzisztencia biztosítására
+- **Hibakezelés**: Részletes hibaüzenetek minden lehetséges hibaforgatókönyvre
+
+### Bővített Hiba Kezelés
+A rendszer most már további részletes hibaüzeneteket biztosít:
+
+- **Kapacitás túllépés**: `A szoba kapacitása nem elegendő! Szabad helyek: 2, de 4 diákot próbál átköltöztetni.`
+- **Nem létező diákok**: `A következő diák ID-k nem találhatók: 999, 888`
+- **Már a szobában lévő diákok**: `A következő diák ID-k már be vannak költözve ebbe a szobába: 1, 2`
+- **Más szobákban aktív diákok**: `A következő diákok más szobákban aktívak: Diák ID: 1, Szoba: A101; Diák ID: 2, Szoba: B102`
+
+### Részletes Válasz Formátum
+Sikeres tömeges beköltözés esetén részletes információkat ad vissza:
+
+```json
+{
+  "success": true,
+  "message": "Tömeges beköltözés sikeresen végrehajtva",
+  "data": {
+    "szoba_id": 1,
+    "szoba_szama": "A101",
+    "bekoltozes_datum": "2024-09-01",
+    "total_students": 4,
+    "transfers": [
+      { "diak_id": 1, "bekoltozes_id": 10, "status": "success" },
+      { "diak_id": 2, "bekoltozes_id": 11, "status": "success" },
+      { "diak_id": 3, "bekoltozes_id": 12, "status": "success" },
+      { "diak_id": 4, "bekoltozes_id": 13, "status": "success" }
+    ]
+  }
+}
+```
+
+### Architekturális Bővítések
+
+#### Útvonal Réteg Frissítve
+- Új validációs middleware hozzáadva a tömeges beköltözéshez
+- `diak_ids` tömb validáció és egyedi elemek kiválogatása
+- Részletes hibaüzenetek a tömb validációhoz
+
+#### Vezérlő Réteg Bővítve
+- `createBulkBekoltozes` metódus hozzáadva
+- Tömeges műveletek kezelése és hibakezelés
+- Részletes válasz formázás
+
+#### Szolgáltatás Réteg Kiterjesztve
+- `createBulkBekoltozes` metódus hozzáadva
+- Tömeges üzleti logika delegálás a repository réteg felé
+- Hibakezelés és fordítás bővítve
+
+#### Repository Réteg Átalakítva
+- `createBulkBekoltozes` metódus hozzáadva kiterjesztett üzleti logikával
+- Tömeges adatbázis műveletek `bulkCreate` használatával
+- Összetett tranzakciós logika több diák egyidejű kezelésére
+
+### HTTP Kérés Példák Hozzáadva
+- **http-requests.http** fájl frissítve tömeges beköltözési példákkal
+- Sikeres és hibás forgatókönyvek tesztelése
+- Különböző hibafajták lefedése
+
 ## Verzió Információ
-- **Verzió**: 1.10
-- **Dátum**: 2026. január 15.
+- **Verzió**: 1.11
+- **Dátum**: 2026. január 27.
 - **Fejlesztő**: KANYR Fejlesztő Csapat
 - **Státusz**: Befejezett és tesztelt

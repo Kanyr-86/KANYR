@@ -78,6 +78,32 @@ const validateCreateBekoltozes = [
     .isISO8601().withMessage('Érvényes dátumot adjon meg (YYYY-MM-DD formátum)')
 ];
 
+// Validáció tömeges beköltözés létrehozásához
+const validateCreateBulkBekoltozes = [
+  body('szoba_id')
+    .notEmpty().withMessage('A szoba ID kötelező')
+    .isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell lennie'),
+
+  body('bekoltozes_datum')
+    .notEmpty().withMessage('A beköltözés dátuma kötelező')
+    .isISO8601().withMessage('Érvényes dátumot adjon meg (YYYY-MM-DD formátum)'),
+
+  body('diak_ids')
+    .notEmpty().withMessage('A diák ID-k listája kötelező')
+    .isArray({ min: 1 }).withMessage('Legalább egy diák ID-t meg kell adni')
+    .custom((value) => {
+      if (!Array.isArray(value)) {
+        throw new Error('A diák ID-k listájának tömbnek kell lennie');
+      }
+      for (let i = 0; i < value.length; i++) {
+        if (!Number.isInteger(value[i]) || value[i] < 1) {
+          throw new Error(`A(z) ${i + 1}. diák ID-nek pozitív egész számnak kell lennie`);
+        }
+      }
+      return true;
+    })
+];
+
 // Útvonalak
 // Protected routes (require authentication)
 router.post(
@@ -140,6 +166,14 @@ router.post(
   authenticate,
   validateCreateBekoltozes,
   async (req, res) => SzobaController.createBekoltozes(req, res)
+);
+
+// Tömeges beköltözés végpont (require authentication)
+router.post(
+  '/bulk-bekoltozes',
+  authenticate,
+  validateCreateBulkBekoltozes,
+  async (req, res) => SzobaController.createBulkBekoltozes(req, res)
 );
 
 // Admin-only route for available rooms (require admin authentication)

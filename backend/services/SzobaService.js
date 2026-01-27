@@ -167,6 +167,22 @@ class SzobaService {
       throw new Error(`Hiba a beköltözés létrehozásakor: ${error.message}`);
     }
   }
+
+  /**
+   * Tömeges beköltözés létrehozása
+   * @param {Object} bulkData - Tömeges beköltözés adatok
+   * @param {number} bulkData.szoba_id - Szoba ID
+   * @param {string} bulkData.bekoltozes_datum - Beköltözés dátuma
+   * @param {Array<number>} bulkData.diak_ids - Diák ID-k listája
+   * @returns {Promise<Object>} - Létrehozott beköltözések eredménye
+   */
+  async createBulkBekoltozes(bulkData) {
+    try {
+      return await this.SzobaRepository.createBulkBekoltozes(bulkData);
+    } catch (error) {
+      throw new Error(`Hiba a tömeges beköltözés létrehozásakor: ${error.message}`);
+    }
+  }
 }
 
 module.exports = SzobaService;
