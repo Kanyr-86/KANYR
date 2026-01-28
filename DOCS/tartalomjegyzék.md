@@ -12,7 +12,7 @@
         1. Új szülő felvétele
         2. Szülő adatok lekérése
     4. Szobák
-        1. 
+        1. Beköltözés
     5. Felhasználoi adatok
 5. Fogalomtár
 
