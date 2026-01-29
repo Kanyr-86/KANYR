@@ -50,3 +50,25 @@
 - ✅ Szobaátcsatolás sikeresen végrehajtható
 - ✅ Rendszer megakadályozza érvénytelen műveleteket
 - ✅ Minden művelet naplózásra kerül
+
+## Új diák, nincs rendszerben szülő
+
+## Új diák, van rendszerben szülő
+
+## Diák szobába szobába költözése
+
+## Diák egyik szobából másikba költözése
+
+## Diák kiköltözése
+
+## Új szoba felvétele
+
+## Új suülő felvétele
+
+## Diák szülő módosítása
+
+## Szülő törlése
+
+## Diák törlése
+
+## Szoba törlése
