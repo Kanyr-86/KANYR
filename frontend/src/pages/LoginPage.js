@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Avatar, Button, TextField, Box, Typography, Container, Alert, Link } from '@mui/material';
+import { Avatar, Button, TextField, Box, Typography, Container, Alert, Link, InputAdornment, IconButton } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, error, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(username, password);
+    await login(email, password);
+  };
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -43,13 +50,13 @@ const LoginPage = () => {
             margin="normal"
             required
             fullWidth
-            id="username"
-            label="Felhasználónév"
-            name="username"
-            autoComplete="username"
+            id="email"
+            label="Email cím"
+            name="email"
+            autoComplete="email"
             autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
           />
           <TextField
@@ -58,19 +65,33 @@ const LoginPage = () => {
             fullWidth
             name="password"
             label="Jelszó"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             id="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleTogglePasswordVisibility}
+                    edge="end"
+                    disabled={loading}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            disabled={loading || !username || !password}
+            disabled={loading || !email || !password}
           >
             {loading ? 'Bejelentkezés...' : 'Bejelentkezés'}
           </Button>

@@ -1,0 +1,349 @@
+/* Optimized CSS for KANYR Frontend */
+
+/* CSS Variables for consistent theming */
+:root {
+  --primary-color: #1976d2;
+  --primary-hover: #1565c0;
+  --success-color: #2e7d32;
+  --success-hover: #1b5e20;
+  --info-color: #0288d1;
+  --info-hover: #01579b;
+  --warning-color: #f57c00;
+  --warning-hover: #ef6c00;
+  --error-color: #d32f2f;
+  --error-hover: #b71c1c;
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --bg-light: #f5f5f5;
+  --bg-white: #ffffff;
+  --border-radius: 8px;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+}
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+}
+
+/* Optimized DataGrid styles */
+.MuiDataGrid-root {
+  border: none;
+  background-color: var(--bg-white);
+}
+
+.MuiDataGrid-cell {
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.MuiDataGrid-columnHeaders {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid rgba(224, 224, 224, 1);
+  font-weight: 600;
+}
+
+.MuiDataGrid-columnHeaderTitle {
+  font-weight: 600;
+}
+
+.MuiDataGrid-footerContainer {
+  border-top: 1px solid rgba(224, 224, 224, 1);
+}
+
+/* Optimized Paper styles */
+.MuiPaper-root {
+  box-shadow: var(--shadow-md);
+  border-radius: var(--border-radius);
+  transition: box-shadow var(--transition-fast);
+}
+
+.MuiPaper-root:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Optimized Button styles */
+.MuiButton-root {
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: none;
+  transition: all var(--transition-fast);
+}
+
+.MuiButton-containedPrimary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.MuiButton-containedPrimary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.MuiButton-containedError {
+  background-color: var(--error-color);
+  border-color: var(--error-color);
+}
+
+.MuiButton-containedError:hover {
+  background-color: var(--error-hover);
+  border-color: var(--error-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.MuiButton-outlinedInfo {
+  border-color: var(--info-color);
+  color: var(--info-color);
+}
+
+.MuiButton-outlinedInfo:hover {
+  background-color: var(--info-color);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Optimized Typography styles */
+.MuiTypography-h4 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.MuiTypography-h6 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.MuiTypography-body1 {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.MuiTypography-body2 {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Optimized Form styles */
+.MuiTextField-root {
+  margin-bottom: 16px;
+}
+
+.MuiInputBase-root {
+  border-radius: 6px;
+  transition: border-color var(--transition-fast);
+}
+
+.MuiInputBase-root:hover {
+  border-color: var(--primary-color);
+}
+
+.MuiInputBase-input {
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.MuiFormHelperText-root {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Optimized Dialog styles */
+.MuiDialog-paper {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+}
+
+.MuiDialogTitle-root {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.MuiDialogContent-root {
+  padding: 20px 24px;
+}
+
+.MuiDialogActions-root {
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Optimized Alert styles */
+.MuiAlert-root {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.MuiAlert-standardError {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+.MuiAlert-standardSuccess {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+/* Optimized Loading styles */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  gap: 16px;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Optimized Grid styles */
+.MuiGrid-container {
+  transition: opacity var(--transition-fast);
+}
+
+.MuiGrid-item {
+  transition: transform var(--transition-fast);
+}
+
+/* Optimized responsive styles */
+@media (max-width: 900px) {
+  .MuiDataGrid-columnHeaders {
+    font-size: 12px;
+  }
+  
+  .MuiDataGrid-cell {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+  
+  .MuiTypography-h4 {
+    font-size: 1.5rem;
+  }
+  
+  .MuiTypography-h6 {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .MuiDataGrid-root {
+    font-size: 12px;
+  }
+  
+  .MuiDataGrid-cell {
+    padding: 4px 6px;
+  }
+  
+  .MuiButton-root {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+  
+  .MuiTypography-h4 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Performance optimizations */
+/* Reduce repaints and reflows */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Hardware acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize scrolling performance */
+.scroll-container {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce layout thrashing */
+.fixed-height {
+  height: fit-content;
+}
+
+/* Optimize image loading */
+.lazy-image {
+  loading: lazy;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.lazy-image.loaded {
+  opacity: 1;
+}
+
+.lazy-image:not(.loaded) {
+  opacity: 0;
+}
+
+/* Optimize focus states */
+.Mui-focusVisible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Reduce CSS specificity conflicts */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+}
+
+/* Optimize print styles */
+@media print {
+  .MuiAppBar-root,
+  .MuiDrawer-root,
+  .MuiButton-root {
+    display: none !important;
+  }
+  
+  .main-content {
+    padding: 0;
+  }
+  
+  .MuiPaper-root {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Box, Typography, Button, Paper, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Alert, CircularProgress } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
@@ -49,11 +49,7 @@ const StudentsPage = () => {
     }
   });
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -65,9 +61,13 @@ const StudentsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleOpenDialog = (mode, student = null) => {
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
+  const handleOpenDialog = useCallback((mode, student = null) => {
     setDialogMode(mode);
     setCurrentStudent(student);
 
@@ -100,14 +100,14 @@ const StudentsPage = () => {
     }
 
     setOpenDialog(true);
-  };
+  }, [reset]);
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
     setCurrentStudent(null);
-  };
+  }, []);
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     try {
       if (dialogMode === 'create') {
         await createStudent(data);
@@ -121,9 +121,9 @@ const StudentsPage = () => {
       console.error('Student operation failed:', err);
       setError(err.response?.data?.error || 'Operation failed');
     }
-  };
+  }, [dialogMode, currentStudent, fetchStudents, handleCloseDialog]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (window.confirm('Biztosan törölni szeretné ezt a diákot?')) {
       try {
         await deleteStudent(id);
@@ -133,7 +133,7 @@ const StudentsPage = () => {
         setError(err.response?.data?.error || 'Delete failed');
       }
     }
-  };
+  }, [fetchStudents]);
 
   const columns = [
     { field: 'diak_id', headerName: 'ID', width: 70 },

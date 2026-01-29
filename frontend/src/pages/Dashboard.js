@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Grid, Paper, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { getStudentStatistics, getActiveStudents, getRooms } from '../services/api';
@@ -7,74 +7,49 @@ import BedroomChildIcon from '@mui/icons-material/BedroomChild';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import { DataGrid } from '@mui/x-data-grid';
+import useApiData from '../hooks/useApiData';
+import { commonColumns, createColumns } from '../utils/gridUtils';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [activeStudents, setActiveStudents] = useState([]);
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  
+  // Use optimized API hooks with caching
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError
+  } = useApiData(getStudentStatistics, [], { keyPrefix: 'dashboard-stats' });
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const {
+    data: activeStudents,
+    loading: studentsLoading,
+    error: studentsError
+  } = useApiData(getActiveStudents, [], { keyPrefix: 'dashboard-students' });
 
-        // Fetch statistics
-        const statsResponse = await getStudentStatistics();
-        setStats(statsResponse.data);
+  const {
+    data: rooms,
+    loading: roomsLoading,
+    error: roomsError
+  } = useApiData(getRooms, [], { keyPrefix: 'dashboard-rooms' });
 
-        // Fetch active students
-        const studentsResponse = await getActiveStudents();
-        setActiveStudents(studentsResponse.data.students || []);
+  const loading = statsLoading || studentsLoading || roomsLoading;
+  const error = statsError || studentsError || roomsError;
 
-        // Fetch rooms
-        const roomsResponse = await getRooms();
-        setRooms(roomsResponse.data.szobas || []);
+  const studentColumns = useMemo(() => createColumns([
+    commonColumns.diakId,
+    commonColumns.nev,
+    commonColumns.email,
+    commonColumns.telefonszam,
+    commonColumns.szoba
+  ]), []);
 
-      } catch (err) {
-        console.error('Dashboard data fetch error:', err);
-        setError(err.response?.data?.error || 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
-  const studentColumns = [
-    { field: 'diak_id', headerName: 'ID', width: 70 },
-    { field: 'nev', headerName: 'Név', width: 200 },
-    { field: 'email', headerName: 'Email', width: 200 },
-    { field: 'telefonszam', headerName: 'Telefon', width: 150 },
-    {
-      field: 'szoba',
-      headerName: 'Szoba',
-      width: 100,
-      valueGetter: (params) => params.row.bekoltozesek?.[0]?.szoba?.szoba_szama || 'N/A'
-    },
-  ];
-
-  const roomColumns = [
-    { field: 'szoba_id', headerName: 'ID', width: 70 },
-    { field: 'szoba_szama', headerName: 'Szoba száma', width: 150 },
-    { field: 'osszes_hely', headerName: 'Férőhelyek', width: 120 },
-    {
-      field: 'foglalt_helyek',
-      headerName: 'Foglalt helyek',
-      width: 150,
-      valueGetter: (params) => params.row.bekoltozesek?.length || 0
-    },
-    {
-      field: 'szabad_helyek',
-      headerName: 'Szabad helyek',
-      width: 120,
-      valueGetter: (params) => (params.row.osszes_hely || 0) - (params.row.bekoltozesek?.length || 0)
-    },
-  ];
+  const roomColumns = useMemo(() => createColumns([
+    commonColumns.szobaId,
+    commonColumns.szobaSzama,
+    commonColumns.osszesHely,
+    commonColumns.foglaltHelyek,
+    commonColumns.szabadHelyek
+  ]), []);
 
   if (loading) {
     return (
