@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Box, Typography, Button, Paper, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, CircularProgress } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
@@ -34,11 +34,7 @@ const RoomsPage = () => {
     }
   });
 
-  useEffect(() => {
-    fetchRooms();
-  }, []);
-
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -50,9 +46,9 @@ const RoomsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchRoomOccupancy = async (roomId) => {
+  const fetchRoomOccupancy = useCallback(async (roomId) => {
     try {
       const response = await getRoomOccupancy(roomId);
       setOccupancyData(response.data);
@@ -60,9 +56,13 @@ const RoomsPage = () => {
       console.error('Failed to fetch occupancy:', err);
       setError(err.response?.data?.error || 'Failed to load occupancy data');
     }
-  };
+  }, []);
 
-  const handleOpenDialog = (mode, room = null) => {
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
+
+  const handleOpenDialog = useCallback((mode, room = null) => {
     setDialogMode(mode);
     setCurrentRoom(room);
 
@@ -79,14 +79,14 @@ const RoomsPage = () => {
     }
 
     setOpenDialog(true);
-  };
+  }, [reset]);
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
     setCurrentRoom(null);
-  };
+  }, []);
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     try {
       if (dialogMode === 'create') {
         await createRoom(data);
@@ -100,9 +100,9 @@ const RoomsPage = () => {
       console.error('Room operation failed:', err);
       setError(err.response?.data?.error || 'Operation failed');
     }
-  };
+  }, [dialogMode, currentRoom, fetchRooms, handleCloseDialog]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (window.confirm('Biztosan törölni szeretné ezt a szobát?')) {
       try {
         await deleteRoom(id);
@@ -112,9 +112,9 @@ const RoomsPage = () => {
         setError(err.response?.data?.error || 'Delete failed');
       }
     }
-  };
+  }, [fetchRooms]);
 
-  const columns = [
+  const columns = useMemo(() => [
     { field: 'szoba_id', headerName: 'ID', width: 70 },
     { field: 'szoba_szama', headerName: 'Szoba száma', width: 150 },
     { field: 'osszes_hely', headerName: 'Férőhelyek', width: 120 },
@@ -165,7 +165,7 @@ const RoomsPage = () => {
         </Box>
       ),
     },
-  ];
+  ], [handleOpenDialog, handleDelete, fetchRoomOccupancy]);
 
   if (loading) {
     return (
