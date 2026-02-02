@@ -6,10 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd backend && node app.js",
-    "start-frontend": "cd frontend && npm start",
+    "start-frontend": "cd frontend && npm run dev",
     "start-all": "concurrently \"npm run start\" \"npm run start-frontend\"",
     "build-frontend": "cd frontend && npm run build",
-    "dev": "concurrently \"cd backend && nodemon app.js\" \"cd frontend && npm start\""
+    "dev": "concurrently \"cd backend && nodemon app.js\" \"cd frontend && npm run dev\""
   },
   "repository": {
     "type": "git",
@@ -23,10 +23,15 @@
   },
   "homepage": "https://github.com/Kanyr-86/KANYR#readme",
   "dependencies": {
-    "first_backend": "file:backend"
+    "axios": "^1.13.4",
+    "bootstrap": "^5.3.8",
+    "bootstrap-vue-3": "^0.5.1",
+    "first_backend": "file:backend",
+    "pinia": "^3.0.4",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",
     "react-scripts": "^5.0.1"
   }
