@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const { testConnection } = require('./config/database');
 const db = require('./models');
 
@@ -6,6 +7,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors({
+  origin: 'http://localhost:5174', // Frontend URL
+  credentials: true
+}));
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 

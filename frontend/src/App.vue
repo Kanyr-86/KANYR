@@ -1,30 +1,67 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div id="app">
+    <Navbar @menu-click="toggleSidebar" />
+    <Sidebar :open="sidebarOpen" @close="toggleSidebar" />
+    
+    <div
+      class="main-content"
+      :class="{ 'sidebar-open': sidebarOpen }"
+    >
+      <ErrorBoundary>
+        <router-view />
+      </ErrorBoundary>
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script>
+import { defineComponent, ref } from 'vue'
+import Navbar from './components/Navbar.vue'
+import Sidebar from './components/Sidebar.vue'
+import ErrorBoundary from './components/ErrorBoundary.vue'
+
+export default defineComponent({
+  name: 'App',
+  components: {
+    Navbar,
+    Sidebar,
+    ErrorBoundary
+  },
+  setup() {
+    const sidebarOpen = ref(false)
+    
+    const toggleSidebar = () => {
+      sidebarOpen.value = !sidebarOpen.value
+    }
+
+    return {
+      sidebarOpen,
+      toggleSidebar
+    }
+  }
+})
+</script>
+
+<style>
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  transition: margin-left 0.3s;
+  margin-left: 0;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+.main-content.sidebar-open {
+  margin-left: 240px;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 </style>

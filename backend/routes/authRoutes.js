@@ -1,5 +1,5 @@
 const express = require('express');
-const { body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
 const { authenticate } = require('../middleware/authMiddleware');
@@ -156,11 +156,5 @@ router.post(
     }
   }
 );
-
-// Helper function for validation
-function validationResult(req) {
-  const { validationResult } = require('express-validator');
-  return validationResult(req);
-}
 
 module.exports = router;
