@@ -145,6 +145,14 @@ router.get(
   async (req, res) => SzobaController.getRoomStatistics(req, res)
 );
 
+// Room occupancy endpoint (require authentication)
+router.get(
+  '/:id/occupancy',
+  authenticate,
+  validateIdParam,
+  async (req, res) => SzobaController.getRoomOccupancy(req, res)
+);
+
 // Protected routes (require authentication)
 router.put(
   '/:id',

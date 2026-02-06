@@ -301,6 +301,36 @@ class SzobaController {
   }
 
   /**
+   * Szoba elfoglaltságának lekérdezése
+   * @param {Object} req - Express request objektum
+   * @param {Object} res - Express response objektum
+   */
+  async getRoomOccupancy(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Érvénytelen szoba ID'
+        });
+      }
+
+      const occupancy = await this.SzobaService.getRoomOccupancy(parseInt(id));
+
+      res.json({
+        success: true,
+        data: occupancy
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
    * Tömeges beköltözés létrehozása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum

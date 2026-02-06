@@ -57,6 +57,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { authService } from '../services/authService'
 import { useRouter } from 'vue-router'
+import { toast } from 'vue3-toastify'
 
 export default {
   name: 'AuthView',
@@ -71,14 +72,16 @@ export default {
     const handleLogin = async () => {
       loading.value = true
       try {
-        const response = await authService.login(email.value, password.value)
+        const response = await authStore.login(email.value, password.value)
         if (response.success) {
-          authStore.setToken(response.data.token)
-          authStore.setUser(response.data.user)
+          toast.success('Sikeres bejelentkezés!')
           router.push('/dashboard')
+        } else {
+          toast.error(response.error || 'Hibás bejelentkezési adatok')
         }
       } catch (error) {
-        alert('Hibás bejelentkezési adatok')
+        console.error('Login error:', error)
+        toast.error(error.error || 'Hiba a bejelentkezés során')
       } finally {
         loading.value = false
       }
@@ -91,10 +94,14 @@ export default {
         if (response.success) {
           authStore.setToken(response.data.token)
           authStore.setUser({ userId: response.data.userId, admin: response.data.admin })
+          toast.success('Teszt admin token sikeresen generálva!')
           router.push('/dashboard')
+        } else {
+          toast.error(response.error || 'Hiba a teszt token generálása közben')
         }
       } catch (error) {
-        alert('Hiba a teszt token generálása közben')
+        console.error('Test token error:', error)
+        toast.error(error.error || 'Hiba a teszt token generálása közben')
       } finally {
         loading.value = false
       }

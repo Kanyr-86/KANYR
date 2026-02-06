@@ -60,6 +60,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
+import { toast } from 'vue3-toastify'
 
 export default {
   name: 'DashboardView',
@@ -74,15 +75,20 @@ export default {
         const response = await api.get('/diak/statistics')
         if (response.data.success) {
           statistics.value = response.data.data
+        } else {
+          toast.error(response.data.error || 'Hiba a statisztikák lekérése közben')
         }
       } catch (error) {
         console.error('Hiba a statisztikák lekérése közben:', error)
+        toast.error('Nem sikerült betölteni a statisztikákat')
       } finally {
         loading.value = false
       }
     }
 
     onMounted(() => {
+      // Initialize auth state
+      authStore.initializeAuth()
       fetchStatistics()
     })
 

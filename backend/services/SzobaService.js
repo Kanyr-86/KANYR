@@ -169,6 +169,37 @@ class SzobaService {
   }
 
   /**
+   * Szoba elfoglaltságának lekérdezése
+   * @param {number} szobaId - Szoba ID
+   * @returns {Promise<Object>} - Szoba elfoglaltsági adatok
+   */
+  async getRoomOccupancy(szobaId) {
+    try {
+      const szoba = await this.SzobaRepository.getSzobaById(szobaId);
+      if (!szoba) {
+        throw new Error('Szoba nem található');
+      }
+
+      const currentOccupancy = await this.db.SzobaBekoltozes.count({
+        where: {
+          szoba_id: szobaId,
+          kikoltozes_datum: null
+        }
+      });
+
+      return {
+        szobaszam: szoba.szoba_szama,
+        maxLakokSzama: szoba.osszes_hely,
+        currentOccupancy: currentOccupancy,
+        available: currentOccupancy < szoba.osszes_hely,
+        availableCount: szoba.osszes_hely - currentOccupancy
+      };
+    } catch (error) {
+      throw new Error(`Hiba a szoba elfoglaltságának lekérdezésekor: ${error.message}`);
+    }
+  }
+
+  /**
    * Tömeges beköltözés létrehozása
    * @param {Object} bulkData - Tömeges beköltözés adatok
    * @param {number} bulkData.szoba_id - Szoba ID
