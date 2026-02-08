@@ -28,6 +28,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/parents',
+      name: 'Parents',
+      component: () => import('../views/ParentsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/',
       redirect: '/dashboard'
     }
@@ -35,7 +41,19 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+  // Check if auth store is available (it might not be during initial load)
+  let authStore
+  try {
+    authStore = useAuthStore()
+  } catch (e) {
+    // If auth store is not available, allow navigation to login page
+    if (to.path === '/login') {
+      next()
+    } else {
+      next('/login')
+    }
+    return
+  }
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')

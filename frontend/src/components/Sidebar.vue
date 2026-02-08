@@ -46,6 +46,7 @@ export default defineComponent({
     const menuItems = computed(() => [
       { text: 'Dashboard', icon: '🏠', path: '/dashboard', roles: ['admin', 'user'] },
       { text: 'Diákok', icon: '👥', path: '/students', roles: ['admin', 'user'] },
+      { text: 'Szülők', icon: '👨‍👩‍👧‍👦', path: '/parents', roles: ['admin'] },
       { text: 'Szobák', icon: '🛏️', path: '/rooms', roles: ['admin'] },
       { text: 'Jelentések', icon: '📊', path: '/reports', roles: ['admin'] },
     ].filter(item => item.roles.includes(authStore.user?.admin ? 'admin' : 'user')))

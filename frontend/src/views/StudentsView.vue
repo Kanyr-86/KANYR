@@ -70,11 +70,14 @@
                       <button class="btn btn-sm btn-outline-primary me-2" @click="viewStudent(student)">
                         Megtekintés
                       </button>
+                      <button class="btn btn-sm btn-outline-warning me-2" @click="editStudent(student)">
+                        Szerkesztés
+                      </button>
                       <button class="btn btn-sm btn-outline-warning me-2" @click="transferStudent(student)">
                         Áthelyezés
                       </button>
-                      <button class="btn btn-sm btn-outline-danger" @click="moveOutStudent(student)">
-                        Kiköltöztetés
+                      <button class="btn btn-sm btn-outline-danger" @click="deleteStudent(student)">
+                        Törlés
                       </button>
                     </td>
                   </tr>
@@ -196,6 +199,144 @@
         </div>
       </div>
     </div>
+    
+    <!-- Diák szerkesztés modal -->
+    <div class="modal fade" tabindex="-1" v-if="showEditModal">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Diák szerkesztése</h5>
+            <button type="button" class="btn-close" @click="showEditModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateStudent">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6>Diák adatai</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Név</label>
+                    <input type="text" class="form-control" v-model="editStudentData.nev" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" v-model="editStudentData.email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Telefonszám</label>
+                    <input type="tel" class="form-control" v-model="editStudentData.telefonszam" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Születési dátum</label>
+                    <input type="date" class="form-control" v-model="editStudentData.szuletesi_datum" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Személyi igazolvány szám</label>
+                    <input type="text" class="form-control" v-model="editStudentData.szemelyi_igazolvany_szam" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">TAJ szám</label>
+                    <input type="text" class="form-control" v-model="editStudentData.taj_szam" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Diákigazolvány szám</label>
+                    <input type="text" class="form-control" v-model="editStudentData.diakigazolvany_szam" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Kapcsolat típusa</label>
+                    <select class="form-select" v-model="editStudentData.kapcsolat_tipusa" required>
+                      <option value="anya">Anya</option>
+                      <option value="apa">Apa</option>
+                      <option value="gondviselo">Gondviselő</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6>Szülő adatai</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Név</label>
+                    <input type="text" class="form-control" v-model="editStudentData.szuloData.nev" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" v-model="editStudentData.szuloData.email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Telefonszám</label>
+                    <input type="tel" class="form-control" v-model="editStudentData.szuloData.telefonszam" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Személyi igazolvány szám</label>
+                    <input type="text" class="form-control" v-model="editStudentData.szuloData.szemelyi_igazolvany_szam" required>
+                  </div>
+                  
+                  <h6>Lakcím adatai</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Ország</label>
+                    <input type="text" class="form-control" v-model="editStudentData.lakcimData.orszag" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Irányítószám</label>
+                    <input type="text" class="form-control" v-model="editStudentData.lakcimData.iranyitoszam" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Város</label>
+                    <input type="text" class="form-control" v-model="editStudentData.lakcimData.varos" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Utca, házszám</label>
+                    <input type="text" class="form-control" v-model="editStudentData.lakcimData.utca_hazszam" required>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label">Szoba</label>
+                    <select class="form-select" v-model="editStudentData.szoba_id">
+                      <option value="">Nincs szoba</option>
+                      <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_id">
+                        {{ room.szoba_szama }} ({{ room.osszes_hely }} fő)
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="showEditModal = false">Mégse</button>
+                <button type="submit" class="btn btn-primary" :disabled="updateLoading">
+                  {{ updateLoading ? 'Mentés...' : 'Mentés' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Törlés megerősítő modal -->
+    <div class="modal fade" tabindex="-1" v-if="showDeleteModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Diák törlése</h5>
+            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <p>Biztosan törölni szeretné a következő diákot?</p>
+            <p><strong>{{ deleteStudentData?.nev }}</strong></p>
+            <p class="text-warning">
+              <small>
+                Figyelem: A diák törlése csak akkor lehetséges, ha nincs aktív szobája.
+              </small>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
+            <button type="button" class="btn btn-danger" @click="confirmDeleteStudent" :disabled="deleteLoading">
+              {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -244,6 +385,38 @@ export default {
       },
       szoba_id: ''
     })
+    
+    const showEditModal = ref(false)
+    const showDeleteModal = ref(false)
+    const updateLoading = ref(false)
+    const deleteLoading = ref(false)
+    
+    const editStudentData = ref({
+      nev: '',
+      email: '',
+      telefonszam: '',
+      szuletesi_datum: '',
+      szemelyi_igazolvany_szam: '',
+      taj_szam: '',
+      diakigazolvany_szam: '',
+      kapcsolat_tipusa: 'anya',
+      szuloData: {
+        nev: '',
+        email: '',
+        telefonszam: '',
+        szemelyi_igazolvany_szam: ''
+      },
+      lakcimData: {
+        orszag: '',
+        iranyitoszam: '',
+        varos: '',
+        utca_hazszam: ''
+      },
+      szoba_id: ''
+    })
+    
+    const deleteStudentData = ref(null)
+    const currentEditStudentId = ref(null)
 
     const authStore = useAuthStore()
 
@@ -440,6 +613,73 @@ export default {
       console.log('Diák kiköltöztetése:', student)
     }
 
+    const editStudent = (student) => {
+      currentEditStudentId.value = student.diak_id
+      editStudentData.value = {
+        nev: student.nev,
+        email: student.email,
+        telefonszam: student.telefonszam,
+        szuletesi_datum: student.szuletesi_datum,
+        szemelyi_igazolvany_szam: student.szemelyi_igazolvany_szam,
+        taj_szam: student.taj_szam,
+        diakigazolvany_szam: student.diakigazolvany_szam,
+        kapcsolat_tipusa: student.kapcsolat_tipusa,
+        szuloData: {
+          nev: student.szulo?.nev || '',
+          email: student.szulo?.email || '',
+          telefonszam: student.szulo?.telefonszam || '',
+          szemelyi_igazolvany_szam: student.szulo?.szemelyi_igazolvany_szam || ''
+        },
+        lakcimData: {
+          orszag: student.lakcim?.orszag || '',
+          iranyitoszam: student.lakcim?.iranyitoszam || '',
+          varos: student.lakcim?.varos || '',
+          utca_hazszam: student.lakcim?.utca_hazszam || ''
+        },
+        szoba_id: student.szoba?.szoba_id || ''
+      }
+      showEditModal.value = true
+    }
+
+    const updateStudent = async () => {
+      updateLoading.value = true
+      try {
+        const response = await api.put(`/diaks/${currentEditStudentId.value}`, editStudentData.value)
+        if (response.data.success) {
+          showEditModal.value = false
+          fetchStudents()
+          toast.success('Diák adatai sikeresen módosítva')
+        }
+      } catch (error) {
+        console.error('Hiba a diák módosítása közben:', error)
+        toast.error('Hiba történt a diák módosítása közben')
+      } finally {
+        updateLoading.value = false
+      }
+    }
+
+    const deleteStudent = (student) => {
+      deleteStudentData.value = student
+      showDeleteModal.value = true
+    }
+
+    const confirmDeleteStudent = async () => {
+      deleteLoading.value = true
+      try {
+        const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
+        if (response.data.success) {
+          showDeleteModal.value = false
+          fetchStudents()
+          toast.success('Diák sikeresen törölve')
+        }
+      } catch (error) {
+        console.error('Hiba a diák törlése közben:', error)
+        toast.error('Hiba történt a diák törlése közben')
+      } finally {
+        deleteLoading.value = false
+      }
+    }
+
     onMounted(() => {
       fetchStudents()
       fetchRooms()
@@ -462,10 +702,20 @@ export default {
       viewStudent,
       transferStudent,
       moveOutStudent,
+      editStudent,
+      updateStudent,
+      deleteStudent,
+      confirmDeleteStudent,
       debouncedSearch,
       getRoomOccupancy,
       clearFilters,
-      canTransferToRoom
+      canTransferToRoom,
+      showEditModal,
+      showDeleteModal,
+      updateLoading,
+      deleteLoading,
+      editStudentData,
+      deleteStudentData
     }
   }
 }

@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import Navbar from './components/Navbar.vue'
 import Sidebar from './components/Sidebar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
@@ -33,6 +33,16 @@ export default defineComponent({
     const toggleSidebar = () => {
       sidebarOpen.value = !sidebarOpen.value
     }
+
+    // Ensure app is mounted only after auth store is initialized
+    const appReady = ref(false)
+    
+    onMounted(() => {
+      // Small delay to ensure Pinia store is initialized
+      setTimeout(() => {
+        appReady.value = true
+      }, 100)
+    })
 
     return {
       sidebarOpen,
