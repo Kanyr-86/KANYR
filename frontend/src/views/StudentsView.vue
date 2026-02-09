@@ -11,32 +11,23 @@
         
         <div class="card">
           <div class="card-body">
-            <div class="row mb-3">
-              <div class="col-md-4">
+            <div class="row mb-3 g-2">
+              <div class="col-12 col-md-6">
                 <input 
                   type="text" 
                   class="form-control" 
-                  placeholder="Diák keresése név vagy szobaszám alapján..."
+                  placeholder="Keresés név, email vagy szoba alapján..."
                   v-model="searchQuery"
-                  @input="debouncedSearch"
                 >
               </div>
-              <div class="col-md-3">
-                <select class="form-select" v-model="selectedRoom">
-                  <option value="">Összes szoba</option>
-                  <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_szama">
-                    {{ room.szoba_szama }} ({{ getRoomOccupancy(room.szoba_szama) }}/{{ room.osszes_hely }})
-                  </option>
-                </select>
-              </div>
-              <div class="col-md-3">
+              <div class="col-12 col-sm-6 col-md-4">
                 <select class="form-select" v-model="selectedStatus">
                   <option value="">Összes státusz</option>
                   <option value="true">Aktív</option>
                   <option value="false">Inaktív</option>
                 </select>
               </div>
-              <div class="col-md-2">
+              <div class="col-12 col-sm-6 col-md-2">
                 <button class="btn btn-outline-secondary w-100" @click="clearFilters">
                   Szűrők törlése
                 </button>
@@ -48,8 +39,8 @@
                 <thead>
                   <tr>
                     <th>Név</th>
-                    <th>Email</th>
-                    <th>Telefonszám</th>
+                    <th class="d-none d-md-table-cell">Email</th>
+                    <th class="d-none d-lg-table-cell">Telefonszám</th>
                     <th>Szoba</th>
                     <th>Státusz</th>
                     <th>Műveletek</th>
@@ -58,27 +49,49 @@
                 <tbody>
                   <tr v-for="student in filteredStudents" :key="student.diak_id">
                     <td>{{ student.nev }}</td>
-                    <td>{{ student.email }}</td>
-                    <td>{{ student.telefonszam }}</td>
-                    <td>{{ student.szoba ? student.szoba.szoba_szama : 'Nincs szoba' }}</td>
+                    <td class="d-none d-md-table-cell">{{ student.email }}</td>
+                    <td class="d-none d-lg-table-cell">{{ student.telefonszam }}</td>
+                    <td>{{ student.szoba ? student.szoba.szoba_szama : 'Nincs' }}</td>
                     <td>
                       <span class="badge" :class="student.aktiv ? 'bg-success' : 'bg-danger'">
                         {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary me-2" @click="viewStudent(student)">
-                        Megtekintés
-                      </button>
-                      <button class="btn btn-sm btn-outline-warning me-2" @click="editStudent(student)">
-                        Szerkesztés
-                      </button>
-                      <button class="btn btn-sm btn-outline-warning me-2" @click="transferStudent(student)">
-                        Áthelyezés
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" @click="deleteStudent(student)">
-                        Törlés
-                      </button>
+                      <div class="btn-group" role="group">
+                        <button 
+                          class="btn btn-sm btn-outline-primary" 
+                          @click="viewStudent(student)"
+                          title="Megtekintés"
+                        >
+                          <span class="d-none d-xl-inline">Megtekintés</span>
+                          <span class="d-xl-none">👁</span>
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-warning" 
+                          @click="editStudent(student)"
+                          title="Szerkesztés"
+                        >
+                          <span class="d-none d-xl-inline">Szerkesztés</span>
+                          <span class="d-xl-none">✏</span>
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-info" 
+                          @click="transferStudent(student)"
+                          title="Áthelyezés"
+                        >
+                          <span class="d-none d-xl-inline">Áthelyezés</span>
+                          <span class="d-xl-none">↻</span>
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-danger" 
+                          @click="deleteStudent(student)"
+                          title="Törlés"
+                        >
+                          <span class="d-none d-xl-inline">Törlés</span>
+                          <span class="d-xl-none">🗑</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -451,10 +464,9 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
-import { debounce } from 'lodash-es'
 import { toast } from 'vue3-toastify'
 
 export default {
@@ -464,11 +476,9 @@ export default {
     const rooms = ref([])
     const loading = ref(false)
     const searchQuery = ref('')
-    const selectedRoom = ref('')
     const selectedStatus = ref('')
     const showEnrollModal = ref(false)
     const enrollLoading = ref(false)
-    const roomOccupancy = ref(new Map())
     
     const enrollData = ref({
       diakData: {
@@ -554,25 +564,9 @@ export default {
         const response = await api.get('/szoba')
         if (response.data.success) {
           rooms.value = response.data.data
-          // Fetch room occupancy for each room
-          await Promise.all(rooms.value.map(room => fetchRoomOccupancy(room.szoba_szama)))
         }
       } catch (error) {
         console.error('Hiba a szobák lekérése közben:', error)
-      }
-    }
-
-    const fetchRoomOccupancy = async (roomNumber) => {
-      try {
-        const room = rooms.value.find(r => r.szoba_szama === roomNumber)
-        if (room) {
-          const response = await api.get(`/szoba/${room.szoba_id}/occupancy`)
-          if (response.data.success) {
-            roomOccupancy.value.set(roomNumber, response.data.data.currentOccupancy)
-          }
-        }
-      } catch (error) {
-        console.error('Hiba a szoba elfoglaltságának lekérése közben:', error)
       }
     }
 
@@ -582,16 +576,13 @@ export default {
       // Filter by search query (name, email, or room number)
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
-        result = result.filter(student => 
-          student.nev.toLowerCase().includes(query) ||
-          student.email.toLowerCase().includes(query) ||
-          student.szoba?.szoba_szama?.toString().includes(query)
-        )
-      }
-      
-      // Filter by room
-      if (selectedRoom.value) {
-        result = result.filter(student => student.szoba?.szoba_szama === selectedRoom.value)
+        result = result.filter(student => {
+          const matchesName = student.nev.toLowerCase().includes(query)
+          const matchesEmail = student.email.toLowerCase().includes(query)
+          const matchesRoomNumber = student.szoba?.szoba_szama?.toString().includes(query)
+          const matchesNoRoom = !student.szoba && (query.includes('nincs') || query.includes('nincs szoba'))
+          return matchesName || matchesEmail || matchesRoomNumber || matchesNoRoom
+        })
       }
       
       // Filter by status
@@ -647,44 +638,14 @@ export default {
       }
     }
 
-    // Debounced search function
-    const debouncedSearch = debounce(async () => {
-      if (searchQuery.value.trim()) {
-        try {
-          const response = await api.get('/diaks/search', {
-            params: {
-              nev: searchQuery.value,
-              email: searchQuery.value,
-              szoba_szama: searchQuery.value
-            }
-          })
-          if (response.data.success) {
-            students.value = response.data.data
-          }
-        } catch (error) {
-          console.error('Hiba a diák keresése közben:', error)
-        }
-      } else {
-        // If search is empty, fetch all students
-        fetchStudents()
-      }
-    }, 300)
-
-    // Get room occupancy for display
-    const getRoomOccupancy = (roomNumber) => {
-      return roomOccupancy.value.get(roomNumber) || 0
-    }
-
     // Clear all filters
     const clearFilters = () => {
       searchQuery.value = ''
-      selectedRoom.value = ''
       selectedStatus.value = ''
     }
 
     // Check if room has capacity for transfer
     const canTransferToRoom = (student, targetRoom) => {
-      const currentRoom = rooms.value.find(r => r.szoba_szama === student.szoba?.szoba_szama)
       const targetRoomData = rooms.value.find(r => r.szoba_szama === targetRoom)
       
       if (!targetRoomData) return false
@@ -807,12 +768,10 @@ export default {
       rooms,
       loading,
       searchQuery,
-      selectedRoom,
       selectedStatus,
       showEnrollModal,
       enrollLoading,
       enrollData,
-      roomOccupancy,
       filteredStudents,
       fetchStudents,
       enrollStudent,
@@ -823,8 +782,6 @@ export default {
       updateStudent,
       deleteStudent,
       confirmDeleteStudent,
-      debouncedSearch,
-      getRoomOccupancy,
       clearFilters,
       canTransferToRoom,
       showViewModal,

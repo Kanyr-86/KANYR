@@ -57,21 +57,38 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .main-content {
   flex: 1;
-  padding: 24px;
+  padding: 12px;
   transition: margin-left 0.3s;
   margin-left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    padding: 24px;
+  }
 }
 
 .main-content.sidebar-open {
   margin-left: 240px;
 }
 
+@media (max-width: 991px) {
+  .main-content.sidebar-open {
+    margin-left: 0;
+  }
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
 }
 </style>

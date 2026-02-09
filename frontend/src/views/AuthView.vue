@@ -1,44 +1,48 @@
 <template>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="text-center">KANYR Bejelentkezés</h3>
+  <div class="container auth-container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h3 class="text-center mb-0">KANYR Bejelentkezés</h3>
           </div>
-          <div class="card-body">
+          <div class="card-body p-4">
             <form @submit.prevent="handleLogin">
               <div class="mb-3">
                 <label for="email" class="form-label">Email cím</label>
                 <input 
                   type="email" 
-                  class="form-control" 
+                  class="form-control form-control-lg" 
                   id="email" 
                   v-model="email"
+                  placeholder="pelda@email.hu"
                   required
                 >
               </div>
-              <div class="mb-3">
+              <div class="mb-4">
                 <label for="password" class="form-label">Jelszó</label>
                 <input 
                   type="password" 
-                  class="form-control" 
+                  class="form-control form-control-lg" 
                   id="password" 
                   v-model="password"
+                  placeholder="••••••••"
                   required
                 >
               </div>
               <div class="d-grid">
-                <button type="submit" class="btn btn-primary" :disabled="loading">
+                <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
                   {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
                 </button>
               </div>
             </form>
             
-            <div class="mt-3 text-center">
-              <p>Vagy használjon teszt admin tokent:</p>
+            <hr class="my-4">
+            
+            <div class="text-center">
+              <p class="text-muted mb-3">Vagy használjon teszt admin tokent:</p>
               <button 
-                class="btn btn-secondary" 
+                class="btn btn-outline-secondary" 
                 @click="useTestToken"
                 :disabled="loading"
               >
@@ -51,6 +55,52 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+.auth-container {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+@media (min-width: 576px) {
+  .auth-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .auth-container {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+}
+
+.card-header {
+  border-radius: 12px 12px 0 0 !important;
+  padding: 1.5rem;
+}
+
+.card-header h3 {
+  font-size: 1.5rem;
+  word-wrap: break-word;
+}
+
+@media (max-width: 575px) {
+  .card-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .card-body {
+    padding: 1.5rem !important;
+  }
+}
+</style>
 
 <script>
 import { ref } from 'vue'

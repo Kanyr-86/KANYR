@@ -13,22 +13,39 @@
       </button>
       
       <a class="navbar-brand" href="#">
-        KANYR - Kollégiumi Nyilvántartó
+        <span class="d-none d-sm-inline">KANYR - Kollégiumi Nyilvántartó</span>
+        <span class="d-sm-none">KANYR</span>
       </a>
       
-      <div class="navbar-nav ms-auto" v-if="user">
-        <span class="navbar-text me-3">
-          {{ user.username }} ({{ user.admin ? 'Admin' : 'Felhasználó' }})
-        </span>
-        <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
-        <button class="btn btn-outline-light" @click="logout">Kijelentkezés</button>
+      <button 
+        class="navbar-toggler ms-auto" 
+        type="button" 
+        @click="toggleUserMenu"
+        aria-label="Toggle user menu"
+        v-if="user"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div 
+        class="collapse navbar-collapse" 
+        :class="{ 'show': userMenuOpen }"
+        v-if="user"
+      >
+        <div class="navbar-nav ms-auto align-items-lg-center">
+          <span class="navbar-text me-lg-3 mb-2 mb-lg-0">
+            {{ user.username }} ({{ user.admin ? 'Admin' : 'Felhasználó' }})
+          </span>
+          <router-link to="/dashboard" class="nav-link mb-2 mb-lg-0">Dashboard</router-link>
+          <button class="btn btn-outline-light btn-sm" @click="logout">Kijelentkezés</button>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <script>
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useRouter } from 'vue-router'
 
@@ -40,9 +57,14 @@ export default defineComponent({
     const router = useRouter()
     
     const user = computed(() => authStore.user)
+    const userMenuOpen = ref(false)
 
     const toggleSidebar = () => {
       emit('menu-click')
+    }
+
+    const toggleUserMenu = () => {
+      userMenuOpen.value = !userMenuOpen.value
     }
 
     const logout = () => {
@@ -52,7 +74,9 @@ export default defineComponent({
 
     return {
       user,
+      userMenuOpen,
       toggleSidebar,
+      toggleUserMenu,
       logout
     }
   }
