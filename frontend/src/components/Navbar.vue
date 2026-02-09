@@ -17,19 +17,8 @@
         <span class="d-sm-none">KANYR</span>
       </a>
       
-      <button 
-        class="navbar-toggler ms-auto" 
-        type="button" 
-        @click="toggleUserMenu"
-        aria-label="Toggle user menu"
-        v-if="user"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      
       <div 
-        class="collapse navbar-collapse" 
-        :class="{ 'show': userMenuOpen }"
+        class="collapse navbar-collapse show" 
         v-if="user"
       >
         <div class="navbar-nav ms-auto align-items-lg-center">
@@ -45,7 +34,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useRouter } from 'vue-router'
 
@@ -57,14 +46,9 @@ export default defineComponent({
     const router = useRouter()
     
     const user = computed(() => authStore.user)
-    const userMenuOpen = ref(false)
 
     const toggleSidebar = () => {
       emit('menu-click')
-    }
-
-    const toggleUserMenu = () => {
-      userMenuOpen.value = !userMenuOpen.value
     }
 
     const logout = () => {
@@ -74,9 +58,7 @@ export default defineComponent({
 
     return {
       user,
-      userMenuOpen,
       toggleSidebar,
-      toggleUserMenu,
       logout
     }
   }

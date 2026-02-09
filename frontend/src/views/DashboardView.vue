@@ -72,7 +72,7 @@ export default {
     const fetchStatistics = async () => {
       loading.value = true
       try {
-        const response = await api.get('/diak/statistics')
+        const response = await api.get('/diaks/statistics')
         if (response.data.success) {
           statistics.value = response.data.data
         } else {

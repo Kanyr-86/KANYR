@@ -78,23 +78,10 @@
                       <h6>Diákok:</h6>
                       <ul class="list-group list-group-flush">
                         <li class="list-group-item" v-for="student in room.diakok" :key="student.diak_id">
-                          <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                              <span>{{ student.nev }}</span>
-                              <span class="badge bg-success ms-2" v-if="student.aktiv">Aktív</span>
-                              <span class="badge bg-danger ms-2" v-else>Inaktív</span>
-                            </div>
-                            <div class="btn-group btn-group-sm" role="group">
-                              <button class="btn btn-outline-primary" @click="viewStudent(student)">
-                                <i class="bi bi-eye"></i>
-                              </button>
-                              <button class="btn btn-outline-warning" @click="transferStudent(student)">
-                                <i class="bi bi-arrow-right"></i>
-                              </button>
-                              <button class="btn btn-outline-danger" @click="moveOutStudent(student)">
-                                <i class="bi bi-door-closed"></i>
-                              </button>
-                            </div>
+                          <div>
+                            <span>{{ student.nev }}</span>
+                            <span class="badge bg-success ms-2" v-if="student.aktiv">Aktív</span>
+                            <span class="badge bg-danger ms-2" v-else>Inaktív</span>
                           </div>
                         </li>
                       </ul>
@@ -124,7 +111,7 @@
     </div>
     
     <!-- Szoba felvétel modal -->
-    <div class="modal fade" tabindex="-1" v-if="showCreateModal">
+    <div class="modal fade show" tabindex="-1" v-if="showCreateModal" style="display: block;">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -155,7 +142,7 @@
     </div>
     
     <!-- Szoba szerkesztés modal -->
-    <div class="modal fade" tabindex="-1" v-if="showEditModal">
+    <div class="modal fade show" tabindex="-1" v-if="showEditModal" style="display: block;">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -186,7 +173,7 @@
     </div>
     
     <!-- Tömeges beköltöztetés modal -->
-    <div class="modal fade" tabindex="-1" v-if="showBulkTransferModal">
+    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal" style="display: block;">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -253,7 +240,7 @@
     </div>
     
     <!-- Törlés megerősítő modal -->
-    <div class="modal fade" tabindex="-1" v-if="showDeleteModal">
+    <div class="modal fade show" tabindex="-1" v-if="showDeleteModal" style="display: block;">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -274,6 +261,66 @@
             <button type="button" class="btn btn-danger" @click="confirmDeleteRoom" :disabled="deleteLoading">
               {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Szoba részletek modal -->
+    <div class="modal fade show" tabindex="-1" v-if="showDetailsModal" style="display: block;">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Szoba részletei: {{ selectedRoomDetails?.szoba_szama }}</h5>
+            <button type="button" class="btn-close" @click="showDetailsModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <div v-if="detailsLoading" class="text-center">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Betöltés...</span>
+              </div>
+            </div>
+            <div v-else>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <p><strong>Férőhely:</strong> {{ selectedRoomDetails?.osszes_hely }} fő</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Jelenlegi lakók:</strong> {{ selectedRoomDetails?.currentOccupancy || 0 }} fő</p>
+                </div>
+              </div>
+              
+              <h6 class="mb-3">Bent lakó diákok:</h6>
+              <div v-if="selectedRoomDetails?.diakok && selectedRoomDetails.diakok.length > 0">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Név</th>
+                        <th>Email</th>
+                        <th>Telefon</th>
+                        <th>Beköltözés dátuma</th>
+                        <th>Státusz</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="student in selectedRoomDetails.diakok" :key="student.diak_id">
+                        <td>{{ student.nev }}</td>
+                        <td>{{ student.email || '-' }}</td>
+                        <td>{{ student.telefon || '-' }}</td>
+                        <td>{{ formatDate(student.bekoltozes_datum) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div v-else class="alert alert-info">
+                Nincs bent lakó ebben a szobában.
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showDetailsModal = false">Bezárás</button>
           </div>
         </div>
       </div>
@@ -300,10 +347,14 @@ export default {
     const showEditModal = ref(false)
     const showDeleteModal = ref(false)
     const showBulkTransferModal = ref(false)
+    const showDetailsModal = ref(false)
     const createLoading = ref(false)
     const updateLoading = ref(false)
     const deleteLoading = ref(false)
     const bulkTransferLoading = ref(false)
+    const detailsLoading = ref(false)
+    
+    const selectedRoomDetails = ref(null)
     
     const roomData = ref({
       szoba_szama: '',
@@ -332,7 +383,7 @@ export default {
     const fetchRooms = async () => {
       loading.value = true
       try {
-        const response = await api.get('/szoba')
+        const response = await api.get('/szobas')
         if (response.data.success) {
           rooms.value = response.data.data
           // Fetch occupancy for each room
@@ -348,7 +399,7 @@ export default {
 
     const fetchRoomOccupancy = async (roomId) => {
       try {
-        const response = await api.get(`/szoba/${roomId}/occupancy`)
+        const response = await api.get(`/szobas/${roomId}/occupancy`)
         if (response.data.success) {
           const room = rooms.value.find(r => r.szoba_id === roomId)
           if (room) {
@@ -363,7 +414,7 @@ export default {
 
     const fetchAvailableRooms = async () => {
       try {
-        const response = await api.get('/szoba/available')
+        const response = await api.get('/szobas/available')
         if (response.data.success) {
           availableRooms.value = response.data.data
         }
@@ -448,7 +499,7 @@ export default {
     const createRoom = async () => {
       createLoading.value = true
       try {
-        const response = await api.post('/szoba', roomData.value)
+        const response = await api.post('/szobas', roomData.value)
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
@@ -475,7 +526,7 @@ export default {
     const updateRoom = async () => {
       updateLoading.value = true
       try {
-        const response = await api.put(`/szoba/${currentEditRoomId.value}`, editRoomData.value)
+        const response = await api.put(`/szobas/${currentEditRoomId.value}`, editRoomData.value)
         if (response.data.success) {
           showEditModal.value = false
           fetchRooms()
@@ -497,7 +548,7 @@ export default {
     const confirmDeleteRoom = async () => {
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/szoba/${deleteRoomData.value.szoba_id}`)
+        const response = await api.delete(`/szobas/${deleteRoomData.value.szoba_id}`)
         if (response.data.success) {
           showDeleteModal.value = false
           fetchRooms()
@@ -511,9 +562,44 @@ export default {
       }
     }
 
-    const viewRoomDetails = (room) => {
-      console.log('Szoba részletei:', room)
-      toast.info(`Szoba részletei: ${room.szoba_szama}`)
+    const viewRoomDetails = async (room) => {
+      detailsLoading.value = true
+      showDetailsModal.value = true
+      
+      // Reaktív objektum létrehozása
+      selectedRoomDetails.value = {
+        szoba_szama: room.szoba_szama,
+        osszes_hely: room.osszes_hely,
+        currentOccupancy: room.currentOccupancy || 0,
+        diakok: []
+      }
+      
+      try {
+        const response = await api.get(`/szobas/${room.szoba_id}/occupancy`)
+        console.log('API válasz:', response.data)
+        if (response.data.success) {
+          const data = response.data.data
+          console.log('Students adatok:', data.students)
+          // Objektum tulajdonságainak közvetlen módosítása a reaktivitás megőrzéséhez
+          selectedRoomDetails.value.currentOccupancy = data.currentOccupancy
+          selectedRoomDetails.value.diakok = data.students || []
+        }
+      } catch (error) {
+        console.error('Hiba a szoba részleteinek lekérése közben:', error)
+        toast.error('Hiba történt a szoba részleteinek betöltése közben')
+      } finally {
+        detailsLoading.value = false
+      }
+    }
+
+    const formatDate = (dateString) => {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      return date.toLocaleDateString('hu-HU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
     }
 
     const viewStudent = (student) => {
@@ -524,7 +610,7 @@ export default {
     const transferStudent = async (student) => {
       try {
         // Get available rooms for transfer
-        const response = await api.get('/szoba/available')
+        const response = await api.get('/szobas/available')
         if (response.data.success) {
           const availableRooms = response.data.data
           const currentRoom = rooms.value.find(r => r.szoba_id === student.szoba?.szoba_id)
@@ -557,7 +643,7 @@ export default {
     const bulkTransfer = async () => {
       bulkTransferLoading.value = true
       try {
-        const response = await api.post('/szoba/bulk-bekoltozes', bulkTransferData.value)
+        const response = await api.post('/szobas/bulk-bekoltozes', bulkTransferData.value)
         if (response.data.success) {
           showBulkTransferModal.value = false
           resetBulkTransferForm()
@@ -591,7 +677,7 @@ export default {
     const debouncedSearch = debounce(async () => {
       if (searchQuery.value.trim()) {
         try {
-          const response = await api.get('/szoba', {
+        const response = await api.get('/szobas', {
             params: {
               prefix: searchQuery.value
             }
@@ -633,14 +719,17 @@ export default {
       showEditModal,
       showDeleteModal,
       showBulkTransferModal,
+      showDetailsModal,
       createLoading,
       updateLoading,
       deleteLoading,
       bulkTransferLoading,
+      detailsLoading,
       roomData,
       editRoomData,
       deleteRoomData,
       bulkTransferData,
+      selectedRoomDetails,
       availableRooms,
       availableStudents,
       filteredRooms,
@@ -661,7 +750,8 @@ export default {
       getOccupancyPercentage,
       getRoomStatusClass,
       getRoomStatusText,
-      clearFilters
+      clearFilters,
+      formatDate
     }
   }
 }

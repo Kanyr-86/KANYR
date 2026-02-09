@@ -187,12 +187,34 @@ class SzobaService {
         }
       });
 
+      // Diákok lekérdezése beköltözés dátumával
+      const students = await this.db.SzobaBekoltozes.findAll({
+        where: {
+          szoba_id: szobaId,
+          kikoltozes_datum: null
+        },
+        include: [{
+          model: this.db.Diak,
+          as: 'diak'
+        }]
+      });
+
+      // Diákok formázása a válaszhoz
+      const formattedStudents = students.map(bekoltozes => ({
+        diak_id: bekoltozes.diak.diak_id,
+        nev: bekoltozes.diak.nev,
+        email: bekoltozes.diak.email,
+        telefon: bekoltozes.diak.telefonszam,
+        bekoltozes_datum: bekoltozes.bekoltozes_datum
+      }));
+
       return {
         szobaszam: szoba.szoba_szama,
         maxLakokSzama: szoba.osszes_hely,
         currentOccupancy: currentOccupancy,
         available: currentOccupancy < szoba.osszes_hely,
-        availableCount: szoba.osszes_hely - currentOccupancy
+        availableCount: szoba.osszes_hely - currentOccupancy,
+        students: formattedStudents
       };
     } catch (error) {
       throw new Error(`Hiba a szoba elfoglaltságának lekérdezésekor: ${error.message}`);

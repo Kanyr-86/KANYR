@@ -90,7 +90,7 @@
     </div>
     
     <!-- Szülő felvétel modal -->
-    <div class="modal fade" tabindex="-1" v-if="showCreateModal">
+    <div class="modal fade show" tabindex="-1" v-if="showCreateModal" style="display: block;">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -153,7 +153,7 @@
     </div>
     
     <!-- Szülő szerkesztés modal -->
-    <div class="modal fade" tabindex="-1" v-if="showEditModal">
+    <div class="modal fade show" tabindex="-1" v-if="showEditModal" style="display: block;">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -216,7 +216,7 @@
     </div>
     
     <!-- Törlés megerősítő modal -->
-    <div class="modal fade" tabindex="-1" v-if="showDeleteModal">
+    <div class="modal fade show" tabindex="-1" v-if="showDeleteModal" style="display: block;">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -300,7 +300,7 @@ export default {
     const fetchParents = async () => {
       loading.value = true
       try {
-        const response = await api.get('/szulo')
+        const response = await api.get('/szulos')
         if (response.data.success) {
           parents.value = response.data.data
         }
@@ -363,7 +363,7 @@ export default {
     const createParent = async () => {
       createLoading.value = true
       try {
-        const response = await api.post('/szulo', parentData.value)
+        const response = await api.post('/szulos', parentData.value)
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
@@ -398,7 +398,7 @@ export default {
     const updateParent = async () => {
       updateLoading.value = true
       try {
-        const response = await api.put(`/szulo/${currentEditParentId.value}`, editParentData.value)
+        const response = await api.put(`/szulos/${currentEditParentId.value}`, editParentData.value)
         if (response.data.success) {
           showEditModal.value = false
           fetchParents()
@@ -417,10 +417,16 @@ export default {
       showDeleteModal.value = true
     }
 
+    const viewParent = (parent) => {
+      // Szülő megtekintése - megjelenítjük a részletes adatokat
+      console.log('Szülő megtekintése:', parent)
+      toast.info(`${parent.nev} - ${parent.email}`)
+    }
+
     const confirmDeleteParent = async () => {
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/szulo/${deleteParentData.value.szulo_id}`)
+        const response = await api.delete(`/szulos/${deleteParentData.value.szulo_id}`)
         if (response.data.success) {
           showDeleteModal.value = false
           fetchParents()
@@ -453,7 +459,7 @@ export default {
     const debouncedSearch = debounce(async () => {
       if (searchQuery.value.trim()) {
         try {
-          const response = await api.get('/szulo', {
+        const response = await api.get('/szulos', {
             params: {
               search: searchQuery.value
             }
@@ -504,6 +510,7 @@ export default {
       updateParent,
       deleteParent,
       confirmDeleteParent,
+      viewParent,
       resetCreateForm,
       debouncedSearch,
       getRelationTypeLabel,

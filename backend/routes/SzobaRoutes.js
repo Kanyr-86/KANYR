@@ -114,12 +114,31 @@ router.post(
 );
 
 // Admin-only routes (require admin authentication)
+// FONTOS: A konkrét route-okat (available, statistics) a dinamikus route-ok (/:id) ELÉ kell tenni!
+
 router.get(
   '/',
   authenticate,
   isAdmin,
   validateQueryParams,
   async (req, res) => SzobaController.getAllSzobas(req, res)
+);
+
+// Elérhető szobák végpont - konkrét route, ezért előbb kell lennie mint a /:id
+router.get(
+  '/available',
+  authenticate,
+  isAdmin,
+  validateQueryParams,
+  async (req, res) => SzobaController.getAvailableRooms(req, res)
+);
+
+// Statisztika végpont - konkrét route, ezért előbb kell lennie mint a /:id
+router.get(
+  '/statistics',
+  authenticate,
+  isAdmin,
+  async (req, res) => SzobaController.getRoomStatistics(req, res)
 );
 
 router.get(
@@ -136,13 +155,6 @@ router.get(
   isAdmin,
   validateIdParam,
   async (req, res) => SzobaController.getStudentsInRoom(req, res)
-);
-
-router.get(
-  '/statistics',
-  authenticate,
-  isAdmin,
-  async (req, res) => SzobaController.getRoomStatistics(req, res)
 );
 
 // Room occupancy endpoint (require authentication)
@@ -182,15 +194,6 @@ router.post(
   authenticate,
   validateCreateBulkBekoltozes,
   async (req, res) => SzobaController.createBulkBekoltozes(req, res)
-);
-
-// Admin-only route for available rooms (require admin authentication)
-router.get(
-  '/available',
-  authenticate,
-  isAdmin,
-  validateQueryParams,
-  async (req, res) => SzobaController.getAvailableRooms(req, res)
 );
 
 module.exports = initController;
