@@ -1,85 +1,63 @@
 # User Stories
 
-## Kollégiumi Titkár Diák Kezelése
+## Teljesen új diák, szülő, és lakcím rögzítése
 
-### User Story: Titkár segíti a diákot szobainformációval és áthelyezéssel
+### 1. User Story: Titkár fel akkar venni egy új diákot, gondviselőt, és lakcímet a rendszerben
 **Mint** kollégiumi titkár,  
-**Szeretném** segíteni a diákokat szobainformációval és szobaátcsatolással,  
-**Hogy** hatékonyan kezeljem a kollégiumi elhelyezési kérdéseket.
+**Szeretném hogy** feltudjak venni egy új diákot és gondviselőt, az új tanév alkalmából
 
-## Új diák, nincs rendszerben szülő
+## Diák, Gondviselő részletes megtekintése
 
-### User Story: Titkár felvihet új diákot, akinek nincs szülő a rendszerben
+### 2. User Story: Titkár megakkarja néz egy diák adatjait
 **Mint** kollégiumi titkár,  
-**Szeretném** felvenni új diákot, akinek nincs szülő a rendszerben,  
-**Hogy** minden diák adatai teljesek legyenek a nyilvántartásban.
+**Szeretném hogy** megnézem a diáknak az adatjait
 
-## Új diák, van rendszerben szülő
+## Új diák rögzítése, már meglevő gondviselő, és lakcímmel
 
-### User Story: Titkár felvihet új diákot, akinek van szülő a rendszerben
+### 3. User Story: Titkár fel akkar venni egy új diákot akinek a gondviselője bent van már a rendszerben
 **Mint** kollégiumi titkár,  
-**Szeretném** felvenni új diákot, akinek van szülő a rendszerben,  
-**Hogy** hatékonyan kezeljem a diák és szülői adatokat.
+**Szeretném hogy** felvegyek egy új diákot akinek a gondiviselője meg van már
 
-## Diák szobába szobába költözése
+## Diák másik szobába költözése
 
-### User Story: Titkár áthelyezheti a diákot egyik szobából a másikba
-**Mint** kollégiumi titkár,  
-**Szeretném** áthelyezni a diákokat egyik szobából a másikba,  
-**Hogy** hatékonyan kezeljem a szobabeosztási változásokat.
-
-## Diák egyik szobából másikba költözése
-
-### User Story: Titkár nyomon követheti a diák szobaváltását
-**Mint** kollégiumi titkár,  
-**Szeretném** nyomon követni a diákok szobaváltását,  
-**Hogy** pontosan tudjam, hol lakik minden diák.
+### 4. User Story: Titkár át akkar költözteti egy diákot egy másik szobába 
+**Mint** kollégiumi titkár
+**Szeretném hogy** egy diákot átköltözhetesek egy másik szobába
 
 ## Diák kiköltözése
 
-### User Story: Titkár kezelheti a diák kiköltözését
+### 5. User Story: Titkár kezelheti a diák kiköltözését
+**Mint** kollégiumi titkár
+**Szeretném hogy** egy diákot kitudjak költöztetni év végekor
+
+## Diák gondviselő szerkesztése
+
+### 6. User Story: Titkár szerkeszti egy diáknak gondviselői kapcsolatát
+**Mint** kollégiumi titkár
+**Szeretném hogy** egy diáknak a jelenlegi gondviselője legyen bent.
+
+## Diák, Gondviselőm, és lakcím törlése
+
+### 7. User Story: Titkár a ballagó diákok és hozzájuk tartozó adatokat törji a rendszerből
+**Mint** kollégiumi titkár
+**Szeretném hogy** egy diáknak eltárolt adatjait töröljem ballagásuk után. 
+
+## Szoba információ
+
+### 8. User Story: Titkár megnézni hogy egy szobában melyik diákok vannak.
+**Mint** kollégiumi titkár
+**Szeretném hogy** láthassam hogy melyik diákok vannak egy adott szobában.
+
+## Tejles lista, szobák és diákokról kiválasztot dátümon 
+
+### 9. User Story: 
 **Mint** kollégiumi titkár,  
-**Szeretném** kezelni a diákok kiköltözését,  
-**Hogy** naprakészen tudjam, ki lakik a kollégiumban.
+**Szeretném hogy** 
 
-## Új szoba felvétele
 
-### User Story: Titkár felvihet új szobákat a rendszerbe
+# Template:
+## 
+
+### x. User Story: 
 **Mint** kollégiumi titkár,  
-**Szeretném** felvenni új szobákat a rendszerbe,  
-**Hogy** bővíteni tudjam a kollégiumi elhelyezési lehetőségeket.
-
-## Új szülő felvétele
-
-### User Story: Titkár felvihet új szülőket a rendszerbe
-**Mint** kollégiumi titkár,  
-**Szeretném** felvenni új szülőket a rendszerbe,  
-**Hogy** minden diákhoz hozzá tudjam rendelni a szülői adatait.
-
-## Diák szülő módosítása
-
-### User Story: Titkár módosíthatja a diák szülői adatait
-**Mint** kollégiumi titkár,  
-**Szeretném** módosítani a diákok szülői adatait,  
-**Hogy** naprakészen tudjam a szülői elérhetőségeket.
-
-## Szülő törlése
-
-### User Story: Titkár törölheti a szülői adatokat
-**Mint** kollégiumi titkár,  
-**Szeretném** törölni a szülői adatokat,  
-**Hogy** tisztán tartsam a nyilvántartást.
-
-## Diák törlése
-
-### User Story: Titkár törölheti a diákokat a rendszerből
-**Mint** kollégiumi titkár,  
-**Szeretném** törölni a diákokat a rendszerből,  
-**Hogy** naprakészen tudjam, ki aktív diák a kollégiumban.
-
-## Szoba törlése
-
-### User Story: Titkár törölheti a szobákat a rendszerből
-**Mint** kollégiumi titkár,  
-**Szeretném** törölni a szobákat a rendszerből,  
-**Hogy** naprakészen tudjam, mely szobák állnak rendelkezésre.
+**Szeretném hogy** 
