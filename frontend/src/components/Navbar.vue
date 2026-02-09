@@ -34,20 +34,15 @@ import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'Navbar',
-  props: {
-    onMenuClick: {
-      type: Function,
-      required: true
-    }
-  },
-  setup(props) {
+  emits: ['menu-click'],
+  setup(props, { emit }) {
     const authStore = useAuthStore()
     const router = useRouter()
     
     const user = computed(() => authStore.user)
 
     const toggleSidebar = () => {
-      props.onMenuClick()
+      emit('menu-click')
     }
 
     const logout = () => {
@@ -72,5 +67,10 @@ export default defineComponent({
 .navbar-text {
   color: white;
   font-weight: 500;
+}
+
+/* Show menu button on all screen sizes */
+.navbar-toggler {
+  display: block !important;
 }
 </style>

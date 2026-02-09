@@ -65,6 +65,22 @@ button:focus-visible {
   text-align: center;
 }
 
+/* Toastify ikonok méret korlátozás - ne jelenjenek meg nagyban */
+.Toastify__toast-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+}
+
+.Toastify__toast-icon {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  flex-shrink: 0;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

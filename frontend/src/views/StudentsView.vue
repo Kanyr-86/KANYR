@@ -311,6 +311,116 @@
       </div>
     </div>
     
+    <!-- Diák megtekintés modal -->
+    <div class="modal fade show" tabindex="-1" v-if="showViewModal" style="display: block;">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Diák adatai - {{ viewStudentData?.nev }}</h5>
+            <button type="button" class="btn-close" @click="showViewModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Tab navigáció -->
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeViewTab === 'student' }" href="#" @click.prevent="activeViewTab = 'student'">
+                  Diák adatok
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeViewTab === 'parent' }" href="#" @click.prevent="activeViewTab = 'parent'">
+                  Szülő adatai
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeViewTab === 'address' }" href="#" @click.prevent="activeViewTab = 'address'">
+                  Lakcím
+                </a>
+              </li>
+            </ul>
+
+            <!-- Diák adatok fül -->
+            <div v-if="activeViewTab === 'student'">
+              <div class="row">
+                <div class="col-md-6">
+                  <table class="table table-borderless">
+                    <tbody>
+                      <tr><td><strong>Név:</strong></td><td>{{ viewStudentData?.nev }}</td></tr>
+                      <tr><td><strong>Email:</strong></td><td>{{ viewStudentData?.email }}</td></tr>
+                      <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData?.telefonszam }}</td></tr>
+                      <tr><td><strong>Születési dátum:</strong></td><td>{{ viewStudentData?.szuletesi_datum }}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-6">
+                  <table class="table table-borderless">
+                    <tbody>
+                      <tr><td><strong>Személyi igazolvány:</strong></td><td>{{ viewStudentData?.szemelyi_igazolvany_szam }}</td></tr>
+                      <tr><td><strong>TAJ szám:</strong></td><td>{{ viewStudentData?.taj_szam }}</td></tr>
+                      <tr><td><strong>Diákigazolvány:</strong></td><td>{{ viewStudentData?.diakigazolvany_szam }}</td></tr>
+                      <tr>
+                        <td><strong>Státusz:</strong></td>
+                        <td>
+                          <span class="badge" :class="viewStudentData?.aktiv ? 'bg-success' : 'bg-danger'">
+                            {{ viewStudentData?.aktiv ? 'Aktív' : 'Inaktív' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr><td><strong>Szoba:</strong></td><td>{{ viewStudentData?.szoba?.szoba_szama || 'Nincs szoba' }}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Szülő adatai fül -->
+            <div v-if="activeViewTab === 'parent'">
+              <div v-if="viewStudentData?.szulo">
+                <div class="row">
+                  <div class="col-md-6">
+                    <table class="table table-borderless">
+                      <tbody>
+                        <tr><td><strong>Név:</strong></td><td>{{ viewStudentData.szulo.nev }}</td></tr>
+                        <tr><td><strong>Email:</strong></td><td>{{ viewStudentData.szulo.email }}</td></tr>
+                        <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData.szulo.telefonszam }}</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-md-6">
+                    <table class="table table-borderless">
+                      <tbody>
+                        <tr><td><strong>Személyi igazolvány:</strong></td><td>{{ viewStudentData.szulo.szemelyi_igazolvany_szam }}</td></tr>
+                        <tr><td><strong>Kapcsolat típusa:</strong></td><td>{{ viewStudentData.kapcsolat_tipusa }}</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="alert alert-info">Nincs megadva szülő adat.</div>
+            </div>
+
+            <!-- Lakcím fül -->
+            <div v-if="activeViewTab === 'address'">
+              <div v-if="viewStudentData?.lakcim">
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr><td><strong>Ország:</strong></td><td>{{ viewStudentData.lakcim.orszag }}</td></tr>
+                    <tr><td><strong>Irányítószám:</strong></td><td>{{ viewStudentData.lakcim.iranyitoszam }}</td></tr>
+                    <tr><td><strong>Város:</strong></td><td>{{ viewStudentData.lakcim.varos }}</td></tr>
+                    <tr><td><strong>Utca, házszám:</strong></td><td>{{ viewStudentData.lakcim.utca_hazszam }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-else class="alert alert-info">Nincs megadva lakcím.</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showViewModal = false">Bezárás</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Törlés megerősítő modal -->
     <div class="modal fade" tabindex="-1" v-if="showDeleteModal">
       <div class="modal-dialog">
@@ -417,6 +527,11 @@ export default {
     
     const deleteStudentData = ref(null)
     const currentEditStudentId = ref(null)
+    
+    // View modal state
+    const showViewModal = ref(false)
+    const viewStudentData = ref(null)
+    const activeViewTab = ref('student')
 
     const authStore = useAuthStore()
 
@@ -481,7 +596,8 @@ export default {
       
       // Filter by status
       if (selectedStatus.value !== '') {
-        result = result.filter(student => student.aktiv.toString() === selectedStatus.value)
+        const statusBool = selectedStatus.value === 'true'
+        result = result.filter(student => Boolean(student.aktiv) === statusBool)
       }
       
       return result
@@ -579,8 +695,9 @@ export default {
     }
 
     const viewStudent = (student) => {
-      // Diák részletes megtekintése
-      console.log('Diák megtekintése:', student)
+      viewStudentData.value = student
+      activeViewTab.value = 'student'
+      showViewModal.value = true
     }
 
     const transferStudent = async (student) => {
@@ -710,6 +827,9 @@ export default {
       getRoomOccupancy,
       clearFilters,
       canTransferToRoom,
+      showViewModal,
+      viewStudentData,
+      activeViewTab,
       showEditModal,
       showDeleteModal,
       updateLoading,

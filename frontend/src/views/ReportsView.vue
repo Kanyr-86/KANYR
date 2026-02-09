@@ -174,35 +174,52 @@
 <script>
 import { defineComponent, ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
-import { useApiData } from '../composables/useApiData'
 import api from '../services/api'
 
 export default defineComponent({
   name: 'ReportsView',
   setup() {
-    const { user } = useAuthStore()
+    const authStore = useAuthStore()
     const reportType = ref('occupancy')
     
-    const {
-      data: stats,
-      loading: statsLoading,
-      error: statsError
-    } = useApiData(api.getStudentStatistics, [], { keyPrefix: 'reports-stats' })
+    const stats = ref(null)
+    const rooms = ref([])
+    const activeStudents = ref([])
+    const loading = ref(true)
+    const error = ref(null)
 
-    const {
-      data: rooms,
-      loading: roomsLoading,
-      error: roomsError
-    } = useApiData(() => api.getRooms(), [], { keyPrefix: 'reports-rooms' })
+    const fetchData = async () => {
+      loading.value = true
+      error.value = null
+      
+      try {
+        // Fetch statistics
+        const statsResponse = await api.get('/diak/statistics')
+        if (statsResponse.data.success) {
+          stats.value = statsResponse.data.data
+        }
+        
+        // Fetch rooms
+        const roomsResponse = await api.get('/szoba')
+        if (roomsResponse.data.success) {
+          rooms.value = roomsResponse.data.data
+        }
+        
+        // Fetch active students
+        const studentsResponse = await api.get('/diaks')
+        if (studentsResponse.data.success) {
+          activeStudents.value = studentsResponse.data.data.filter(s => s.aktiv)
+        }
+      } catch (err) {
+        error.value = err.response?.data?.error || err.message || 'Hiba az adatok betöltése közben'
+      } finally {
+        loading.value = false
+      }
+    }
 
-    const {
-      data: activeStudents,
-      loading: studentsLoading,
-      error: studentsError
-    } = useApiData(api.getActiveStudents, [], { keyPrefix: 'reports-students' })
-
-    const loading = computed(() => statsLoading.value || roomsLoading.value || studentsLoading.value)
-    const error = computed(() => statsError.value || roomsError.value || studentsError.value)
+    onMounted(() => {
+      fetchData()
+    })
 
     const calculateOccupancyPercentage = (room) => {
       const occupied = room.bekoltozesek?.length || 0
@@ -219,7 +236,6 @@ export default defineComponent({
     }
 
     return {
-      user,
       stats,
       rooms,
       activeStudents,

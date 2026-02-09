@@ -1,10 +1,12 @@
 <template>
+  <div v-if="open" class="sidebar-overlay" @click="$emit('close')"></div>
   <div 
     class="sidebar"
     :class="{ 'show': open }"
   >
     <div class="sidebar-header">
       <h5>Menü</h5>
+      <button class="btn-close" @click="$emit('close')" aria-label="Bezárás"></button>
     </div>
     
     <div class="sidebar-body">
@@ -13,7 +15,7 @@
           <router-link 
             :to="item.path" 
             class="nav-link"
-            @click="onClose"
+            @click="$emit('close')"
           >
             <span class="me-2">{{ item.icon }}</span>
             {{ item.text }}
@@ -34,13 +36,10 @@ export default defineComponent({
     open: {
       type: Boolean,
       required: true
-    },
-    onClose: {
-      type: Function,
-      required: true
     }
   },
-  setup(props) {
+  emits: ['close'],
+  setup(props, { emit }) {
     const authStore = useAuthStore()
 
     const menuItems = computed(() => [
@@ -80,11 +79,48 @@ export default defineComponent({
   padding: 20px;
   border-bottom: 1px solid #dee2e6;
   background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .sidebar-header h5 {
   margin: 0;
   font-weight: bold;
+}
+
+/* Overlay for closing sidebar when clicking outside */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Close button styling */
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close::before {
+  content: '×';
+  color: #333;
+}
+
+.btn-close:hover::before {
+  color: #000;
 }
 
 .sidebar-body {
