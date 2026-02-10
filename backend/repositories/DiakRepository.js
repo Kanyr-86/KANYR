@@ -57,7 +57,27 @@ class DiakRepository {
         ];
       }
 
-      return await this.Diak.findAll(queryOptions);
+      const diaks = await this.Diak.findAll(queryOptions);
+
+      // Post-process: aktiv mező és szoba adatok hozzáadása
+      return diaks.map(diak => {
+        const diakData = diak.toJSON ? diak.toJSON() : diak;
+        
+        // Aktív beköltözés keresése
+        const activeBekoltozes = diakData.bekoltozesek?.find(b => b.kikoltozes_datum === null);
+        
+        // Aktív státusz beállítása
+        diakData.aktiv = !!activeBekoltozes;
+        
+        // Aktív szoba beállítása (ha van)
+        if (activeBekoltozes && activeBekoltozes.szoba) {
+          diakData.szoba = activeBekoltozes.szoba;
+        } else {
+          diakData.szoba = null;
+        }
+        
+        return diakData;
+      });
     } catch (error) {
       throw new Error(`Hiba a diákok lekérésében: ${error.message}`);
     }

@@ -178,7 +178,7 @@ class SzobaRepository {
    */
   async getStudentsInRoom(szobaId) {
     try {
-      return await this.SzobaBekoltozes.findAll({
+      const bekoltozesek = await this.SzobaBekoltozes.findAll({
         where: {
           szoba_id: szobaId,
           kikoltozes_datum: null
@@ -187,6 +187,15 @@ class SzobaRepository {
           model: this.db.Diak,
           as: 'diak'
         }]
+      });
+
+      // Aktív mező hozzáadása minden diákhoz
+      return bekoltozesek.map(bekoltozes => {
+        const bekoltozesData = bekoltozes.toJSON ? bekoltozes.toJSON() : bekoltozes;
+        if (bekoltozesData.diak) {
+          bekoltozesData.diak.aktiv = true;  // Aktív beköltözés = aktív diák
+        }
+        return bekoltozesData;
       });
     } catch (error) {
       throw new Error(`Hiba a szoba diákjainak lekérésében: ${error.message}`);

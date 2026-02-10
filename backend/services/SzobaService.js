@@ -205,7 +205,8 @@ class SzobaService {
         nev: bekoltozes.diak.nev,
         email: bekoltozes.diak.email,
         telefon: bekoltozes.diak.telefonszam,
-        bekoltozes_datum: bekoltozes.bekoltozes_datum
+        bekoltozes_datum: bekoltozes.bekoltozes_datum,
+        aktiv: true  // Aktív beköltözés, ezért a diák aktív
       }));
 
       return {

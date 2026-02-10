@@ -556,6 +556,79 @@
         </div>
       </div>
     </div>
+
+    <!-- Áthelyezés szoba választó modal -->
+    <div class="modal fade show" tabindex="-1" v-if="showTransferModal" style="display: block;">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Diák áthelyezése - {{ transferStudentData?.nev }}</h5>
+            <button type="button" class="btn-close" @click="closeTransferModal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Jelenlegi szoba info -->
+            <div class="alert alert-info mb-3">
+              <strong>Jelenlegi szoba:</strong> {{ transferStudentData?.szoba?.szoba_szama || 'Nincs szoba' }}
+            </div>
+
+            <!-- Szobák listája -->
+            <h6 class="mb-3">Válasszon cél szobát:</h6>
+            <div v-if="availableRoomsForTransfer.length === 0" class="alert alert-warning">
+              Nincs elérhető szoba az áthelyezéshez.
+            </div>
+            <div class="row" v-else>
+              <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
+                <div class="card mb-3" :class="{ 'border-primary': selectedTransferRoomId === room.szoba_id }">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ room.szoba_szama }}</h6>
+                    <span class="badge" :class="getTransferRoomBadgeClass(room)">
+                      {{ getTransferRoomBadgeText(room) }}
+                    </span>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-text mb-1">
+                      <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
+                    </p>
+                    <p class="card-text mb-1">
+                      <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
+                    </p>
+                    <p class="card-text mb-2">
+                      <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                    </p>
+                    <div class="progress mb-3" style="height: 8px;">
+                      <div class="progress-bar" 
+                           :class="getTransferRoomProgressClass(room)"
+                           :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
+                           :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
+                           aria-valuemin="0" 
+                           aria-valuemax="100">
+                      </div>
+                    </div>
+                    <button 
+                      class="btn btn-sm w-100" 
+                      :class="selectedTransferRoomId === room.szoba_id ? 'btn-primary' : 'btn-outline-primary'"
+                      @click="selectTransferRoom(room.szoba_id)"
+                      :disabled="transferLoading">
+                      {{ selectedTransferRoomId === room.szoba_id ? 'Kiválasztva' : 'Kiválaszt' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeTransferModal">Mégse</button>
+            <button 
+              type="button" 
+              class="btn btn-success" 
+              @click="confirmTransfer"
+              :disabled="!selectedTransferRoomId || transferLoading">
+              {{ transferLoading ? 'Áthelyezés...' : 'Áthelyezés' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -669,12 +742,19 @@ export default {
     const viewStudentData = ref(null)
     const activeViewTab = ref('student')
 
+    // Transfer modal state
+    const showTransferModal = ref(false)
+    const transferStudentData = ref(null)
+    const selectedTransferRoomId = ref(null)
+    const transferLoading = ref(false)
+    const availableRoomsForTransfer = ref([])
+
     const authStore = useAuthStore()
 
     const fetchStudents = async () => {
       loading.value = true
       try {
-        const response = await api.get('/diaks')
+        const response = await api.get('/diaks?includeRelations=true')
         if (response.data.success) {
           students.value = response.data.data
         }
@@ -904,28 +984,125 @@ export default {
     }
 
     const transferStudent = async (student) => {
-      // Diák áthelyezése
-      try {
-        // Check room capacity before transfer
-        const availableRooms = rooms.value.filter(room => 
-          room.szoba_szama !== student.szoba?.szoba_szama &&
-          canTransferToRoom(student, room.szoba_szama)
-        )
-        
-        if (availableRooms.length === 0) {
-          toast.error('Nincs elérhető szabad szoba a diák áthelyezéséhez!')
-          return
-        }
-        
-        // For now, just show a success message
-        // In a real implementation, this would open a modal to select the target room
-        toast.success(`Diák áthelyezése: ${student.nev}`)
-        console.log('Diák áthelyezése:', student)
-        
-      } catch (error) {
-        console.error('Hiba a diák áthelyezése közben:', error)
-        toast.error('Hiba történt a diák áthelyezése közben')
+      // Diák áthelyezése - szoba választó megnyitása
+      transferStudentData.value = student
+      selectedTransferRoomId.value = null
+      transferLoading.value = false
+      
+      // Szobák betöltése lakószámmal
+      await fetchRoomsWithOccupancy()
+      
+      // Elérhető szobák szűrése (kivéve a jelenlegi szobát, és csak amelyekbe fér még diák)
+      const currentRoomId = student.szoba?.szoba_id
+      availableRoomsForTransfer.value = rooms.value.filter(room => {
+        if (room.szoba_id === currentRoomId) return false
+        const occupancy = room.currentOccupancy || 0
+        return occupancy < room.osszes_hely
+      })
+      
+      if (availableRoomsForTransfer.value.length === 0) {
+        toast.error('Nincs elérhető szabad szoba a diák áthelyezéséhez!')
+        return
       }
+      
+      showTransferModal.value = true
+    }
+
+    const fetchRoomsWithOccupancy = async () => {
+      try {
+        // Szobák lekérdezése
+        const response = await api.get('/szobas')
+        if (response.data.success) {
+          const roomsData = response.data.data
+          
+          // Minden szobához lekérjük az elfoglaltságot
+          for (const room of roomsData) {
+            try {
+              const occupancyResponse = await api.get(`/szobas/${room.szoba_id}/occupancy`)
+              if (occupancyResponse.data.success) {
+                room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
+              }
+            } catch (error) {
+              console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
+              room.currentOccupancy = 0
+            }
+          }
+          
+          rooms.value = roomsData
+        }
+      } catch (error) {
+        console.error('Hiba a szobák lekérése közben:', error)
+        toast.error('Hiba történt a szobák betöltése közben')
+      }
+    }
+
+    const closeTransferModal = () => {
+      showTransferModal.value = false
+      transferStudentData.value = null
+      selectedTransferRoomId.value = null
+    }
+
+    const selectTransferRoom = (roomId) => {
+      selectedTransferRoomId.value = roomId
+    }
+
+    const confirmTransfer = async () => {
+      if (!selectedTransferRoomId.value || !transferStudentData.value) return
+      
+      transferLoading.value = true
+      try {
+        const response = await api.post(`/diaks/${transferStudentData.value.diak_id}/transfer`, {
+          uj_szoba_id: selectedTransferRoomId.value,
+          atcsatolas_datum: new Date().toISOString().split('T')[0]
+        })
+        
+        if (response.data.success) {
+          toast.success(`${transferStudentData.value.nev} sikeresen áthelyezve!`)
+          closeTransferModal()
+          fetchStudents() // Diákok listájának frissítése
+        }
+      } catch (error) {
+        console.error('Hiba az áthelyezés közben:', error)
+        toast.error(error.response?.data?.error || 'Hiba történt az áthelyezés közben')
+      } finally {
+        transferLoading.value = false
+      }
+    }
+
+    // Szoba kártya segédfüggvények
+    const getTransferRoomOccupancyPercentage = (room) => {
+      if (!room.osszes_hely) return 0
+      const current = room.currentOccupancy || 0
+      return Math.round((current / room.osszes_hely) * 100)
+    }
+
+    const getTransferRoomBadgeClass = (room) => {
+      const occupancy = room.currentOccupancy || 0
+      const capacity = room.osszes_hely
+      
+      if (occupancy === 0) return 'bg-secondary'
+      if (occupancy === capacity) return 'bg-danger'
+      if (occupancy >= capacity * 0.8) return 'bg-warning'
+      return 'bg-success'
+    }
+
+    const getTransferRoomBadgeText = (room) => {
+      const occupancy = room.currentOccupancy || 0
+      const capacity = room.osszes_hely
+      
+      if (occupancy === 0) return 'Üres'
+      if (occupancy === capacity) return 'Tele'
+      if (occupancy >= capacity * 0.8) return 'Majdnem tele'
+      return 'Elérhető'
+    }
+
+    const getTransferRoomProgressClass = (room) => {
+      const percentage = getTransferRoomOccupancyPercentage(room)
+      
+      if (percentage < 50) return 'bg-success'
+      if (percentage < 80) return 'bg-info'
+      if (percentage < 100) return 'bg-warning'
+      return 'bg-danger'
     }
 
     const moveOutStudent = (student) => {
@@ -1069,7 +1246,20 @@ export default {
       onEditParentSelected,
       editAddressSelectionMode,
       selectedEditAddressId,
-      onEditAddressSelected
+      onEditAddressSelected,
+      // Transfer modal
+      showTransferModal,
+      transferStudentData,
+      selectedTransferRoomId,
+      transferLoading,
+      availableRoomsForTransfer,
+      closeTransferModal,
+      selectTransferRoom,
+      confirmTransfer,
+      getTransferRoomOccupancyPercentage,
+      getTransferRoomBadgeClass,
+      getTransferRoomBadgeText,
+      getTransferRoomProgressClass
     }
   }
 }

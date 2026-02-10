@@ -20,7 +20,7 @@ class DiakController {
         offset = 0, 
         sort = 'nev', 
         order = 'ASC',
-        includeRelations = true 
+        includeRelations = 'true' 
       } = req.query;
 
       const options = {
@@ -28,7 +28,7 @@ class DiakController {
         offset: parseInt(offset),
         sort,
         order,
-        includeRelations: includeRelations === 'true'
+        includeRelations: includeRelations === 'true' || includeRelations === true
       };
 
       const diaks = await this.diakService.repository.findAll(options);
