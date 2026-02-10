@@ -270,7 +270,7 @@ class DiakService {
     try {
       const totalStudents = await this.Diak.count();
       
-      const studentsWithActiveMoveIns = await this.Diak.count({
+      const activeStudents = await this.Diak.count({
         include: [{
           model: this.SzobaBekoltozes,
           as: 'bekoltozesek',
@@ -281,50 +281,33 @@ class DiakService {
         }]
       });
 
-      const studentsWithoutActiveMoveIns = totalStudents - studentsWithActiveMoveIns;
+      // Szobák száma
+      const totalRooms = await this.Szoba.count();
 
-      // Szoba kihasználtság
+      // Összes férőhely és foglalt hely kiszámítása
       const allRooms = await this.Szoba.findAll();
-      const roomStatistics = await Promise.all(allRooms.map(async (szoba) => {
+      let totalCapacity = 0;
+      let totalOccupied = 0;
+
+      for (const szoba of allRooms) {
+        totalCapacity += szoba.osszes_hely;
         const occupancy = await this.SzobaBekoltozes.count({
           where: {
             szoba_id: szoba.szoba_id,
             kikoltozes_datum: null
           }
         });
-        
-        return {
-          szoba_id: szoba.szoba_id,
-          szoba_szama: szoba.szoba_szama,
-          osszes_hely: szoba.osszes_hely,
-          aktualis_szam: occupancy,
-          kihasznaltseg: ((occupancy / szoba.osszes_hely) * 100).toFixed(1) + '%'
-        };
-      }));
+        totalOccupied += occupancy;
+      }
 
-      // Kapcsolat típusok eloszlása
-      const kapcsolatTipusok = await this.Diak.findAll({
-        attributes: [
-          'kapcsolat_tipusa',
-          [this.db.sequelize.fn('COUNT', this.db.sequelize.col('kapcsolat_tipusa')), 'count']
-        ],
-        group: ['kapcsolat_tipusa']
-      });
-
-      const kapcsolatStats = {};
-      kapcsolatTipusok.forEach(item => {
-        kapcsolatStats[item.kapcsolat_tipusa] = parseInt(item.dataValues.count);
-      });
+      // Átlagos foglaltsági ráta százalékban
+      const occupancyRate = totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
 
       return {
-        diakok: {
-          osszzesen: totalStudents,
-          aktivan_bekoltözött: studentsWithActiveMoveIns,
-          aktivan_nem_bekoltözött: studentsWithoutActiveMoveIns
-        },
-        szoba_kihasznaltseg: roomStatistics,
-        kapcsolat_tipusok: kapcsolatStats,
-        keszültség_dátum: new Date().toISOString()
+        totalStudents,
+        activeStudents,
+        totalRooms,
+        occupancyRate
       };
     } catch (error) {
       throw new Error(`Hiba a részletes statisztikák lekérésében: ${error.message}`);
