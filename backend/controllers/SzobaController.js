@@ -366,6 +366,35 @@ class SzobaController {
       });
     }
   }
+
+  /**
+   * Beköltözések lekérdezése szűréssel
+   * @param {Object} req - Express request objektum
+   * @param {Object} res - Express response objektum
+   */
+  async getBekoltozesekWithFilters(req, res) {
+    try {
+      const { diakNev, szobaId, datumFrom, datumTo } = req.query;
+
+      const filters = {};
+      if (diakNev) filters.diakNev = diakNev;
+      if (szobaId) filters.szobaId = parseInt(szobaId);
+      if (datumFrom) filters.datumFrom = datumFrom;
+      if (datumTo) filters.datumTo = datumTo;
+
+      const bekoltozesek = await this.SzobaService.getBekoltozesekWithFilters(filters);
+
+      res.json({
+        success: true,
+        data: bekoltozesek
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = SzobaController;

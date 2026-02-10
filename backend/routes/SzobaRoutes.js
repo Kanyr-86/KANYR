@@ -141,6 +141,14 @@ router.get(
   async (req, res) => SzobaController.getRoomStatistics(req, res)
 );
 
+// Beköltözések lekérdezése szűréssel - konkrét route
+router.get(
+  '/bekoltozesek',
+  authenticate,
+  isAdmin,
+  async (req, res) => SzobaController.getBekoltozesekWithFilters(req, res)
+);
+
 router.get(
   '/:id',
   authenticate,

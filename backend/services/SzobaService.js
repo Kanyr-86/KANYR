@@ -237,6 +237,23 @@ class SzobaService {
       throw new Error(`Hiba a tömeges beköltözés létrehozásakor: ${error.message}`);
     }
   }
+
+  /**
+   * Beköltözések lekérdezése szűréssel
+   * @param {Object} filters - Szűrési feltételek
+   * @param {string} filters.diakNev - Diák név (részleges egyezés)
+   * @param {number} filters.szobaId - Szoba ID
+   * @param {string} filters.datumFrom - Dátumtól (YYYY-MM-DD)
+   * @param {string} filters.datumTo - Dátumig (YYYY-MM-DD)
+   * @returns {Promise<Array>} - Beköltözések listája
+   */
+  async getBekoltozesekWithFilters(filters = {}) {
+    try {
+      return await this.SzobaRepository.getBekoltozesekWithFilters(filters);
+    } catch (error) {
+      throw new Error(`Hiba a beköltözések lekérdezésekor: ${error.message}`);
+    }
+  }
 }
 
 module.exports = SzobaService;

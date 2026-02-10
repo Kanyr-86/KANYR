@@ -320,6 +320,72 @@ class SzobaRepository {
   }
 
   /**
+   * Beköltözések lekérdezése szűréssel
+   * @param {Object} filters - Szűrési feltételek
+   * @param {string} filters.diakNev - Diák név (részleges egyezés)
+   * @param {number} filters.szobaId - Szoba ID
+   * @param {string} filters.datumFrom - Dátumtól (YYYY-MM-DD)
+   * @param {string} filters.datumTo - Dátumig (YYYY-MM-DD)
+   * @returns {Promise<Array>} - Beköltözések listája
+   */
+  async getBekoltozesekWithFilters(filters = {}) {
+    try {
+      const { diakNev, szobaId, datumFrom, datumTo } = filters;
+      
+      const where = {};
+      
+      // Szoba szűrés
+      if (szobaId) {
+        where.szoba_id = szobaId;
+      }
+      
+      // Dátum tartomány szűrés
+      if (datumFrom || datumTo) {
+        where.bekoltozes_datum = {};
+        if (datumFrom) {
+          where.bekoltozes_datum[Op.gte] = datumFrom;
+        }
+        if (datumTo) {
+          where.bekoltozes_datum[Op.lte] = datumTo;
+        }
+      }
+
+      const include = [
+        {
+          model: this.db.Diak,
+          as: 'diak',
+          where: diakNev ? { nev: { [Op.like]: `%${diakNev}%` } } : undefined,
+          required: !!diakNev
+        },
+        {
+          model: this.Szoba,
+          as: 'szoba'
+        }
+      ];
+
+      const bekoltozesek = await this.SzobaBekoltozes.findAll({
+        where,
+        include,
+        order: [['bekoltozes_datum', 'DESC']]
+      });
+
+      // Kiszámítjuk a napok számát minden beköltözéshez
+      return bekoltozesek.map(bekoltozes => {
+        const data = bekoltozes.toJSON ? bekoltozes.toJSON() : bekoltozes;
+        
+        const startDate = new Date(data.bekoltozes_datum);
+        const endDate = data.kikoltozes_datum ? new Date(data.kikoltozes_datum) : new Date();
+        const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        
+        data.napok_szama = daysDiff;
+        return data;
+      });
+    } catch (error) {
+      throw new Error(`Hiba a beköltözések lekérdezésekor: ${error.message}`);
+    }
+  }
+
+  /**
    * Tömeges beköltözés létrehozása
    * @param {Object} bulkData - Tömeges beköltözés adatok
    * @param {number} bulkData.szoba_id - Szoba ID
