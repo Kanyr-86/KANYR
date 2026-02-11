@@ -18,7 +18,7 @@ class LakcimController {
         offset = 0,
         sort = 'varos',
         order = 'ASC',
-        includeRelations = true
+        includeRelations = 'true'
       } = req.query;
 
       const options = {
@@ -26,7 +26,7 @@ class LakcimController {
         offset: parseInt(offset),
         sort,
         order,
-        includeRelations: includeRelations === 'true'
+        includeRelations: includeRelations !== 'false'
       };
 
       const lakcims = await this.lakcimRepository.findAll(options);
@@ -55,7 +55,7 @@ class LakcimController {
   async getLakcimById(req, res) {
     try {
       const { id } = req.params;
-      const { includeRelations = true } = req.query;
+      const { includeRelations = 'true' } = req.query;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -64,7 +64,7 @@ class LakcimController {
         });
       }
 
-      const lakcim = await this.lakcimRepository.findById(parseInt(id), includeRelations === 'true');
+      const lakcim = await this.lakcimRepository.findById(parseInt(id), includeRelations !== 'false');
 
       if (!lakcim) {
         return res.status(404).json({

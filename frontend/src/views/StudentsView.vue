@@ -620,6 +620,13 @@
             <button type="button" class="btn btn-secondary" @click="closeTransferModal">Mégse</button>
             <button 
               type="button" 
+              class="btn btn-danger" 
+              @click="confirmMoveOut"
+              :disabled="transferLoading">
+              {{ transferLoading ? 'Kiköltözés...' : 'Kiköltözés' }}
+            </button>
+            <button 
+              type="button" 
               class="btn btn-success" 
               @click="confirmTransfer"
               :disabled="!selectedTransferRoomId || transferLoading">
@@ -635,6 +642,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
+import { useApiStore } from '../store/api'
 import api from '../services/api'
 import { toast } from 'vue3-toastify'
 import { Modal } from 'bootstrap'
@@ -678,6 +686,8 @@ export default {
     let editModal = null
     let viewModal = null
     let deleteModal = null
+    
+    const apiStore = useApiStore()
     
     const enrollData = ref({
       diakData: {
@@ -839,6 +849,7 @@ export default {
       if (selectedEditParentId.value) {
         const parent = parents.value.find(p => p.szulo_id === parseInt(selectedEditParentId.value))
         if (parent) {
+          editStudentData.value.szulo_id = parseInt(selectedEditParentId.value)
           editStudentData.value.szuloData = {
             nev: parent.nev,
             email: parent.email,
@@ -862,6 +873,7 @@ export default {
       if (selectedEditAddressId.value) {
         const address = addresses.value.find(a => a.lakcim_id === parseInt(selectedEditAddressId.value))
         if (address) {
+          editStudentData.value.cim_id = parseInt(selectedEditAddressId.value)
           editStudentData.value.lakcimData = {
             orszag: address.orszag,
             iranyitoszam: address.iranyitoszam,
@@ -917,7 +929,9 @@ export default {
         if (response.data.success) {
           closeEnrollModal()
           resetEnrollForm()
-          fetchStudents()
+          // Törlöm a cache-t a diákok listája frissítéséhez
+          apiStore.clearCache('diaks')
+          await fetchStudents()
           toast.success('Diák sikeresen felvéve!')
         }
       } catch (error) {
@@ -1015,18 +1029,22 @@ export default {
         if (response.data.success) {
           const roomsData = response.data.data
           
-          // Minden szobához lekérjük az elfoglaltságot
-          for (const room of roomsData) {
-            try {
-              const occupancyResponse = await api.get(`/szobas/${room.szoba_id}/occupancy`)
-              if (occupancyResponse.data.success) {
-                room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
-              }
-            } catch (error) {
-              console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
-              room.currentOccupancy = 0
-            }
-          }
+          // Párhuzamos elfoglaltság lekérdezés (GYORSABB!)
+          const occupancyPromises = roomsData.map(room =>
+            api.get(`/szobas/${room.szoba_id}/occupancy`)
+              .then(occupancyResponse => {
+                if (occupancyResponse.data.success) {
+                  room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
+                }
+              })
+              .catch(error => {
+                console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
+                room.currentOccupancy = 0
+              })
+          )
+          
+          // Wszystkie hívások párhuzamosan, nem sorban!
+          await Promise.allSettled(occupancyPromises)
           
           rooms.value = roomsData
         }
@@ -1059,11 +1077,42 @@ export default {
         if (response.data.success) {
           toast.success(`${transferStudentData.value.nev} sikeresen áthelyezve!`)
           closeTransferModal()
-          fetchStudents() // Diákok listájának frissítése
+          // Törlöm a cache-t a diákok listája frissítéséhez
+          apiStore.clearCache('diaks')
+          await fetchStudents() // Diákok listájának frissítése
         }
       } catch (error) {
         console.error('Hiba az áthelyezés közben:', error)
         toast.error(error.response?.data?.error || 'Hiba történt az áthelyezés közben')
+      } finally {
+        transferLoading.value = false
+      }
+    }
+
+    const confirmMoveOut = async () => {
+      if (!transferStudentData.value) return
+      
+      // Megerősítés kérése
+      if (!confirm(`Biztosan ki szeretné költöztetni ${transferStudentData.value.nev} diákot?`)) {
+        return
+      }
+      
+      transferLoading.value = true
+      try {
+        const response = await api.post(`/diaks/${transferStudentData.value.diak_id}/move-out`, {
+          kikoltozes_datum: new Date().toISOString().split('T')[0]
+        })
+        
+        if (response.data.success) {
+          toast.success(`${transferStudentData.value.nev} sikeresen kiköltöztetve!`)
+          closeTransferModal()
+          // Törlöm a cache-t a diákok listája frissítéséhez
+          apiStore.clearCache('diaks')
+          await fetchStudents() // Diákok listájának frissítése
+        }
+      } catch (error) {
+        console.error('Hiba a kiköltözés közben:', error)
+        toast.error(error.response?.data?.error || 'Hiba történt a kiköltözés közben')
       } finally {
         transferLoading.value = false
       }
@@ -1154,10 +1203,25 @@ export default {
     const updateStudent = async () => {
       updateLoading.value = true
       try {
-        const response = await api.put(`/diaks/${currentEditStudentId.value}`, editStudentData.value)
+        // Készítsen egy másolatot az editStudentData-nak, hogy ne módosítsa az original-t
+        const dataToSend = { ...editStudentData.value }
+
+        // Ha existing módban van a szülő, ne küldj szuloData-t
+        if (editParentSelectionMode.value === 'existing') {
+          delete dataToSend.szuloData
+        }
+
+        // Ha existing módban van a lakcím, ne küldj lakcimData-t
+        if (editAddressSelectionMode.value === 'existing') {
+          delete dataToSend.lakcimData
+        }
+
+        const response = await api.put(`/diaks/${currentEditStudentId.value}`, dataToSend)
         if (response.data.success) {
           showEditModal.value = false
-          fetchStudents()
+          // Törlöm a cache-t a diákok listája frissítéséhez
+          apiStore.clearCache('diaks')
+          await fetchStudents()
           toast.success('Diák adatai sikeresen módosítva')
         }
       } catch (error) {
@@ -1179,12 +1243,19 @@ export default {
         const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
         if (response.data.success) {
           showDeleteModal.value = false
-          fetchStudents()
+          // Törlöm a cache-t a diákok listája frissítéséhez
+          apiStore.clearCache('diaks')
+          await fetchStudents()
           toast.success('Diák sikeresen törölve')
+        } else {
+          // Hiba a válaszban
+          const errorMsg = response.data.error || response.data.message || 'Ismeretlen hiba történt'
+          toast.error(errorMsg)
         }
       } catch (error) {
         console.error('Hiba a diák törlése közben:', error)
-        toast.error('Hiba történt a diák törlése közben')
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Hiba történt a diák törlése közben'
+        toast.error(errorMsg)
       } finally {
         deleteLoading.value = false
       }
@@ -1256,6 +1327,7 @@ export default {
       closeTransferModal,
       selectTransferRoom,
       confirmTransfer,
+      confirmMoveOut,
       getTransferRoomOccupancyPercentage,
       getTransferRoomBadgeClass,
       getTransferRoomBadgeText,

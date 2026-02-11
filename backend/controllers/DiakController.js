@@ -28,7 +28,7 @@ class DiakController {
         offset: parseInt(offset),
         sort,
         order,
-        includeRelations: includeRelations === 'true' || includeRelations === true
+        includeRelations: includeRelations !== 'false'
       };
 
       const diaks = await this.diakService.repository.findAll(options);
@@ -143,7 +143,7 @@ class DiakController {
         });
       }
 
-      const diak = await this.diakService.repository.update(parseInt(id), updates);
+      const diak = await this.diakService.updateDiak(parseInt(id), updates);
 
       res.json({
         success: true,

@@ -553,10 +553,15 @@ export default {
           showDeleteModal.value = false
           fetchRooms()
           toast.success('Szoba sikeresen törölve')
+        } else {
+          // Hiba a válaszban
+          const errorMsg = response.data.error || response.data.message || 'Ismeretlen hiba történt'
+          toast.error(errorMsg)
         }
       } catch (error) {
         console.error('Hiba a szoba törlése közben:', error)
-        toast.error('Hiba történt a szoba törlése közben')
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Hiba történt a szoba törlése közben'
+        toast.error(errorMsg)
       } finally {
         deleteLoading.value = false
       }

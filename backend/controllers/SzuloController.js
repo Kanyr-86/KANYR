@@ -22,7 +22,7 @@ class SzuloController {
         offset = 0,
         sort = 'nev',
         order = 'ASC',
-        includeRelations = true
+        includeRelations = 'true'
       } = req.query;
 
       const options = {
@@ -30,7 +30,7 @@ class SzuloController {
         offset: parseInt(offset),
         sort,
         order,
-        includeRelations: includeRelations === 'true'
+        includeRelations: includeRelations !== 'false'
       };
 
       const szulos = await this.szuloRepository.findAll(options);
@@ -59,7 +59,7 @@ class SzuloController {
   async getSzuloById(req, res) {
     try {
       const { id } = req.params;
-      const { includeRelations = true } = req.query;
+      const { includeRelations = 'true' } = req.query;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -68,7 +68,7 @@ class SzuloController {
         });
       }
 
-      const szulo = await this.szuloRepository.findById(parseInt(id), includeRelations === 'true');
+      const szulo = await this.szuloRepository.findById(parseInt(id), includeRelations !== 'false');
 
       if (!szulo) {
         return res.status(404).json({

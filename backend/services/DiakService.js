@@ -458,6 +458,104 @@ class DiakService {
       throw new Error(`Hiba a diák jelentés generálásában: ${error.message}`);
     }
   }
+
+  /**
+   * Diák frissítése szülő és lakcím adatokkal
+   * @param {number} id - diák ID
+   * @param {Object} updates - frissítendő adatok (diakData, szuloData, lakcimData stb.)
+   * @returns {Promise<Object>} - frissített diák profil
+   */
+  async updateDiak(id, updates) {
+    const transaction = await this.db.sequelize.transaction();
+    
+    try {
+      const diak = await this.Diak.findByPk(id);
+      if (!diak) {
+        throw new Error('A diák nem található!');
+      }
+
+      // Szülő kezelése
+      if (updates.szuloData) {
+        // Új szülő adatok, létrehozunk vagy frissítünk egy szülőt
+        let szulo = await this.Szulo.findOne({
+          where: { email: updates.szuloData.email }
+        });
+
+        let cimId = null;
+
+        // Lakcím kezelése szülőhöz
+        if (updates.lakcimData) {
+          let lakcim = await this.Lakcim.findOne({
+            where: {
+              orszag: updates.lakcimData.orszag,
+              iranyitoszam: updates.lakcimData.iranyitoszam,
+              varos: updates.lakcimData.varos,
+              utca_hazszam: updates.lakcimData.utca_hazszam
+            }
+          });
+
+          if (!lakcim) {
+            lakcim = await this.Lakcim.create(updates.lakcimData, { transaction });
+          }
+
+          cimId = lakcim.cim_id;
+        }
+
+        if (!szulo) {
+          // Új szülő létrehozása
+          szulo = await this.Szulo.create({
+            ...updates.szuloData,
+            cim_id: cimId
+          }, { transaction });
+        } else {
+          // Meglévő szülő frissítése
+          await szulo.update({
+            ...updates.szuloData,
+            cim_id: cimId || szulo.cim_id
+          }, { transaction });
+        }
+
+        updates.szulo_id = szulo.szulo_id;
+        delete updates.szuloData;
+      }
+
+      // Diák lakcím kezelése (ha nem szülővel összekapcsolt)
+      if (updates.lakcimData && !updates.szuloData) {
+        let lakcim = await this.Lakcim.findOne({
+          where: {
+            orszag: updates.lakcimData.orszag,
+            iranyitoszam: updates.lakcimData.iranyitoszam,
+            varos: updates.lakcimData.varos,
+            utca_hazszam: updates.lakcimData.utca_hazszam
+          }
+        });
+
+        if (!lakcim) {
+          lakcim = await this.Lakcim.create(updates.lakcimData, { transaction });
+        }
+
+        updates.cim_id = lakcim.cim_id;
+        delete updates.lakcimData;
+      }
+
+      // Maradék adatok frissítése
+      if (updates.szoba_id) {
+        // Szoba módosítás nem a repository-val, hanem saját logikával
+        delete updates.szoba_id;
+      }
+
+      await diak.update(updates, { transaction });
+      await transaction.commit();
+
+      return await this.getStudentWithFullHistory(id);
+    } catch (error) {
+      await transaction.rollback();
+      if (error.message.includes('nem található')) {
+        throw error;
+      }
+      throw new Error(`Hiba a diák frissítésében: ${error.message}`);
+    }
+  }
 }
 
 module.exports = DiakService;

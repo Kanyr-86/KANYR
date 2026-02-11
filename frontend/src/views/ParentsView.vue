@@ -67,7 +67,7 @@
                     </td>
                     <td>{{ parent.lakcim ? `${parent.lakcim.varos}, ${parent.lakcim.utca_hazszam}` : 'Nincs megadva' }}</td>
                     <td>
-                      <span class="badge bg-info">{{ parent.diakok ? parent.diakok.length : 0 }}</span>
+                      <span class="badge bg-info">{{ parent.diaks ? parent.diaks.length : 0 }}</span>
                     </td>
                     <td>
                       <button class="btn btn-sm btn-outline-primary me-2" @click="viewParent(parent)">
@@ -327,7 +327,7 @@ export default {
       // Filter by relation type
       if (selectedRelationType.value) {
         result = result.filter(parent => 
-          parent.diakok?.some(d => d.kapcsolat_tipusa === selectedRelationType.value)
+          parent.diaks?.some(d => d.kapcsolat_tipusa === selectedRelationType.value)
         )
       }
       
@@ -431,10 +431,15 @@ export default {
           showDeleteModal.value = false
           fetchParents()
           toast.success('Szülő sikeresen törölve')
+        } else {
+          // Hiba a válaszban
+          const errorMsg = response.data.error || response.data.message || 'Ismeretlen hiba történt'
+          toast.error(errorMsg)
         }
       } catch (error) {
         console.error('Hiba a szülő törlése közben:', error)
-        toast.error('Hiba történt a szülő törlése közben')
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Hiba történt a szülő törlése közben'
+        toast.error(errorMsg)
       } finally {
         deleteLoading.value = false
       }

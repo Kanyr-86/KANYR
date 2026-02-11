@@ -308,13 +308,13 @@ export default defineComponent({
       
       try {
         // Fetch statistics
-        const statsResponse = await api.get('/diak/statistics')
+        const statsResponse = await api.get('/diaks/statistics')
         if (statsResponse.data.success) {
           stats.value = statsResponse.data.data
         }
         
         // Fetch rooms
-        const roomsResponse = await api.get('/szoba')
+        const roomsResponse = await api.get('/szobas')
         if (roomsResponse.data.success) {
           rooms.value = roomsResponse.data.data
         }
@@ -341,7 +341,7 @@ export default defineComponent({
         if (filters.value.datumFrom) params.append('datumFrom', filters.value.datumFrom)
         if (filters.value.datumTo) params.append('datumTo', filters.value.datumTo)
         
-        const response = await api.get(`/szoba/bekoltozesek?${params.toString()}`)
+        const response = await api.get(`/szobas/bekoltozesek?${params.toString()}`)
         if (response.data.success) {
           bekoltozesek.value = response.data.data
         }

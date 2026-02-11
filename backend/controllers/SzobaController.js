@@ -36,7 +36,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -53,7 +53,7 @@ class SzobaController {
       if (!id || isNaN(id)) {
         return res.status(400).json({
           success: false,
-          message: 'Érvénytelen szoba ID'
+          error: 'Érvénytelen szoba ID'
         });
       }
 
@@ -62,7 +62,7 @@ class SzobaController {
       if (!szoba) {
         return res.status(404).json({
           success: false,
-          message: 'Szoba nem található'
+          error: 'Szoba nem található'
         });
       }
 
@@ -73,7 +73,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -104,7 +104,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -131,7 +131,7 @@ class SzobaController {
       if (!id || isNaN(id)) {
         return res.status(400).json({
           success: false,
-          message: 'Érvénytelen szoba ID'
+          error: 'Érvénytelen szoba ID'
         });
       }
 
@@ -145,7 +145,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -162,7 +162,7 @@ class SzobaController {
       if (!id || isNaN(id)) {
         return res.status(400).json({
           success: false,
-          message: 'Érvénytelen szoba ID'
+          error: 'Érvénytelen szoba ID'
         });
       }
 
@@ -174,10 +174,17 @@ class SzobaController {
         data: result
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message
-      });
+      if (error.message.includes('szobában')) {
+        res.status(400).json({
+          success: false,
+          error: error.message
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: error.message
+        });
+      }
     }
   }
 
@@ -193,7 +200,7 @@ class SzobaController {
       if (!id || isNaN(id)) {
         return res.status(400).json({
           success: false,
-          message: 'Érvénytelen szoba ID'
+          error: 'Érvénytelen szoba ID'
         });
       }
 
@@ -206,7 +213,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -227,7 +234,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -258,7 +265,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -295,7 +302,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -312,7 +319,7 @@ class SzobaController {
       if (!id || isNaN(id)) {
         return res.status(400).json({
           success: false,
-          message: 'Érvénytelen szoba ID'
+          error: 'Érvénytelen szoba ID'
         });
       }
 
@@ -325,7 +332,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -362,7 +369,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
@@ -391,7 +398,7 @@ class SzobaController {
     } catch (error) {
       res.status(400).json({
         success: false,
-        message: error.message
+        error: error.message
       });
     }
   }
