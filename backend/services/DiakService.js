@@ -288,6 +288,8 @@ class DiakService {
       const allRooms = await this.Szoba.findAll();
       let totalCapacity = 0;
       let totalOccupied = 0;
+      let mostOccupiedRoom = null;
+      let maxOccupancyPercentage = -1;
 
       for (const szoba of allRooms) {
         totalCapacity += szoba.osszes_hely;
@@ -298,16 +300,52 @@ class DiakService {
           }
         });
         totalOccupied += occupancy;
+
+        // Legmagasabb foglaltságú szoba meghatározása
+        const occupancyPercentage = szoba.osszes_hely > 0 ? (occupancy / szoba.osszes_hely) * 100 : 0;
+        if (occupancyPercentage > maxOccupancyPercentage) {
+          maxOccupancyPercentage = occupancyPercentage;
+          mostOccupiedRoom = szoba.szoba_szama;
+        }
       }
 
+      // Szabad helyek száma
+      const availableSpaces = totalCapacity - totalOccupied;
+
       // Átlagos foglaltsági ráta százalékban
-      const occupancyRate = totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
+      const averageOccupancy = totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
+
+      // Legutóbbi beköltözés és kiköltözés lekérdezése
+      const latestMoveInRecord = await this.SzobaBekoltozes.findOne({
+        order: [['bekoltozes_datum', 'DESC']]
+      });
+
+      const latestMoveOutRecord = await this.SzobaBekoltozes.findOne({
+        where: {
+          kikoltozes_datum: {
+            [Op.ne]: null
+          }
+        },
+        order: [['kikoltozes_datum', 'DESC']]
+      });
+
+      const latestMoveIn = latestMoveInRecord 
+        ? new Date(latestMoveInRecord.bekoltozes_datum).toLocaleDateString('hu-HU')
+        : 'N/A';
+      
+      const latestMoveOut = latestMoveOutRecord 
+        ? new Date(latestMoveOutRecord.kikoltozes_datum).toLocaleDateString('hu-HU')
+        : 'N/A';
 
       return {
         totalStudents,
         activeStudents,
         totalRooms,
-        occupancyRate
+        availableSpaces,
+        averageOccupancy,
+        mostOccupiedRoom: mostOccupiedRoom || 'N/A',
+        latestMoveIn,
+        latestMoveOut
       };
     } catch (error) {
       throw new Error(`Hiba a részletes statisztikák lekérésében: ${error.message}`);

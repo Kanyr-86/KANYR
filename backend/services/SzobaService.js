@@ -40,11 +40,35 @@ class SzobaService {
    * @param {string} options.sort - Rendezési mező
    * @param {string} options.order - Rendezési irány (ASC/DESC)
    * @param {string} options.prefix - Szoba szám prefix (pl. 'A')
-   * @returns {Promise<Array>} - Szobák listája
+   * @returns {Promise<Array>} - Szobák listája beköltözésekkel
    */
   async getAllSzobas(options = {}) {
     try {
-      return await this.SzobaRepository.getAllSzobas(options);
+      const szobak = await this.SzobaRepository.getAllSzobas(options);
+      
+      // Kiegészítjük a szobákat a beköltözésekkel
+      const szobakWithBekoltozesek = await Promise.all(szobak.map(async (szoba) => {
+        const szobaData = szoba.toJSON ? szoba.toJSON() : szoba;
+        
+        // Aktív beköltözések lekérdezése
+        const bekoltozesek = await this.db.SzobaBekoltozes.findAll({
+          where: {
+            szoba_id: szobaData.szoba_id,
+            kikoltozes_datum: null
+          },
+          include: [{
+            model: this.db.Diak,
+            as: 'diak'
+          }]
+        });
+        
+        return {
+          ...szobaData,
+          bekoltozesek: bekoltozesek.map(b => b.toJSON ? b.toJSON() : b)
+        };
+      }));
+      
+      return szobakWithBekoltozesek;
     } catch (error) {
       throw new Error(`Hiba a szobák listázásakor: ${error.message}`);
     }

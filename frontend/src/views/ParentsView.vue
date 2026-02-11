@@ -241,6 +241,136 @@
         </div>
       </div>
     </div>
+
+    <!-- Megtekintés modal -->
+    <div class="modal fade show" tabindex="-1" v-if="showViewModal" style="display: block;">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Szülő adatai - {{ viewParentData?.nev }}</h5>
+            <button type="button" class="btn-close" @click="closeViewModal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Tab navigáció -->
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <button 
+                  class="nav-link" 
+                  :class="{ active: activeViewTab === 'adatok' }"
+                  @click="activeViewTab = 'adatok'"
+                >
+                  Adatok
+                </button>
+              </li>
+              <li class="nav-item">
+                <button 
+                  class="nav-link" 
+                  :class="{ active: activeViewTab === 'gyerekek' }"
+                  @click="activeViewTab = 'gyerekek'"
+                >
+                  Gyerekek 
+                  <span v-if="viewParentData?.diaks?.length > 0" class="badge bg-secondary">
+                    {{ viewParentData.diaks.length }}
+                  </span>
+                </button>
+              </li>
+            </ul>
+
+            <!-- Adatok tab -->
+            <div v-if="activeViewTab === 'adatok' && viewParentData">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="mb-3">Személyes adatok</h6>
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <div class="mb-2">
+                        <strong>Név:</strong>
+                        <span class="ms-2">{{ viewParentData.nev }}</span>
+                      </div>
+                      <div class="mb-2">
+                        <strong>Email:</strong>
+                        <span class="ms-2">{{ viewParentData.email }}</span>
+                      </div>
+                      <div class="mb-2">
+                        <strong>Telefonszám:</strong>
+                        <span class="ms-2">{{ viewParentData.telefonszam }}</span>
+                      </div>
+                      <div class="mb-2">
+                        <strong>Személyi igazolvány szám:</strong>
+                        <span class="ms-2">{{ viewParentData.szemelyi_igazolvany_szam }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="mb-3">Lakcím</h6>
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="mb-2" v-if="viewParentData.lakcim">
+                        <strong>Ország:</strong>
+                        <span class="ms-2">{{ viewParentData.lakcim.orszag || '-' }}</span>
+                      </div>
+                      <div class="mb-2" v-if="viewParentData.lakcim">
+                        <strong>Irányítószám:</strong>
+                        <span class="ms-2">{{ viewParentData.lakcim.iranyitoszam || '-' }}</span>
+                      </div>
+                      <div class="mb-2" v-if="viewParentData.lakcim">
+                        <strong>Város:</strong>
+                        <span class="ms-2">{{ viewParentData.lakcim.varos || '-' }}</span>
+                      </div>
+                      <div class="mb-2" v-if="viewParentData.lakcim">
+                        <strong>Utca, házszám:</strong>
+                        <span class="ms-2">{{ viewParentData.lakcim.utca_hazszam || '-' }}</span>
+                      </div>
+                      <div v-if="!viewParentData.lakcim" class="text-muted">
+                        Nincs megadva lakcím
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gyerekek tab -->
+            <div v-if="activeViewTab === 'gyerekek' && viewParentData">
+              <div v-if="viewParentData.diaks && viewParentData.diaks.length > 0">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover">
+                    <thead>
+                      <tr>
+                        <th>Név</th>
+                        <th>Email</th>
+                        <th>Születési dátum</th>
+                        <th>Kapcsolat típusa</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="diak in viewParentData.diaks" :key="diak.diak_id">
+                        <td>{{ diak.nev }}</td>
+                        <td>{{ diak.email }}</td>
+                        <td>{{ formatDate(diak.szuletesi_datum) }}</td>
+                        <td>
+                          <span class="badge bg-primary">{{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div v-else class="text-center py-4">
+                <div class="text-muted">
+                  <i class="bi bi-people fs-1"></i>
+                  <p class="mt-2">Ehhez a szülőhöz még nem tartozik gyerek.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeViewModal">Bezárás</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -262,9 +392,13 @@ export default {
     const showCreateModal = ref(false)
     const showEditModal = ref(false)
     const showDeleteModal = ref(false)
+    const showViewModal = ref(false)
     const createLoading = ref(false)
     const updateLoading = ref(false)
     const deleteLoading = ref(false)
+    const activeViewTab = ref('adatok')
+    
+    const viewParentData = ref(null)
     
     const parentData = ref({
       nev: '',
@@ -418,9 +552,20 @@ export default {
     }
 
     const viewParent = (parent) => {
-      // Szülő megtekintése - megjelenítjük a részletes adatokat
-      console.log('Szülő megtekintése:', parent)
-      toast.info(`${parent.nev} - ${parent.email}`)
+      viewParentData.value = parent
+      activeViewTab.value = 'adatok'
+      showViewModal.value = true
+    }
+
+    const closeViewModal = () => {
+      showViewModal.value = false
+      viewParentData.value = null
+    }
+
+    const formatDate = (dateString) => {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      return date.toLocaleDateString('hu-HU')
     }
 
     const confirmDeleteParent = async () => {
@@ -501,12 +646,15 @@ export default {
       showCreateModal,
       showEditModal,
       showDeleteModal,
+      showViewModal,
       createLoading,
       updateLoading,
       deleteLoading,
+      activeViewTab,
       parentData,
       editParentData,
       deleteParentData,
+      viewParentData,
       filteredParents,
       uniqueCities,
       fetchParents,
@@ -516,6 +664,8 @@ export default {
       deleteParent,
       confirmDeleteParent,
       viewParent,
+      closeViewModal,
+      formatDate,
       resetCreateForm,
       debouncedSearch,
       getRelationTypeLabel,

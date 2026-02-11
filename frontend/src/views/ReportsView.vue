@@ -382,8 +382,30 @@ export default defineComponent({
 
     const handleGenerateReport = async (type) => {
       reportType.value = type
+      
+      // Frissítjük az adatokat a jelentés típusának megfelelően
       if (type === 'bekoltozesek') {
         await fetchBekoltozesek()
+      } else if (type === 'occupancy') {
+        // Szobák frissítése
+        try {
+          const roomsResponse = await api.get('/szobas')
+          if (roomsResponse.data.success) {
+            rooms.value = roomsResponse.data.data
+          }
+        } catch (err) {
+          console.error('Hiba a szobák frissítésekor:', err)
+        }
+      } else if (type === 'students') {
+        // Aktív diákok frissítése
+        try {
+          const studentsResponse = await api.get('/diaks')
+          if (studentsResponse.data.success) {
+            activeStudents.value = studentsResponse.data.data.filter(s => s.aktiv)
+          }
+        } catch (err) {
+          console.error('Hiba a diákok frissítésekor:', err)
+        }
       }
     }
 
