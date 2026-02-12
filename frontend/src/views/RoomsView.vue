@@ -8,8 +8,8 @@
             <button class="btn btn-primary" @click="showCreateModal = true">
               Szoba felvétele
             </button>
-            <button class="btn btn-info" @click="showBulkTransferModal = true">
-              Tömeges beköltöztetés
+            <button class="btn btn-info" @click="openBulkTransferModal">
+              Tömeges beköltöztetés / átköltöztetés
             </button>
           </div>
         </div>
@@ -38,9 +38,9 @@
               <div class="col-md-3">
                 <select class="form-select" v-model="selectedStatus">
                   <option value="">Összes státusz</option>
-                  <option value="available">Elérhető</option>
+                  <option value="empty">Üres</option>
+                  <option value="available">Van szabad hely</option>
                   <option value="full">Tele</option>
-                  <option value="occupied">Foglalt</option>
                 </select>
               </div>
               <div class="col-md-2">
@@ -172,68 +172,270 @@
       </div>
     </div>
     
-    <!-- Tömeges beköltöztetés modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
+    <!-- TÖMEGES BEKÖLTÖZTETÉS - 1. LÉPÉS: Szoba kiválasztása -->
+    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal && bulkTransferStep === 1" style="display: block;">
+      <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Tömeges beköltöztetés</h5>
-            <button type="button" class="btn-close" @click="showBulkTransferModal = false"></button>
+            <h5 class="modal-title">Tömeges beköltöztetés - 1. lépés: Szoba kiválasztása</h5>
+            <button type="button" class="btn-close" @click="closeBulkTransferModal"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="bulkTransfer">
-              <div class="mb-3">
-                <label class="form-label">Cél szoba</label>
-                <select class="form-select" v-model="bulkTransferData.szoba_id" required>
-                  <option value="">Válasszon szobát</option>
-                  <option v-for="room in availableRooms" :key="room.szoba_id" :value="room.szoba_id">
-                    {{ room.szoba_szama }} ({{ room.osszes_hely }} fő, {{ room.currentOccupancy || 0 }}/{{ room.osszes_hely }} foglalt)
-                  </option>
-                </select>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Beköltözés dátuma</label>
-                <input type="date" class="form-control" v-model="bulkTransferData.bekoltozes_datum" required>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Diákok kiválasztása</label>
-                <div class="table-responsive">
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Választ</th>
-                        <th>Név</th>
-                        <th>Email</th>
-                        <th>Státusz</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="student in availableStudents" :key="student.diak_id">
-                        <td>
-                          <input type="checkbox" :value="student.diak_id" v-model="bulkTransferData.diak_ids">
-                        </td>
-                        <td>{{ student.nev }}</td>
-                        <td>{{ student.email }}</td>
-                        <td>
-                          <span class="badge" :class="student.aktiv ? 'bg-success' : 'bg-danger'">
-                            {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+            <div class="alert alert-info mb-3">
+              <i class="bi bi-info-circle"></i>
+              Válassza ki a szobát, ahová a diákokat költöztetni szeretné. 
+              Csak a szabad hellyel rendelkező szobák jelennek meg.
+            </div>
+            
+            <div v-if="availableRoomsForBulkTransfer.length === 0" class="alert alert-warning">
+              <strong>Nincs elérhető szoba!</strong><br>
+              Minden szoba tele van, vagy nincs elegendő szabad hely.
+            </div>
+            
+            <div class="row" v-else>
+              <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForBulkTransfer" :key="room.szoba_id">
+                <div class="card mb-3 room-card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ room.szoba_szama }}</h6>
+                    <div class="d-flex gap-1">
+                      <span class="badge" :class="getTransferRoomBadgeClass(room)">
+                        {{ getTransferRoomBadgeText(room) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-text mb-1">
+                      <small><strong>{{ getRoomGenderText(room) }}</strong></small>
+                    </p>
+                    <p class="card-text mb-1">
+                      <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
+                    </p>
+                    <p class="card-text mb-1">
+                      <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
+                    </p>
+                    <p class="card-text mb-2">
+                      <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                    </p>
+                    <div class="progress mb-3" style="height: 8px;">
+                      <div class="progress-bar" 
+                           :class="getTransferRoomProgressClass(room)"
+                           :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
+                           :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
+                           aria-valuemin="0" 
+                           aria-valuemax="100">
+                      </div>
+                    </div>
+                    <button 
+                      class="btn btn-sm w-100 btn-outline-primary" 
+                      @click="selectRoomForBulkTransfer(room)">
+                      Kiválaszt
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showBulkTransferModal = false">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="bulkTransferLoading">
-                  {{ bulkTransferLoading ? 'Beköltöztetés...' : 'Beköltöztetés' }}
-                </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeBulkTransferModal">Mégse</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TÖMEGES BEKÖLTÖZTETÉS - 2. LÉPÉS: Szoba megerősítése -->
+    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal && bulkTransferStep === 2" style="display: block;">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Tömeges beköltöztetés - 2. lépés: Szoba megerősítése</h5>
+            <button type="button" class="btn-close" @click="closeBulkTransferModal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info mb-3">
+              Kérjük, erősítse meg a kiválasztott szobát:
+            </div>
+            
+            <div class="card border-primary">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ selectedRoomForTransfer?.szoba_szama }}</h5>
               </div>
-            </form>
+              <div class="card-body">
+                <table class="table table-borderless table-sm">
+                  <tbody>
+                    <tr>
+                      <td><strong>Státusz:</strong></td>
+                      <td>
+                        <span class="badge" :class="getTransferRoomBadgeClass(selectedRoomForTransfer)">
+                          {{ getTransferRoomBadgeText(selectedRoomForTransfer) }}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Nem:</strong></td>
+                      <td>{{ getRoomGenderText(selectedRoomForTransfer) }}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Férőhely:</strong></td>
+                      <td>{{ selectedRoomForTransfer?.osszes_hely }} fő</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Jelenlegi lakók:</strong></td>
+                      <td>{{ selectedRoomForTransfer?.currentOccupancy || 0 }} fő</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Szabad helyek:</strong></td>
+                      <td class="text-success">
+                        <strong>{{ (selectedRoomForTransfer?.osszes_hely || 0) - (selectedRoomForTransfer?.currentOccupancy || 0) }} fő</strong>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar" 
+                       :class="getTransferRoomProgressClass(selectedRoomForTransfer)"
+                       :style="{ width: getTransferRoomOccupancyPercentage(selectedRoomForTransfer) + '%' }">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="alert alert-warning mt-3">
+              <small>
+                <i class="bi bi-exclamation-triangle"></i>
+                Ezután kiválaszthatja a diákokat, akiket ebbe a szobába szeretne költöztetni.
+              </small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="bulkTransferStep = 1">
+              <i class="bi bi-arrow-left"></i> Vissza
+            </button>
+            <button type="button" class="btn btn-primary" @click="confirmRoomAndProceed">
+              Tovább a diákok kiválasztásához
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TÖMEGES BEKÖLTÖZTETÉS - 3. LÉPÉS: Diákok kiválasztása -->
+    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal && bulkTransferStep === 3" style="display: block;">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Tömeges beköltöztetés - 3. lépés: Diákok kiválasztása
+              <span class="badge bg-info ms-2">{{ selectedRoomForTransfer?.szoba_szama }}</span>
+            </h5>
+            <button type="button" class="btn-close" @click="closeBulkTransferModal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Beköltözés dátuma -->
+            <div class="mb-3">
+              <label class="form-label">Beköltözés / átköltöztetés dátuma</label>
+              <input type="date" class="form-control" v-model="bulkTransferData.bekoltozes_datum" required>
+            </div>
+
+            <!-- Összesítő -->
+            <div v-if="bulkTransferData.diak_ids.length > 0" class="alert alert-info mb-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Kiválasztott diákok:</strong> {{ bulkTransferData.diak_ids.length }} fő
+                  <br>
+                  <small>
+                    <span class="text-success">Új beköltöztetés: {{ selectedNewMoveIns.length }} fő</span> |
+                    <span class="text-warning">Átköltöztetés: {{ selectedTransfers.length }} fő</span>
+                  </small>
+                </div>
+                <div v-if="selectedTransfers.length > 0">
+                  <small class="text-muted">
+                    Az átköltöztetett diákok régi szobája automatikusan felszabadul.
+                  </small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Diákok kiválasztása</label>
+              <div class="alert alert-light border mb-2">
+                <small class="text-muted">
+                  <i class="bi bi-info-circle"></i>
+                  <strong>Útmutató:</strong>
+                  <span class="badge bg-success ms-1">Inaktív</span> = új beköltöztetés,
+                  <span class="badge bg-warning text-dark ms-1">Aktív</span> = átköltöztetés másik szobából
+                </small>
+              </div>
+              <div v-if="selectedBulkGender" class="alert alert-info mb-2">
+                <small>
+                  <strong>Kiválasztott nem:</strong> {{ selectedBulkGender === 'férfi' ? 'Férfi' : 'Nő' }} |
+                  <span class="text-muted">Csak azonos nemű diákokat választhat.</span>
+                </small>
+              </div>
+              <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-striped table-hover">
+                  <thead class="table-dark sticky-top">
+                    <tr>
+                      <th style="width: 50px;">Választ</th>
+                      <th>Név</th>
+                      <th>Email</th>
+                      <th>Nem</th>
+                      <th>Státusz</th>
+                      <th>Jelenlegi szoba</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="student in availableStudents" :key="student.diak_id" 
+                        :class="{ 
+                          'table-secondary': !isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id),
+                          'table-success': bulkTransferData.diak_ids.includes(student.diak_id) && !student.aktiv,
+                          'table-warning': bulkTransferData.diak_ids.includes(student.diak_id) && student.aktiv
+                        }">
+                      <td class="text-center">
+                        <input type="checkbox" 
+                               class="form-check-input"
+                               :value="student.diak_id" 
+                               v-model="bulkTransferData.diak_ids"
+                               :disabled="!isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id)">
+                      </td>
+                      <td>
+                        <strong>{{ student.nev }}</strong>
+                        <span v-if="bulkTransferData.diak_ids.includes(student.diak_id)" class="ms-2">
+                          <span v-if="!student.aktiv" class="badge bg-success">Új beköltöztetés</span>
+                          <span v-else class="badge bg-warning text-dark">Átköltöztetés</span>
+                        </span>
+                      </td>
+                      <td>{{ student.email }}</td>
+                      <td>{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td>
+                      <td>
+                        <span class="badge" :class="student.aktiv ? 'bg-warning text-dark' : 'bg-success'">
+                          {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
+                        </span>
+                      </td>
+                      <td>
+                        <span v-if="student.szoba" class="badge bg-info">
+                          {{ student.szoba.szoba_szama }}
+                        </span>
+                        <span v-else class="text-muted">-</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="bulkTransferStep = 2">
+              <i class="bi bi-arrow-left"></i> Vissza
+            </button>
+            <button type="button" class="btn btn-primary" 
+                    :disabled="bulkTransferLoading || bulkTransferData.diak_ids.length === 0"
+                    @click="bulkTransfer">
+              <span v-if="bulkTransferLoading">Feldolgozás...</span>
+              <span v-else>
+                {{ getTransferButtonText() }}
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -300,7 +502,6 @@
                         <th>Email</th>
                         <th>Telefon</th>
                         <th>Beköltözés dátuma</th>
-                        <th>Státusz</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -329,7 +530,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { debounce } from 'lodash-es'
@@ -369,14 +570,63 @@ export default {
     const deleteRoomData = ref(null)
     const currentEditRoomId = ref(null)
     
+    // Tömeges beköltöztetés állapotok
+    const bulkTransferStep = ref(1) // 1: szoba választás, 2: megerősítés, 3: diákok választása
+    const selectedRoomForTransfer = ref(null)
+    const availableRoomsForBulkTransfer = ref([])
+    const roomGenders = ref({}) // Szobák nemeinek tárolása
+    
     const bulkTransferData = ref({
       szoba_id: '',
-      bekoltozes_datum: '',
+      bekoltozes_datum: new Date().toISOString().split('T')[0],
       diak_ids: []
     })
     
     const availableRooms = ref([])
     const availableStudents = ref([])
+    
+    // Tömeges beköltöztetéshez - kiválasztott diákok neme
+    const selectedBulkGender = computed(() => {
+      if (bulkTransferData.value.diak_ids.length === 0) return null
+      const firstSelectedId = bulkTransferData.value.diak_ids[0]
+      const firstSelected = availableStudents.value.find(s => s.diak_id === firstSelectedId)
+      return firstSelected?.nem || null
+    })
+
+    // Kiválasztott új beköltöztetések (inaktív diákok)
+    const selectedNewMoveIns = computed(() => {
+      return availableStudents.value.filter(s => 
+        bulkTransferData.value.diak_ids.includes(s.diak_id) && !s.aktiv
+      )
+    })
+
+    // Kiválasztott átköltöztetések (aktív diákok)
+    const selectedTransfers = computed(() => {
+      return availableStudents.value.filter(s => 
+        bulkTransferData.value.diak_ids.includes(s.diak_id) && s.aktiv
+      )
+    })
+    
+    // Segédfüggvény: Ellenőrzi, hogy egy diák kiválasztható-e
+    const isStudentSelectable = (student) => {
+      const selectedGender = selectedBulkGender.value
+      if (!selectedGender) return true // Ha nincs kiválasztva senki, mindenki választható
+      return student.nem === selectedGender
+    }
+
+    // Gomb szövegének meghatározása
+    const getTransferButtonText = () => {
+      const newCount = selectedNewMoveIns.value.length
+      const transferCount = selectedTransfers.value.length
+      
+      if (newCount > 0 && transferCount > 0) {
+        return `${newCount} beköltöztetés + ${transferCount} átköltöztetés`
+      } else if (transferCount > 0) {
+        return `${transferCount} diák átköltöztetése`
+      } else {
+        return `${newCount} diák beköltöztetése`
+      }
+    }
     
     const authStore = useAuthStore()
 
@@ -427,10 +677,107 @@ export default {
       try {
         const response = await api.get('/diaks')
         if (response.data.success) {
-          availableStudents.value = response.data.data.filter(s => s.aktiv)
+          // Minden diák megjelenítése (aktív és inaktív is)
+          availableStudents.value = response.data.data
         }
       } catch (error) {
         console.error('Hiba a diákok lekérése közben:', error)
+      }
+    }
+
+    // Tömeges beköltöztetés megnyitása - szobák betöltése
+    const openBulkTransferModal = async () => {
+      showBulkTransferModal.value = true
+      bulkTransferStep.value = 1
+      selectedRoomForTransfer.value = null
+      bulkTransferData.value = {
+        szoba_id: '',
+        bekoltozes_datum: new Date().toISOString().split('T')[0],
+        diak_ids: []
+      }
+      
+      await fetchRoomsWithDetailsForTransfer()
+    }
+
+    // Szobák betöltése részletes információkkal
+    const fetchRoomsWithDetailsForTransfer = async () => {
+      try {
+        // Szobák lekérdezése
+        const response = await api.get('/szobas')
+        if (response.data.success) {
+          const roomsData = response.data.data
+          
+          // Párhuzamos elfoglaltság és lakók lekérdezése
+          const roomDetailPromises = roomsData.map(room =>
+            Promise.allSettled([
+              // Elfoglaltság lekérdezése
+              api.get(`/szobas/${room.szoba_id}/occupancy`)
+                .then(occupancyResponse => {
+                  if (occupancyResponse.data.success) {
+                    room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
+                  }
+                })
+                .catch(error => {
+                  console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
+                  room.currentOccupancy = 0
+                }),
+              // Lakók lekérdezése a szoba neme miatt
+              api.get(`/szobas/${room.szoba_id}/occupants`)
+                .then(studentsResponse => {
+                  if (studentsResponse.data.success && studentsResponse.data.data.length > 0) {
+                    // Az első lakó neme határozza meg a szoba nemét
+                    const firstResident = studentsResponse.data.data[0]
+                    const gender = firstResident.diak?.nem || firstResident.nem
+                    if (gender) {
+                      roomGenders.value[room.szoba_id] = gender
+                    }
+                  } else {
+                    roomGenders.value[room.szoba_id] = null // Üres szoba, nincs neme
+                  }
+                })
+                .catch(error => {
+                  console.error(`Hiba a szoba ${room.szoba_id} lakóinak lekérése közben:`, error)
+                  roomGenders.value[room.szoba_id] = null
+                })
+            ])
+          )
+          
+          // Minden hívás párhuzamosan
+          await Promise.allSettled(roomDetailPromises)
+          
+          // Csak a szabad hellyel rendelkező szobák megjelenítése
+          availableRoomsForBulkTransfer.value = roomsData.filter(room => {
+            const occupancy = room.currentOccupancy || 0
+            return occupancy < room.osszes_hely
+          })
+        }
+      } catch (error) {
+        console.error('Hiba a szobák lekérése közben:', error)
+        toast.error('Hiba történt a szobák betöltése közben')
+      }
+    }
+
+    // Szoba kiválasztása tömeges beköltöztetéshez
+    const selectRoomForBulkTransfer = (room) => {
+      selectedRoomForTransfer.value = room
+      bulkTransferData.value.szoba_id = room.szoba_id
+      bulkTransferStep.value = 2
+    }
+
+    // Szoba megerősítése és továbblépés
+    const confirmRoomAndProceed = () => {
+      bulkTransferStep.value = 3
+    }
+
+    // Tömeges beköltöztetés modal bezárása
+    const closeBulkTransferModal = () => {
+      showBulkTransferModal.value = false
+      bulkTransferStep.value = 1
+      selectedRoomForTransfer.value = null
+      bulkTransferData.value = {
+        szoba_id: '',
+        bekoltozes_datum: new Date().toISOString().split('T')[0],
+        diak_ids: []
       }
     }
 
@@ -456,12 +803,12 @@ export default {
           const occupancy = room.currentOccupancy || 0
           const capacity = room.osszes_hely
           
-          if (selectedStatus.value === 'available') {
-            return occupancy < capacity
+          if (selectedStatus.value === 'empty') {
+            return occupancy === 0
+          } else if (selectedStatus.value === 'available') {
+            return occupancy > 0 && occupancy < capacity
           } else if (selectedStatus.value === 'full') {
             return occupancy === capacity
-          } else if (selectedStatus.value === 'occupied') {
-            return occupancy > 0
           }
           return true
         })
@@ -494,6 +841,51 @@ export default {
       if (occupancy === capacity) return 'Tele'
       if (occupancy >= capacity * 0.8) return 'Majdnem tele'
       return 'Elérhető'
+    }
+
+    // Szoba kártya segédfüggvények
+    const getTransferRoomOccupancyPercentage = (room) => {
+      if (!room?.osszes_hely) return 0
+      const current = room.currentOccupancy || 0
+      return Math.round((current / room.osszes_hely) * 100)
+    }
+
+    const getTransferRoomBadgeClass = (room) => {
+      if (!room) return 'bg-secondary'
+      const occupancy = room.currentOccupancy || 0
+      const capacity = room.osszes_hely
+      
+      if (occupancy === 0) return 'bg-secondary'
+      if (occupancy === capacity) return 'bg-danger'
+      if (occupancy >= capacity * 0.8) return 'bg-warning'
+      return 'bg-success'
+    }
+
+    const getTransferRoomBadgeText = (room) => {
+      if (!room) return '-'
+      const occupancy = room.currentOccupancy || 0
+      const capacity = room.osszes_hely
+      
+      if (occupancy === 0) return 'Üres'
+      if (occupancy === capacity) return 'Tele'
+      if (occupancy >= capacity * 0.8) return 'Majdnem tele'
+      return 'Elérhető'
+    }
+
+    const getTransferRoomProgressClass = (room) => {
+      const percentage = getTransferRoomOccupancyPercentage(room)
+      
+      if (percentage < 50) return 'bg-success'
+      if (percentage < 80) return 'bg-info'
+      if (percentage < 100) return 'bg-warning'
+      return 'bg-danger'
+    }
+
+    const getRoomGenderText = (room) => {
+      if (!room) return '-'
+      const gender = roomGenders.value[room.szoba_id]
+      if (!gender) return 'Üres szoba'
+      return gender === 'férfi' ? 'Fiú szoba' : 'Lány szoba'
     }
 
     const createRoom = async () => {
@@ -650,14 +1042,26 @@ export default {
       try {
         const response = await api.post('/szobas/bulk-bekoltozes', bulkTransferData.value)
         if (response.data.success) {
-          showBulkTransferModal.value = false
-          resetBulkTransferForm()
+          const data = response.data.data
+          closeBulkTransferModal()
           fetchRooms()
-          toast.success('Tömeges beköltöztetés sikeresen megtörtént')
+          
+          // Részletes visszajelzés
+          const newCount = data.new_move_ins || 0
+          const transferCount = data.transfer_count || 0
+          
+          if (newCount > 0 && transferCount > 0) {
+            toast.success(`${newCount} új beköltöztetés és ${transferCount} átköltöztetés sikeres!`)
+          } else if (transferCount > 0) {
+            toast.success(`${transferCount} diák sikeresen átköltöztetve!`)
+          } else {
+            toast.success(`${newCount} diák sikeresen beköltöztetve!`)
+          }
         }
       } catch (error) {
         console.error('Hiba a tömeges beköltöztetés közben:', error)
-        toast.error('Hiba történt a tömeges beköltöztetés közben')
+        const errorMsg = error.response?.data?.error || 'Hiba történt a tömeges beköltöztetés közben'
+        toast.error(errorMsg)
       } finally {
         bulkTransferLoading.value = false
       }
@@ -667,14 +1071,6 @@ export default {
       roomData.value = {
         szoba_szama: '',
         osszes_hely: 2
-      }
-    }
-
-    const resetBulkTransferForm = () => {
-      bulkTransferData.value = {
-        szoba_id: '',
-        bekoltozes_datum: '',
-        diak_ids: []
       }
     }
 
@@ -738,6 +1134,25 @@ export default {
       availableRooms,
       availableStudents,
       filteredRooms,
+      selectedBulkGender,
+      selectedNewMoveIns,
+      selectedTransfers,
+      isStudentSelectable,
+      getTransferButtonText,
+      // Tömeges beköltöztetés
+      bulkTransferStep,
+      selectedRoomForTransfer,
+      availableRoomsForBulkTransfer,
+      openBulkTransferModal,
+      closeBulkTransferModal,
+      selectRoomForBulkTransfer,
+      confirmRoomAndProceed,
+      // Szoba kártya függvények
+      getTransferRoomOccupancyPercentage,
+      getTransferRoomBadgeClass,
+      getTransferRoomBadgeText,
+      getTransferRoomProgressClass,
+      getRoomGenderText,
       fetchRooms,
       createRoom,
       editRoom,
@@ -750,7 +1165,6 @@ export default {
       moveOutStudent,
       bulkTransfer,
       resetCreateForm,
-      resetBulkTransferForm,
       debouncedSearch,
       getOccupancyPercentage,
       getRoomStatusClass,
@@ -761,3 +1175,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Szoba kártya stílusok */
+.room-card {
+  transition: all 0.3s ease;
+}
+
+.room-card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+</style>

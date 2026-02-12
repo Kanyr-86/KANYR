@@ -306,6 +306,26 @@ class SzobaRepository {
         throw new Error('A diák már be van költözve ebbe a szobába!');
       }
 
+      // ELLENŐRZÉS: Ha van már a szobában diák, csak azonos nemű költözhet be
+      if (currentOccupancy > 0) {
+        // Lekérdezzük a szobában lakó első diák nemét
+        const existingResident = await this.SzobaBekoltozes.findOne({
+          where: {
+            szoba_id: szoba_id,
+            kikoltozes_datum: null
+          },
+          include: [{
+            model: this.db.Diak,
+            as: 'diak',
+            attributes: ['nem']
+          }]
+        });
+
+        if (existingResident && existingResident.diak.nem !== diak.nem) {
+          throw new Error(`A szobában már ${existingResident.diak.nem} diák(ok) laknak. Csak azonos nemű diák költözhet be!`);
+        }
+      }
+
       // Új beköltözés létrehozása
       const newBekoltozes = await this.SzobaBekoltozes.create({
         diak_id,
@@ -386,7 +406,7 @@ class SzobaRepository {
   }
 
   /**
-   * Tömeges beköltözés létrehozása
+   * Tömeges beköltözés létrehozása (beköltöztetés és átköltöztetés támogatással)
    * @param {Object} bulkData - Tömeges beköltözés adatok
    * @param {number} bulkData.szoba_id - Szoba ID
    * @param {string} bulkData.bekoltozes_datum - Beköltözés dátuma
@@ -449,7 +469,7 @@ class SzobaRepository {
         throw new Error(`A következő diák ID-k már be vannak költözve ebbe a szobába: ${existingDiakIds.join(', ')}`);
       }
 
-      // 5. Ellenőrizzük, hogy a diákok más szobákban vannak-e aktívan
+      // 5. Diákok szétválasztása aktív és inaktív csoportokra
       const activeBekoltozesek = await this.SzobaBekoltozes.findAll({
         where: {
           diak_id: uniqueDiakIds,
@@ -462,20 +482,49 @@ class SzobaRepository {
         transaction
       });
 
-      const activeDiakIds = activeBekoltozesek.map(b => b.diak_id);
-      const activeRoomInfo = activeBekoltozesek.map(b => ({
-        diak_id: b.diak_id,
-        szoba_szama: b.szoba.szoba_szama
-      }));
+      const activeDiakIds = new Set(activeBekoltozesek.map(b => b.diak_id));
+      const inactiveDiakIds = uniqueDiakIds.filter(id => !activeDiakIds.has(id));
 
-      if (activeDiakIds.length > 0) {
-        const activeInfo = activeRoomInfo.map(info => 
-          `Diák ID: ${info.diak_id}, Szoba: ${info.szoba_szama}`
-        ).join('; ');
-        throw new Error(`A következő diákok más szobákban aktívak: ${activeInfo}`);
+      // 6. ELLENŐRZÉS: Ha van már a szobában diák, csak azonos nemű költözhet be
+      if (currentOccupancy > 0) {
+        // Lekérdezzük a szobában lakó első diák nemét
+        const existingResident = await this.SzobaBekoltozes.findOne({
+          where: {
+            szoba_id: szoba_id,
+            kikoltozes_datum: null
+          },
+          include: [{
+            model: this.db.Diak,
+            as: 'diak',
+            attributes: ['nem']
+          }],
+          transaction
+        });
+
+        if (existingResident) {
+          const roomGender = existingResident.diak.nem;
+          // Ellenőrizzük, hogy minden beköltöző diák azonos nemű-e
+          const invalidDiakok = diakok.filter(d => d.nem !== roomGender);
+          if (invalidDiakok.length > 0) {
+            throw new Error(`A szobában már ${roomGender} diák(ok) laknak. Csak azonos nemű diák költözhet be! Hibás diákok: ${invalidDiakok.map(d => d.diak_id).join(', ')}`);
+          }
+        }
+      } else {
+        // Ha a szoba üres, ellenőrizzük, hogy az összes beköltöző diák azonos nemű-e
+        const uniqueGenders = [...new Set(diakok.map(d => d.nem))];
+        if (uniqueGenders.length > 1) {
+          throw new Error(`A beköltöző diákok nem azonos neműek! Különböző nemeik: ${uniqueGenders.join(', ')}`);
+        }
       }
 
-      // 6. Tömeges beköltözés létrehozása
+      // 7. AKTÍV DIÁKOK ÁTKÖLTÖZTETÉSE - régi beköltözések lezárása
+      for (const bekoltozes of activeBekoltozesek) {
+        await bekoltozes.update({
+          kikoltozes_datum: bekoltozes_datum
+        }, { transaction });
+      }
+
+      // 8. Új beköltözések létrehozása (mind aktív, mind inaktív diákoknak)
       const bekoltozesekData = uniqueDiakIds.map(diak_id => ({
         diak_id,
         szoba_id,
@@ -484,17 +533,29 @@ class SzobaRepository {
 
       const createdBekoltozesek = await this.SzobaBekoltozes.bulkCreate(bekoltozesekData, { transaction });
 
-      // 7. Részletes eredmény visszaadása
+      // 9. Részletes eredmény visszaadása
+      const transfers = [];
+      for (const bekoltozes of createdBekoltozesek) {
+        const isTransfer = activeDiakIds.has(bekoltozes.diak_id);
+        const oldBekoltozes = activeBekoltozesek.find(b => b.diak_id === bekoltozes.diak_id);
+        
+        transfers.push({
+          diak_id: bekoltozes.diak_id,
+          bekoltozes_id: bekoltozes.bekoltozes_id,
+          status: 'success',
+          type: isTransfer ? 'transfer' : 'move_in',
+          previous_room: isTransfer && oldBekoltozes ? oldBekoltozes.szoba.szoba_szama : null
+        });
+      }
+
       return {
         szoba_id: szoba_id,
         szoba_szama: szoba.szoba_szama,
         bekoltozes_datum: bekoltozes_datum,
         total_students: uniqueDiakIds.length,
-        transfers: createdBekoltozesek.map(bekoltozes => ({
-          diak_id: bekoltozes.diak_id,
-          bekoltozes_id: bekoltozes.bekoltozes_id,
-          status: 'success'
-        }))
+        new_move_ins: inactiveDiakIds.length,
+        transfer_count: activeDiakIds.size,
+        transfers: transfers
       };
     });
   }

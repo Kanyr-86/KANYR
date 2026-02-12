@@ -16,9 +16,11 @@ Az adatbázis relációs modellre épül, normalizált szerkezetben.
 - szülő_id (FK → Szülő)
 - kapcsolat_típusa (anya, apa, gondviselő)
 - cím_id (FK → Lakcím)
+- nem (férfi, nő)
 
 A Diák tábla a rendszer központi eleme, amely a kollégiumban lakó diákok személyes
 adatait tartalmazza. Egy diákhoz egy kapcsolattartó szülő vagy gondviselő tartozik.
+A nem mező alapján történik a szobák elkülönítése (fiúk és lányok külön szobákban).
 
 ## Szülő tábla
 - szülő_id (PK)

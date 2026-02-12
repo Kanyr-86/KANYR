@@ -120,7 +120,8 @@ async function seedDatabase() {
         diakigazolvany_szam: 'DIG2024-001',
         szulo_id: szulok[0].szulo_id,
         kapcsolat_tipusa: 'anya',
-        cim_id: lakcimek[0].cim_id
+        cim_id: lakcimek[0].cim_id,
+        nem: 'nő'
       },
       {
         nev: 'Nagy Péter',
@@ -132,7 +133,8 @@ async function seedDatabase() {
         diakigazolvany_szam: 'DIG2024-002',
         szulo_id: szulok[1].szulo_id,
         kapcsolat_tipusa: 'apa',
-        cim_id: lakcimek[1].cim_id
+        cim_id: lakcimek[1].cim_id,
+        nem: 'férfi'
       },
       {
         nev: 'Kovács Zsófia',
@@ -144,7 +146,8 @@ async function seedDatabase() {
         diakigazolvany_szam: 'DIG2024-003',
         szulo_id: szulok[2].szulo_id,
         kapcsolat_tipusa: 'anya',
-        cim_id: lakcimek[2].cim_id
+        cim_id: lakcimek[2].cim_id,
+        nem: 'nő'
       },
       {
         nev: 'Szabó Katalin',
@@ -156,7 +159,8 @@ async function seedDatabase() {
         diakigazolvany_szam: 'DIG2024-004',
         szulo_id: szulok[3].szulo_id,
         kapcsolat_tipusa: 'apa',
-        cim_id: lakcimek[3].cim_id
+        cim_id: lakcimek[3].cim_id,
+        nem: 'nő'
       },
       {
         nev: 'Bodnár Krisztina',
@@ -168,7 +172,8 @@ async function seedDatabase() {
         diakigazolvany_szam: 'DIG2024-005',
         szulo_id: szulok[4].szulo_id,
         kapcsolat_tipusa: 'anya',
-        cim_id: lakcimek[4].cim_id
+        cim_id: lakcimek[4].cim_id,
+        nem: 'nő'
       },
       {
         nev: 'Kiss Tamás',
@@ -180,7 +185,8 @@ async function seedDatabase() {
         diakigazolvany_szam: 'DIG2024-006',
         szulo_id: szulok[5].szulo_id,
         kapcsolat_tipusa: 'apa',
-        cim_id: lakcimek[5].cim_id
+        cim_id: lakcimek[5].cim_id,
+        nem: 'férfi'
       }
     ]);
     console.log(`✓ ${diaks.length} diák létrehozva\n`);
@@ -226,7 +232,7 @@ async function seedDatabase() {
       },
       {
         diak_id: diaks[1].diak_id,
-        szoba_id: szobak[0].szoba_id,
+        szoba_id: szobak[3].szoba_id,
         bekoltozes_datum: '2024-09-01',
         kikoltozes_datum: null
       },

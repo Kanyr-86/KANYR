@@ -32,7 +32,7 @@
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Foglaltság</h5>
-                <p class="card-text">{{ statistics.occupancyRate || 0 }}%</p>
+                <p class="card-text">{{ statistics.averageOccupancy || 0 }}%</p>
               </div>
             </div>
           </div>

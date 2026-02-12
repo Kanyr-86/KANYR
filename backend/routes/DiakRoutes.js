@@ -19,7 +19,8 @@ const validateCreateDiak = [
   body('diakigazolvany_szam').notEmpty().withMessage('A diákigazolvány szám kötelező'),
   body('szulo_id').isInt({ min: 1 }).withMessage('A szülő ID pozitív egész számnak kell legyen'),
   body('kapcsolat_tipusa').isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
-  body('cim_id').isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen')
+  body('cim_id').isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen'),
+  body('nem').isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet')
 ];
 
 const validateUpdateDiak = [
@@ -32,7 +33,8 @@ const validateUpdateDiak = [
   body('diakigazolvany_szam').optional().notEmpty().withMessage('A diákigazolvány szám nem lehet üres'),
   body('szulo_id').optional().isInt({ min: 1 }).withMessage('A szülő ID pozitív egész számnak kell legyen'),
   body('kapcsolat_tipusa').optional().isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
-  body('cim_id').optional().isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen')
+  body('cim_id').optional().isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen'),
+  body('nem').optional().isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet')
 ];
 
 const validateEnrollStudent = [
@@ -45,6 +47,7 @@ const validateEnrollStudent = [
   body('diakData.taj_szam').notEmpty().withMessage('A TAJ szám kötelező'),
   body('diakData.diakigazolvany_szam').notEmpty().withMessage('A diákigazolvány szám kötelező'),
   body('diakData.kapcsolat_tipusa').isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
+  body('diakData.nem').isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet'),
   
   body('szuloData').isObject().withMessage('A szülő adatok objektum formátumban kell lennie'),
   body('szuloData.nev').notEmpty().withMessage('A szülő neve kötelező'),
@@ -74,6 +77,7 @@ const validateMoveOut = [
 const validateBulkEnroll = [
   body('studentsData').isArray().withMessage('A studentsData paraméternek tömbnek kell lennie'),
   body('studentsData.*.diakData').isObject().withMessage('Minden diák objektumban diakData kötelező'),
+  body('studentsData.*.diakData.nem').isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet'),
   body('studentsData.*.szuloData').isObject().withMessage('Minden diák objektumban szuloData kötelező'),
   body('studentsData.*.lakcimData').isObject().withMessage('Minden diák objektumban lakcimData kötelező'),
   body('studentsData.*.szoba_id').isInt({ min: 1 }).withMessage('Minden diák objektumban szoba_id pozitív egész számnak kell legyen')

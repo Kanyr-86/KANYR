@@ -78,9 +78,9 @@
                         <button 
                           class="btn btn-sm btn-outline-info" 
                           @click="transferStudent(student)"
-                          title="Áthelyezés"
+                          title="Költöztetés"
                         >
-                          <span class="d-none d-xl-inline">Áthelyezés</span>
+                          <span class="d-none d-xl-inline">Költöztetés</span>
                           <span class="d-xl-none">↻</span>
                         </button>
                         <button 
@@ -149,6 +149,14 @@
                       <option value="anya">Anya</option>
                       <option value="apa">Apa</option>
                       <option value="gondviselo">Gondviselő</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Nem</label>
+                    <select class="form-select" v-model="enrollData.diakData.nem" required>
+                      <option value="">Válasszon nemet</option>
+                      <option value="férfi">Férfi</option>
+                      <option value="nő">Nő</option>
                     </select>
                   </div>
                 </div>
@@ -310,6 +318,14 @@
                       <option value="gondviselo">Gondviselő</option>
                     </select>
                   </div>
+                  <div class="mb-3">
+                    <label class="form-label">Nem</label>
+                    <select class="form-select" v-model="editStudentData.nem" required>
+                      <option value="">Válasszon nemet</option>
+                      <option value="férfi">Férfi</option>
+                      <option value="nő">Nő</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <h6>Szülő adatai</h6>
@@ -458,6 +474,7 @@
                       <tr><td><strong>Email:</strong></td><td>{{ viewStudentData?.email }}</td></tr>
                       <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData?.telefonszam }}</td></tr>
                       <tr><td><strong>Születési dátum:</strong></td><td>{{ viewStudentData?.szuletesi_datum }}</td></tr>
+                      <tr><td><strong>Nem:</strong></td><td>{{ viewStudentData?.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -562,7 +579,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Diák áthelyezése - {{ transferStudentData?.nev }}</h5>
+            <h5 class="modal-title">Diák költöztetése - {{ transferStudentData?.nev }}</h5>
             <button type="button" class="btn-close" @click="closeTransferModal"></button>
           </div>
           <div class="modal-body">
@@ -573,19 +590,39 @@
 
             <!-- Szobák listája -->
             <h6 class="mb-3">Válasszon cél szobát:</h6>
+            <div class="alert alert-info mb-3" v-if="transferStudentData?.nem">
+              <small>
+                <strong>Diák neme:</strong> {{ transferStudentData.nem === 'férfi' ? 'Férfi' : 'Nő' }} |
+                <span class="text-muted">A másik nem szobái homályosak és nem választhatók.</span>
+              </small>
+            </div>
             <div v-if="availableRoomsForTransfer.length === 0" class="alert alert-warning">
-              Nincs elérhető szoba az áthelyezéshez.
+              <strong>Nincs elérhető szoba a költöztetéshez.</strong><br>
+              <small>Csak a kiköltözés lehetséges.</small>
             </div>
             <div class="row" v-else>
               <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
-                <div class="card mb-3" :class="{ 'border-primary': selectedTransferRoomId === room.szoba_id }">
+                <div 
+                  class="card mb-3 room-card" 
+                  :class="{ 
+                    'border-primary': selectedTransferRoomId === room.szoba_id,
+                    'room-incompatible': !isRoomGenderCompatible(room, transferStudentData?.nem)
+                  }"
+                >
                   <div class="card-header d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">{{ room.szoba_szama }}</h6>
-                    <span class="badge" :class="getTransferRoomBadgeClass(room)">
-                      {{ getTransferRoomBadgeText(room) }}
-                    </span>
+                    <div class="d-flex gap-1">
+                      <span class="badge" :class="getTransferRoomBadgeClass(room)">
+                        {{ getTransferRoomBadgeText(room) }}
+                      </span>
+                    </div>
                   </div>
                   <div class="card-body">
+                    <p class="card-text mb-1">
+                      <small>
+                        <strong>{{ getRoomGenderText(room) }}</strong>
+                      </small>
+                    </p>
                     <p class="card-text mb-1">
                       <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
                     </p>
@@ -605,11 +642,18 @@
                       </div>
                     </div>
                     <button 
+                      v-if="isRoomGenderCompatible(room, transferStudentData?.nem)"
                       class="btn btn-sm w-100" 
                       :class="selectedTransferRoomId === room.szoba_id ? 'btn-primary' : 'btn-outline-primary'"
                       @click="selectTransferRoom(room.szoba_id)"
                       :disabled="transferLoading">
                       {{ selectedTransferRoomId === room.szoba_id ? 'Kiválasztva' : 'Kiválaszt' }}
+                    </button>
+                    <button 
+                      v-else
+                      class="btn btn-sm w-100 btn-outline-secondary" 
+                      disabled>
+                      Nem kompatibilis
                     </button>
                   </div>
                 </div>
@@ -630,7 +674,7 @@
               class="btn btn-success" 
               @click="confirmTransfer"
               :disabled="!selectedTransferRoomId || transferLoading">
-              {{ transferLoading ? 'Áthelyezés...' : 'Áthelyezés' }}
+              {{ transferLoading ? 'Költöztetés...' : 'Költöztetés' }}
             </button>
           </div>
         </div>
@@ -758,6 +802,7 @@ export default {
     const selectedTransferRoomId = ref(null)
     const transferLoading = ref(false)
     const availableRoomsForTransfer = ref([])
+    const roomGenders = ref({}) // Szobák nemeinek tárolása: { szoba_id: 'férfi' | 'nő' | null }
 
     const authStore = useAuthStore()
 
@@ -1003,22 +1048,30 @@ export default {
       selectedTransferRoomId.value = null
       transferLoading.value = false
       
-      // Szobák betöltése lakószámmal
+      // Szobák betöltése lakószámmal és nemi információval
       await fetchRoomsWithOccupancy()
       
       // Elérhető szobák szűrése (kivéve a jelenlegi szobát, és csak amelyekbe fér még diák)
       const currentRoomId = student.szoba?.szoba_id
+      const studentGender = student.nem
+      
       availableRoomsForTransfer.value = rooms.value.filter(room => {
         if (room.szoba_id === currentRoomId) return false
         const occupancy = room.currentOccupancy || 0
+        // Csak akkor elérhető, ha van szabad hely ÉS kompatibilis a nemek
         return occupancy < room.osszes_hely
       })
       
-      if (availableRoomsForTransfer.value.length === 0) {
-        toast.error('Nincs elérhető szabad szoba a diák áthelyezéséhez!')
+      // Ellenőrizzük, hogy van-e jelenlegi szoba (kiköltözés lehetősége)
+      const hasCurrentRoom = student.szoba?.szoba_id != null
+      
+      // Ha nincs elérhető szoba ÉS nincs jelenlegi szoba (tehát nincs mit csinálni)
+      if (availableRoomsForTransfer.value.length === 0 && !hasCurrentRoom) {
+        toast.error('Nincs elérhető szoba a költöztetéshez, és a diáknak nincs jelenlegi szobája!')
         return
       }
       
+      // Minden más esetben megnyitjuk a modalt (kiköltözés vagy költöztetés lehetséges)
       showTransferModal.value = true
     }
 
@@ -1029,22 +1082,43 @@ export default {
         if (response.data.success) {
           const roomsData = response.data.data
           
-          // Párhuzamos elfoglaltság lekérdezés (GYORSABB!)
-          const occupancyPromises = roomsData.map(room =>
-            api.get(`/szobas/${room.szoba_id}/occupancy`)
-              .then(occupancyResponse => {
-                if (occupancyResponse.data.success) {
-                  room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
-                }
-              })
-              .catch(error => {
-                console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
-                room.currentOccupancy = 0
-              })
+          // Párhuzamos elfoglaltság és lakók lekérdezése
+          const roomDetailPromises = roomsData.map(room =>
+            Promise.allSettled([
+              // Elfoglaltság lekérdezése
+              api.get(`/szobas/${room.szoba_id}/occupancy`)
+                .then(occupancyResponse => {
+                  if (occupancyResponse.data.success) {
+                    room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
+                  }
+                })
+                .catch(error => {
+                  console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
+                  room.currentOccupancy = 0
+                }),
+              // Lakók lekérdezése a szoba neme miatt
+              api.get(`/szobas/${room.szoba_id}/occupants`)
+                .then(studentsResponse => {
+                  if (studentsResponse.data.success && studentsResponse.data.data.length > 0) {
+                    // Az első lakó neme határozza meg a szoba nemét
+                    const firstResident = studentsResponse.data.data[0]
+                    const gender = firstResident.diak?.nem || firstResident.nem
+                    if (gender) {
+                      roomGenders.value[room.szoba_id] = gender
+                    }
+                  } else {
+                    roomGenders.value[room.szoba_id] = null // Üres szoba, nincs neme
+                  }
+                })
+                .catch(error => {
+                  console.error(`Hiba a szoba ${room.szoba_id} lakóinak lekérése közben:`, error)
+                  roomGenders.value[room.szoba_id] = null
+                })
+            ])
           )
           
-          // Wszystkie hívások párhuzamosan, nem sorban!
-          await Promise.allSettled(occupancyPromises)
+          // Minden hívás párhuzamosan
+          await Promise.allSettled(roomDetailPromises)
           
           rooms.value = roomsData
         }
@@ -1052,6 +1126,20 @@ export default {
         console.error('Hiba a szobák lekérése közben:', error)
         toast.error('Hiba történt a szobák betöltése közben')
       }
+    }
+
+    // Segédfüggvény: Ellenőrzi, hogy egy szoba kompatibilis-e a diák nemével
+    const isRoomGenderCompatible = (room, studentGender) => {
+      const roomGender = roomGenders.value[room.szoba_id]
+      // Ha a szoba üres (nincs neme) vagy azonos nemű, akkor kompatibilis
+      return !roomGender || roomGender === studentGender
+    }
+
+    // Segédfüggvény: Visszaadja egy szoba nemének szöveges leírását
+    const getRoomGenderText = (room) => {
+      const gender = roomGenders.value[room.szoba_id]
+      if (!gender) return 'Üres szoba'
+      return gender === 'férfi' ? 'Fiú szoba' : 'Lány szoba'
     }
 
     const closeTransferModal = () => {
@@ -1179,6 +1267,7 @@ export default {
         taj_szam: student.taj_szam,
         diakigazolvany_szam: student.diakigazolvany_szam,
         kapcsolat_tipusa: student.kapcsolat_tipusa,
+        nem: student.nem,
         szuloData: {
           nev: student.szulo?.nev || '',
           email: student.szulo?.email || '',
@@ -1324,6 +1413,7 @@ export default {
       selectedTransferRoomId,
       transferLoading,
       availableRoomsForTransfer,
+      roomGenders,
       closeTransferModal,
       selectTransferRoom,
       confirmTransfer,
@@ -1331,8 +1421,39 @@ export default {
       getTransferRoomOccupancyPercentage,
       getTransferRoomBadgeClass,
       getTransferRoomBadgeText,
-      getTransferRoomProgressClass
+      getTransferRoomProgressClass,
+      isRoomGenderCompatible,
+      getRoomGenderText
     }
   }
 }
 </script>
+
+<style scoped>
+/* Szoba kártya stílusok - nem kompatibilis szobák homályosítása */
+.room-card {
+  transition: all 0.3s ease;
+}
+
+.room-card.room-incompatible {
+  opacity: 0.5;
+  filter: blur(1px) grayscale(0.5);
+  pointer-events: none;
+  background-color: #f8f9fa;
+}
+
+.room-card.room-incompatible .card-header {
+  background-color: #e9ecef;
+}
+
+.room-card.room-incompatible .card-body {
+  color: #6c757d;
+}
+
+/* Biztosítjuk, hogy a "Nem kompatibilis" gomb látható legyen */
+.room-card.room-incompatible button {
+  pointer-events: auto;
+  opacity: 1;
+  filter: none;
+}
+</style>

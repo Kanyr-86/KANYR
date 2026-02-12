@@ -12,7 +12,7 @@
         <div class="card">
           <div class="card-body">
             <div class="row mb-3">
-              <div class="col-md-4">
+              <div class="col-md-5">
                 <input 
                   type="text" 
                   class="form-control" 
@@ -21,15 +21,7 @@
                   @input="debouncedSearch"
                 >
               </div>
-              <div class="col-md-3">
-                <select class="form-select" v-model="selectedRelationType">
-                  <option value="">Összes kapcsolat típus</option>
-                  <option value="anya">Anya</option>
-                  <option value="apa">Apa</option>
-                  <option value="gondviselo">Gondviselő</option>
-                </select>
-              </div>
-              <div class="col-md-3">
+              <div class="col-md-5">
                 <select class="form-select" v-model="selectedCity">
                   <option value="">Összes város</option>
                   <option v-for="city in uniqueCities" :key="city" :value="city">
@@ -51,7 +43,6 @@
                     <th>Név</th>
                     <th>Email</th>
                     <th>Telefonszám</th>
-                    <th>Kapcsolat típusa</th>
                     <th>Lakcím</th>
                     <th>Diákok</th>
                     <th>Műveletek</th>
@@ -62,9 +53,6 @@
                     <td>{{ parent.nev }}</td>
                     <td>{{ parent.email }}</td>
                     <td>{{ parent.telefonszam }}</td>
-                    <td>
-                      <span class="badge bg-primary">{{ getRelationTypeLabel(parent.kapcsolat_tipusa) }}</span>
-                    </td>
                     <td>{{ parent.lakcim ? `${parent.lakcim.varos}, ${parent.lakcim.utca_hazszam}` : 'Nincs megadva' }}</td>
                     <td>
                       <span class="badge bg-info">{{ parent.diaks ? parent.diaks.length : 0 }}</span>
@@ -387,7 +375,6 @@ export default {
     const parents = ref([])
     const loading = ref(false)
     const searchQuery = ref('')
-    const selectedRelationType = ref('')
     const selectedCity = ref('')
     const showCreateModal = ref(false)
     const showEditModal = ref(false)
@@ -455,13 +442,6 @@ export default {
         result = result.filter(parent => 
           parent.nev.toLowerCase().includes(query) ||
           parent.email.toLowerCase().includes(query)
-        )
-      }
-      
-      // Filter by relation type
-      if (selectedRelationType.value) {
-        result = result.filter(parent => 
-          parent.diaks?.some(d => d.kapcsolat_tipusa === selectedRelationType.value)
         )
       }
       
@@ -629,7 +609,6 @@ export default {
     // Clear all filters
     const clearFilters = () => {
       searchQuery.value = ''
-      selectedRelationType.value = ''
       selectedCity.value = ''
     }
 
@@ -641,7 +620,6 @@ export default {
       parents,
       loading,
       searchQuery,
-      selectedRelationType,
       selectedCity,
       showCreateModal,
       showEditModal,

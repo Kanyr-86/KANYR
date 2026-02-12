@@ -110,6 +110,19 @@ module.exports = (sequelize) => {
     //     model: 'Lakcims',
     //     key: 'cim_id'
     //   }
+    },
+    nem: {
+      type: DataTypes.ENUM('férfi', 'nő'),
+      allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'A nem megadása kötelező'
+        },
+        isIn: {
+          args: [['férfi', 'nő']],
+          msg: 'A nem csak "férfi" vagy "nő" lehet'
+        }
+      }
     }
   }, {
     tableName: 'diaks',
