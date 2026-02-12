@@ -75,7 +75,35 @@ function isAdmin(req, res, next) {
   }
 }
 
+/**
+ * Check if user can modify data (create, update, delete)
+ * Only admin can create/update/delete entities
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Next middleware function
+ */
+function canModify(req, res, next) {
+  try {
+    // Check if user is authenticated and is admin
+    if (!req.user || !req.user.admin) {
+      return res.status(403).json({
+        success: false,
+        error: 'Csak főtitkár végezheti ezt a műveletet'
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('CanModify middleware error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Hiba a jogosultság ellenőrzése közben'
+    });
+  }
+}
+
 module.exports = {
   authenticate,
-  isAdmin
+  isAdmin,
+  canModify
 };

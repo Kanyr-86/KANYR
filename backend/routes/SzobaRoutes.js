@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
-const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin, canModify } = require('../middleware/authMiddleware');
 
 // Szoba controller inicializálása
 let SzobaController;
@@ -105,35 +105,24 @@ const validateCreateBulkBekoltozes = [
 ];
 
 // Útvonalak
-// Protected routes (require authentication)
-router.post(
-  '/',
-  authenticate,
-  validateCreateSzoba,
-  async (req, res) => SzobaController.createSzoba(req, res)
-);
 
-// Admin-only routes (require admin authentication)
-// FONTOS: A konkrét route-okat (available, statistics) a dinamikus route-ok (/:id) ELÉ kell tenni!
-
+// Listázások - minden bejelentkezett felhasználó
 router.get(
   '/',
   authenticate,
-  isAdmin,
   validateQueryParams,
   async (req, res) => SzobaController.getAllSzobas(req, res)
 );
 
-// Elérhető szobák végpont - konkrét route, ezért előbb kell lennie mint a /:id
+// Elérhető szobák végpont - minden bejelentkezett felhasználó
 router.get(
   '/available',
   authenticate,
-  isAdmin,
   validateQueryParams,
   async (req, res) => SzobaController.getAvailableRooms(req, res)
 );
 
-// Statisztika végpont - konkrét route, ezért előbb kell lennie mint a /:id
+// Statisztika végpont - csak főtitkár
 router.get(
   '/statistics',
   authenticate,
@@ -141,7 +130,7 @@ router.get(
   async (req, res) => SzobaController.getRoomStatistics(req, res)
 );
 
-// Beköltözések lekérdezése szűréssel - konkrét route
+// Beköltözések lekérdezése szűréssel - csak főtitkár
 router.get(
   '/bekoltozesek',
   authenticate,
@@ -149,10 +138,10 @@ router.get(
   async (req, res) => SzobaController.getBekoltozesekWithFilters(req, res)
 );
 
+// Részletes nézet és szobában lakók - minden bejelentkezett felhasználó
 router.get(
   '/:id',
   authenticate,
-  isAdmin,
   validateIdParam,
   async (req, res) => SzobaController.getSzobaById(req, res)
 );
@@ -160,12 +149,11 @@ router.get(
 router.get(
   '/:id/occupants',
   authenticate,
-  isAdmin,
   validateIdParam,
   async (req, res) => SzobaController.getStudentsInRoom(req, res)
 );
 
-// Room occupancy endpoint (require authentication)
+// Szoba kihasználtság - minden bejelentkezett felhasználó
 router.get(
   '/:id/occupancy',
   authenticate,
@@ -173,10 +161,19 @@ router.get(
   async (req, res) => SzobaController.getRoomOccupancy(req, res)
 );
 
-// Protected routes (require authentication)
+// Szoba létrehozás, módosítás, törlés - csak főtitkár
+router.post(
+  '/',
+  authenticate,
+  canModify,
+  validateCreateSzoba,
+  async (req, res) => SzobaController.createSzoba(req, res)
+);
+
 router.put(
   '/:id',
   authenticate,
+  canModify,
   validateUpdateSzoba,
   async (req, res) => SzobaController.updateSzoba(req, res)
 );
@@ -184,11 +181,12 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
+  isAdmin,
   validateIdParam,
   async (req, res) => SzobaController.deleteSzoba(req, res)
 );
 
-// Új beköltözés végpont (require authentication)
+// Beköltözési műveletek - minden bejelentkezett felhasználó (főtitkár és titkár is)
 router.post(
   '/bekoltozes',
   authenticate,
@@ -196,7 +194,6 @@ router.post(
   async (req, res) => SzobaController.createBekoltozes(req, res)
 );
 
-// Tömeges beköltözés végpont (require authentication)
 router.post(
   '/bulk-bekoltozes',
   authenticate,

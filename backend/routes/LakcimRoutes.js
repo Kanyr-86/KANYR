@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, param, query } = require('express-validator');
 const LakcimController = require('../controllers/LakcimController');
-const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin, canModify } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -43,34 +43,36 @@ const initializeController = (db) => {
 };
 
 // Route definitions
-// Admin-only routes (require admin authentication)
-router.get('/', authenticate, isAdmin, validatePagination, (req, res) => {
+
+// Listázások és részletes nézet - minden bejelentkezett felhasználó
+router.get('/', authenticate, validatePagination, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAllLakcims(req, res);
 });
 
-router.get('/:id', authenticate, isAdmin, validateId, (req, res) => {
+router.get('/:id', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getLakcimById(req, res);
 });
 
-router.get('/city/:varos', authenticate, isAdmin, (req, res) => {
+// Város szerinti keresés - minden bejelentkezett felhasználó
+router.get('/city/:varos', authenticate, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getLakcimsByCity(req, res);
 });
 
-// Protected routes (require authentication)
-router.post('/', authenticate, validateCreateLakcim, (req, res) => {
+// Létrehozás, módosítás, törlés - csak főtitkár
+router.post('/', authenticate, canModify, validateCreateLakcim, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.createLakcim(req, res);
 });
 
-router.put('/:id', authenticate, validateId, validateUpdateLakcim, (req, res) => {
+router.put('/:id', authenticate, canModify, validateId, validateUpdateLakcim, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateLakcim(req, res);
 });
 
-router.delete('/:id', authenticate, validateId, (req, res) => {
+router.delete('/:id', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.deleteLakcim(req, res);
 });

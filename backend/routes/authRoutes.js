@@ -18,7 +18,7 @@ const initializeService = (db) => {
   return felhasznaloService;
 };
 
-// Login validation rules
+// Login validation rules - egyszerűsítve, csak nem üres ellenőrzés
 const loginValidationRules = [
   body('email')
     .trim()
@@ -27,7 +27,6 @@ const loginValidationRules = [
 
   body('password')
     .notEmpty().withMessage('A jelszó nem lehet üres')
-    .isLength({ min: 8 }).withMessage('A jelszónak minimum 8 karakter hosszúnak kell lennie')
 ];
 
 /**

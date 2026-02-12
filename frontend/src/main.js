@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import Vue3Toastify from 'vue3-toastify'
 import router from './router'
 import App from './App.vue'
 import './style.css'
@@ -12,4 +13,12 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(Vue3Toastify, {
+  autoClose: 3000,
+  position: 'top-right',
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+})
 app.mount('#app')

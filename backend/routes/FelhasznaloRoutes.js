@@ -66,28 +66,12 @@ const initializeController = (db) => {
     (req, res) => initializeController(req.app.locals.db).createUser(req, res)
   );
 
-  // Protected routes (require admin authentication)
-  router.get(
-    '/:id',
-    authenticate,
-    isAdmin,
-    idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).getUserById(req, res)
-  );
-
-  // Protected routes (require authentication)
+  // Protected routes - saját profil kezelése (minden bejelentkezett felhasználó)
   router.put(
     '/:id',
     authenticate,
     userValidationRules,
     (req, res) => initializeController(req.app.locals.db).updateUser(req, res)
-  );
-
-  router.delete(
-    '/:id',
-    authenticate,
-    idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).deleteUser(req, res)
   );
 
   router.post(
@@ -97,7 +81,14 @@ const initializeController = (db) => {
     (req, res) => initializeController(req.app.locals.db).updatePassword(req, res)
   );
 
-  // Admin-only routes
+  router.delete(
+    '/:id',
+    authenticate,
+    idValidationRule,
+    (req, res) => initializeController(req.app.locals.db).deleteUser(req, res)
+  );
+
+  // Admin-only routes - felhasználók kezelése (csak főtitkár)
   router.get(
     '/',
     authenticate,
@@ -109,6 +100,14 @@ const initializeController = (db) => {
       query('order').optional().isIn(['ASC', 'DESC']).withMessage('Az order paraméternek ASC vagy DESC értéket kell tartalmaznia')
     ],
     (req, res) => initializeController(req.app.locals.db).getAllUsers(req, res)
+  );
+
+  router.get(
+    '/:id',
+    authenticate,
+    isAdmin,
+    idValidationRule,
+    (req, res) => initializeController(req.app.locals.db).getUserById(req, res)
   );
 
   router.post(

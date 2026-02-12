@@ -268,26 +268,20 @@ async function seedDatabase() {
     
     // Jelszavak hash-elése
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
-    const userPasswordHash = await bcrypt.hash('user123', 10);
+    const userPasswordHash = await bcrypt.hash('user1234', 10);
     
     const felhasznalok = await db.Felhasznalo.bulkCreate([
       {
         username: 'admin',
         email: 'admin@kanyr.hu',
         password: adminPasswordHash,
-        admin: true
+        admin: true  // Főtitkár
       },
       {
-        username: 'szarmaztatott',
-        email: 'szarmaztatott@kanyr.hu',
+        username: 'user',
+        email: 'user@kanyr.hu',
         password: userPasswordHash,
-        admin: false
-      },
-      {
-        username: 'gondnok',
-        email: 'gondnok@kanyr.hu',
-        password: userPasswordHash,
-        admin: false
+        admin: false  // Titkár
       }
     ]);
     console.log(`✓ ${felhasznalok.length} felhasználó létrehozva\n`);
@@ -302,8 +296,8 @@ async function seedDatabase() {
     console.log(`   • Felhasználók: ${felhasznalok.length}`);
     console.log('\n✅ Adatbázis sikeresen feltöltve tesztadatokkal!');
     console.log('\n📝 Alapértelmezett hozzáférési adatok:');
-    console.log('   Admin: admin / admin123');
-    console.log('   Felhasználó: szarmaztatott / user123');
+    console.log('   Főtitkár (admin): admin / admin123');
+    console.log('   Titkár (user): user / user1234');
 
   } catch (error) {
     console.error('❌ Hiba az adatbázis feltöltésekor:', error);

@@ -1,11 +1,11 @@
 <template>
   <div id="app">
-    <Navbar @menu-click="toggleSidebar" />
-    <Sidebar :open="sidebarOpen" @close="toggleSidebar" />
+    <Navbar v-if="!isLoginPage" @menu-click="toggleSidebar" />
+    <Sidebar v-if="!isLoginPage" :open="sidebarOpen" @close="toggleSidebar" />
     
     <div
       class="main-content"
-      :class="{ 'sidebar-open': sidebarOpen }"
+      :class="{ 'sidebar-open': sidebarOpen && !isLoginPage }"
     >
       <ErrorBoundary>
         <router-view />
@@ -15,7 +15,8 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import Sidebar from './components/Sidebar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
@@ -29,6 +30,12 @@ export default defineComponent({
   },
   setup() {
     const sidebarOpen = ref(false)
+    const route = useRoute()
+    
+    // Ellenőrizzük, hogy a login oldalon vagyunk-e
+    const isLoginPage = computed(() => {
+      return route.path === '/login'
+    })
     
     const toggleSidebar = () => {
       sidebarOpen.value = !sidebarOpen.value
@@ -46,19 +53,26 @@ export default defineComponent({
 
     return {
       sidebarOpen,
-      toggleSidebar
+      toggleSidebar,
+      isLoginPage
     }
   }
 })
 </script>
 
 <style>
+/* Sötétebb kék háttérszín - szemkímélő, pihentető */
+html, body {
+  background-color: #2c4a5a !important;
+}
+
 #app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
+  background-color: #2c4a5a !important;
 }
 
 .main-content {
@@ -68,6 +82,7 @@ export default defineComponent({
   margin-left: 0;
   width: 100%;
   box-sizing: border-box;
+  background-color: #2c4a5a !important;
 }
 
 @media (min-width: 768px) {
@@ -90,5 +105,6 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
+  background-color: #2c4a5a !important;
 }
 </style>

@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, param, query } = require('express-validator');
 const SzuloController = require('../controllers/SzuloController');
-const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin, canModify } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -27,9 +27,9 @@ const validateUpdateSzulo = [
 ];
 
 const validatePagination = [
-  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('A limit 1-100 közötti számnak kell legyen'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('A limit 1-100 közötti számnak kell lennie'),
   query('offset').optional().isInt({ min: 0 }).withMessage('Az offset nemnegatív számnak kell legyen'),
-  query('sort').optional().isString().withMessage('A sort paraméter szöveg formátumban kell legyen'),
+  query('sort').optional().isString().withMessage('A sort paraméter szöveg formátumban kell lennie'),
   query('order').optional().isIn(['ASC', 'DESC']).withMessage('A rendelés csak ASC vagy DESC lehet'),
   query('includeRelations').optional().isBoolean().withMessage('A includeRelations paraméter boolean típusú kell legyen')
 ];
@@ -45,29 +45,30 @@ const initializeController = (db) => {
 };
 
 // Route definitions
-// Admin-only routes (require admin authentication)
-router.get('/', authenticate, isAdmin, validatePagination, (req, res) => {
+
+// Listázások és részletes nézet - minden bejelentkezett felhasználó
+router.get('/', authenticate, validatePagination, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAllSzulos(req, res);
 });
 
-router.get('/:id', authenticate, isAdmin, validateId, (req, res) => {
+router.get('/:id', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getSzuloById(req, res);
 });
 
-// Protected routes (require authentication)
-router.post('/', authenticate, validateCreateSzulo, (req, res) => {
+// Létrehozás, módosítás, törlés - csak főtitkár
+router.post('/', authenticate, canModify, validateCreateSzulo, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.createSzulo(req, res);
 });
 
-router.put('/:id', authenticate, validateId, validateUpdateSzulo, (req, res) => {
+router.put('/:id', authenticate, canModify, validateId, validateUpdateSzulo, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateSzulo(req, res);
 });
 
-router.delete('/:id', authenticate, validateId, (req, res) => {
+router.delete('/:id', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.deleteSzulo(req, res);
 });

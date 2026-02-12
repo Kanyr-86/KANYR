@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
     <div class="container-fluid">
       <button 
         class="navbar-toggler" 
@@ -66,6 +66,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* Élénk kék háttér a fejlécnek */
+.custom-navbar {
+  background-color: #1e88e5 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .navbar-brand {
   font-weight: bold;
 }
@@ -78,5 +84,13 @@ export default defineComponent({
 /* Show menu button on all screen sizes */
 .navbar-toggler {
   display: block !important;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.nav-link:hover {
+  color: #ffffff !important;
 }
 </style>

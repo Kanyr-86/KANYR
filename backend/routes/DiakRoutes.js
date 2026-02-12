@@ -37,34 +37,6 @@ const validateUpdateDiak = [
   body('nem').optional().isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet')
 ];
 
-const validateEnrollStudent = [
-  body('diakData').isObject().withMessage('A diák adatok objektum formátumban kell lennie'),
-  body('diakData.nev').notEmpty().withMessage('A diák neve kötelező'),
-  body('diakData.email').isEmail().withMessage('Érvényes email címet adjon meg'),
-  body('diakData.telefonszam').notEmpty().withMessage('A diák telefonszáma kötelező'),
-  body('diakData.szuletesi_datum').isISO8601().withMessage('Érvényes dátum formátum'),
-  body('diakData.szemelyi_igazolvany_szam').notEmpty().withMessage('A személyi igazolvány szám kötelező'),
-  body('diakData.taj_szam').notEmpty().withMessage('A TAJ szám kötelező'),
-  body('diakData.diakigazolvany_szam').notEmpty().withMessage('A diákigazolvány szám kötelező'),
-  body('diakData.kapcsolat_tipusa').isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
-  body('diakData.nem').isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet'),
-  
-  body('szuloData').isObject().withMessage('A szülő adatok objektum formátumban kell lennie'),
-  body('szuloData.nev').notEmpty().withMessage('A szülő neve kötelező'),
-  body('szuloData.email').isEmail().withMessage('Érvényes email címet adjon meg'),
-  body('szuloData.telefonszam').notEmpty().withMessage('A szülő telefonszáma kötelező'),
-  body('szuloData.szemelyi_igazolvany_szam').notEmpty().withMessage('A szülő személyi igazolvány szám kötelező'),
-  
-  body('lakcimData').isObject().withMessage('A lakcím adatok objektum formátumban kell lennie'),
-  body('lakcimData.orszag').notEmpty().withMessage('Az ország kötelező'),
-  body('lakcimData.iranyitoszam').notEmpty().withMessage('Az irányítószám kötelező'),
-  body('lakcimData.varos').notEmpty().withMessage('A város kötelező'),
-  body('lakcimData.utca_hazszam').notEmpty().withMessage('Az utca és házszám kötelező'),
-  
-  body('szoba_id').isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell legyen'),
-  body('bekoltozes_datum').optional().isISO8601().withMessage('Érvényes dátum formátum')
-];
-
 const validateTransferStudent = [
   body('uj_szoba_id').isInt({ min: 1 }).withMessage('Az új szoba ID pozitív egész számnak kell legyen'),
   body('atcsatolas_datum').optional().isISO8601().withMessage('Érvényes dátum formátum')
@@ -72,15 +44,6 @@ const validateTransferStudent = [
 
 const validateMoveOut = [
   body('kikoltozes_datum').optional().isISO8601().withMessage('Érvényes dátum formátum')
-];
-
-const validateBulkEnroll = [
-  body('studentsData').isArray().withMessage('A studentsData paraméternek tömbnek kell lennie'),
-  body('studentsData.*.diakData').isObject().withMessage('Minden diák objektumban diakData kötelező'),
-  body('studentsData.*.diakData.nem').isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet'),
-  body('studentsData.*.szuloData').isObject().withMessage('Minden diák objektumban szuloData kötelező'),
-  body('studentsData.*.lakcimData').isObject().withMessage('Minden diák objektumban lakcimData kötelező'),
-  body('studentsData.*.szoba_id').isInt({ min: 1 }).withMessage('Minden diák objektumban szoba_id pozitív egész számnak kell legyen')
 ];
 
 const validateSearch = [
@@ -109,31 +72,34 @@ const initializeController = (db) => {
 };
 
 // Import authentication middleware
-const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin, canModify } = require('../middleware/authMiddleware');
 
 // Route definitions
-// Admin-only routes (require admin authentication)
-router.get('/', authenticate, isAdmin, validatePagination, (req, res) => {
+
+// Listázások - minden bejelentkezett felhasználó (főtitkár és titkár is)
+router.get('/', authenticate, validatePagination, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAllDiaks(req, res);
 });
 
-router.get('/active', authenticate, isAdmin, (req, res) => {
+router.get('/active', authenticate, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getActiveStudents(req, res);
 });
 
-router.get('/search', authenticate, isAdmin, validateSearch, (req, res) => {
+router.get('/search', authenticate, validateSearch, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.searchStudents(req, res);
 });
 
+// Statisztikák és riportok - csak főtitkár
 router.get('/statistics', authenticate, isAdmin, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getStatistics(req, res);
 });
 
-router.get('/:id', authenticate, isAdmin, validateId, (req, res) => {
+// Részletes nézet - minden bejelentkezett felhasználó
+router.get('/:id', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getDiakById(req, res);
 });
@@ -143,37 +109,28 @@ router.get('/:id/report', authenticate, isAdmin, validateId, (req, res) => {
   return controller.generateStudentReport(req, res);
 });
 
-router.get('/:id/room', authenticate, isAdmin, validateId, (req, res) => {
+router.get('/:id/room', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getStudentRoom(req, res);
 });
 
-// Protected routes (require authentication)
-router.post('/', authenticate, validateCreateDiak, (req, res) => {
+// Létrehozás, módosítás, törlés - csak főtitkár
+router.post('/', authenticate, canModify, validateCreateDiak, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.createDiak(req, res);
 });
 
-router.post('/enroll', authenticate, validateEnrollStudent, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.enrollStudent(req, res);
-});
-
-router.post('/bulk-enroll', authenticate, validateBulkEnroll, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.bulkEnrollStudents(req, res);
-});
-
-router.put('/:id', authenticate, validateId, validateUpdateDiak, (req, res) => {
+router.put('/:id', authenticate, canModify, validateId, validateUpdateDiak, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateDiak(req, res);
 });
 
-router.delete('/:id', authenticate, validateId, (req, res) => {
+router.delete('/:id', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.deleteDiak(req, res);
 });
 
+// Költöztetési műveletek - minden bejelentkezett felhasználó (főtitkár és titkár is)
 router.post('/:id/transfer', authenticate, validateId, validateTransferStudent, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.transferStudent(req, res);

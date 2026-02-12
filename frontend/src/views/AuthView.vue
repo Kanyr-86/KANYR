@@ -1,54 +1,53 @@
 <template>
-  <div class="container auth-container">
-    <div class="row justify-content-center align-items-center min-vh-100">
-      <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
-        <div class="card shadow">
-          <div class="card-header bg-primary text-white">
-            <h3 class="text-center mb-0">KANYR Bejelentkezés</h3>
-          </div>
-          <div class="card-body p-4">
-            <form @submit.prevent="handleLogin">
-              <div class="mb-3">
-                <label for="email" class="form-label">Email cím</label>
-                <input 
-                  type="email" 
-                  class="form-control form-control-lg" 
-                  id="email" 
-                  v-model="email"
-                  placeholder="pelda@email.hu"
-                  required
-                >
-              </div>
-              <div class="mb-4">
-                <label for="password" class="form-label">Jelszó</label>
-                <input 
-                  type="password" 
-                  class="form-control form-control-lg" 
-                  id="password" 
-                  v-model="password"
-                  placeholder="••••••••"
-                  required
-                >
-              </div>
-              <div class="d-grid">
-                <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
-                  {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
-                </button>
-              </div>
-            </form>
-            
-            <hr class="my-4">
-            
-            <div class="text-center">
-              <p class="text-muted mb-3">Vagy használjon teszt admin tokent:</p>
-              <button 
-                class="btn btn-outline-secondary" 
-                @click="useTestToken"
-                :disabled="loading"
+  <div class="login-page">
+    <div class="login-container">
+      <div class="card shadow-sm">
+        <div class="card-header bg-material-blue text-white">
+          <h5 class="text-center mb-0">KANYR Bejelentkezés</h5>
+        </div>
+        <div class="card-body p-3">
+          <form @submit.prevent="handleLogin">
+            <div class="mb-2">
+              <label for="email" class="form-label mb-1 small">Email cím</label>
+              <input 
+                type="email" 
+                class="form-control form-control-sm" 
+                id="email" 
+                v-model="email"
+                placeholder="pelda@email.hu"
+                required
               >
-                {{ loading ? 'Token generálása...' : 'Teszt admin token' }}
+            </div>
+            <div class="mb-2">
+              <label for="password" class="form-label mb-1 small">Jelszó</label>
+              <input 
+                type="password" 
+                class="form-control form-control-sm" 
+                id="password" 
+                v-model="password"
+                placeholder="••••••••"
+                required
+              >
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-sm" :disabled="loading">
+                {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
               </button>
             </div>
+          </form>
+          
+          <hr class="my-2">
+          
+          <div class="text-center">
+            <p class="text-muted mb-1 small" style="font-size: 0.8rem;">Vagy használjon teszt admin tokent:</p>
+            <button 
+              class="btn btn-outline-secondary btn-xs" 
+              @click="useTestToken"
+              :disabled="loading"
+              style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"
+            >
+              {{ loading ? 'Token generálása...' : 'Teszt admin token' }}
+            </button>
           </div>
         </div>
       </div>
@@ -57,47 +56,104 @@
 </template>
 
 <style scoped>
-.auth-container {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+/* Sötét kék háttér - illeszkedik az alkalmazás témájához */
+.login-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2c4a5a;
 }
 
-@media (min-width: 576px) {
-  .auth-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .auth-container {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem;
 }
 
 .card {
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
+  margin: 0;
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .card-header {
-  border-radius: 12px 12px 0 0 !important;
-  padding: 1.5rem;
+  border-radius: 8px 8px 0 0 !important;
+  padding: 0.75rem 1rem;
 }
 
-.card-header h3 {
-  font-size: 1.5rem;
-  word-wrap: break-word;
+/* Material Design kék háttér a bejelentkező oldalhoz */
+.bg-material-blue {
+  background-color: #1e88e5 !important;
+}
+
+.card-header h5 {
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.form-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.form-control-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+hr {
+  margin: 0.75rem 0;
 }
 
 @media (max-width: 575px) {
-  .card-header h3 {
-    font-size: 1.25rem;
+  .login-container {
+    padding: 0.5rem;
+    max-width: 100%;
+  }
+  
+  .card-header h5 {
+    font-size: 1rem;
   }
   
   .card-body {
-    padding: 1.5rem !important;
+    padding: 0.75rem;
+  }
+}
+
+/* Nagyon kis képernyőn még kompaktabb */
+@media (max-height: 500px) {
+  .card-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .card-body {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .mb-2 {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  hr {
+    margin: 0.5rem 0;
   }
 }
 </style>

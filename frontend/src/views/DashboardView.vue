@@ -2,8 +2,10 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
-        <h2>KANYR Dashboard</h2>
-        <div class="row">
+        <h2 class="dashboard-title">KANYR Dashboard</h2>
+        
+        <!-- Admin (Főtitkár) nézet - statisztikákkal -->
+        <div v-if="isAdmin" class="row">
           <div class="col-md-3">
             <div class="card">
               <div class="card-body">
@@ -38,6 +40,16 @@
           </div>
         </div>
         
+        <!-- Titkár nézet - üdvözlés és gyors gombok -->
+        <div v-else class="row">
+          <div class="col-12">
+            <div class="alert alert-info">
+              <h4>Üdvözöljük, {{ authStore.user?.username }}!</h4>
+              <p>Ön titkár jogosultsággal rendelkezik. Az alábbi műveleteket végezheti:</p>
+            </div>
+          </div>
+        </div>
+        
         <div class="row mt-4">
           <div class="col-md-6">
             <div class="card">
@@ -45,8 +57,9 @@
                 <h5>Gyors hivatkozások</h5>
               </div>
               <div class="card-body">
-                <router-link to="/students" class="btn btn-primary me-2">Diákok kezelése</router-link>
-                <router-link to="/rooms" class="btn btn-secondary">Szobák kezelése</router-link>
+                <router-link to="/students" class="btn btn-primary me-2 mb-2">Diákok kezelése</router-link>
+                <router-link to="/rooms" class="btn btn-secondary me-2 mb-2">Szobák kezelése</router-link>
+                <router-link v-if="isAdmin" to="/reports" class="btn btn-info mb-2">Riportok</router-link>
               </div>
             </div>
           </div>
@@ -56,8 +69,17 @@
   </div>
 </template>
 
+<style scoped>
+.dashboard-title {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+</style>
+
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { toast } from 'vue3-toastify'
@@ -69,7 +91,17 @@ export default {
     const loading = ref(false)
     const authStore = useAuthStore()
 
+    // Ellenőrizzük, hogy admin-e a felhasználó
+    const isAdmin = computed(() => {
+      return authStore.user?.admin === true
+    })
+
     const fetchStatistics = async () => {
+      // Csak adminnak töltjük be a statisztikákat
+      if (!isAdmin.value) {
+        return
+      }
+      
       loading.value = true
       try {
         const response = await api.get('/diaks/statistics')
@@ -94,7 +126,9 @@ export default {
 
     return {
       statistics,
-      loading
+      loading,
+      authStore,
+      isAdmin
     }
   }
 }
