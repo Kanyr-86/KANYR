@@ -48,16 +48,72 @@
 **Mint** kollégiumi titkár
 **Szeretném hogy** láthassam hogy melyik diákok vannak egy adott szobában.
 
-## Tejles lista, szobák és diákokról kiválasztot dátümon 
+## Teljes lista, szobák és diákokról kiválasztott dátumon 
 
-### 9. User Story: 
+### 9. User Story: Titkár lekérdez szobákat és diákokat kiválasztott dátumon
 **Mint** kollégiumi titkár,  
-**Szeretném hogy** 
+**Szeretném hogy** filteres lekérdezéssel tudjak szobákat és diákokat keresni egy adott dátum alapján,  
+**Hogy** nyomon követhetem az elhelyezéseket időben.
 
+## Szoba jellemzőinek szűrése
 
-# Template:
-## 
-
-### x. User Story: 
+### 10. User Story: Titkár szobákat szűr nem alapján
 **Mint** kollégiumi titkár,  
-**Szeretném hogy** 
+**Szeretném hogy** szobákat tudjak szűrni nem (férfi/női/vegyes) alapján,  
+**Hogy** könnyebben tudjak diákokat elhelyezni.
+
+## Szoba megtöltöttségi szintek
+
+### 11. User Story: Főtitkár megtöltöttségi riportot kap
+**Mint** főtitkár,  
+**Szeretném hogy** riportot kapjak a szobák megtöltöttségi szintjéről (%),  
+**Hogy** nyomon követhetem a szobák kihasználtságát.
+
+## Megjegyzések a diákhoz
+
+### 12. User Story: Titkár megjegyzéseket ad diákhoz
+**Mint** kollégiumi titkár,  
+**Szeretném hogy** megjegyzéseket tudjak hozzáadni egy diákhoz (fegyelem, speciális igények),  
+**Hogy** könnyebben nyomon követhetem a fontos információkat.
+
+## Diák statusza
+
+### 13. User Story: Titkár bejelöli diák státuszát
+**Mint** kollégiumi titkár,  
+**Szeretném hogy** bejelölhessem a diák státuszát (aktív, szünet, végzett),  
+**Hogy** könnyebben szűrhessem a diákokat.
+
+## Szobacseré végrehajtása
+
+### 14. User Story: Titkár szobacserét végez, ha szoba tele van
+**Mint** kollégiumi titkár,  
+**Szeretném hogy** amikor egy szoba tele van, kiválaszthassak egy diákot és helyette másikkal cseréljek,  
+**Hogy** az áthelyezés lehetséges legyen szobacseré által.
+
+## Szoba lezárás
+
+### 15. User Story: Főtitkár ideiglenesen lezárja a szobát
+**Mint** főtitkár,  
+**Szeretném hogy** ideiglenesen lezárhassak szobákat (felújítás, fertőtlenítés),  
+**Hogy** diákok nem helyezhetők oda.
+
+## Szoba cserélettörténet
+
+### 16. User Story: Titkár meglátja diák szoba előzményeit
+**Mint** kollégiumi titkár,  
+**Szeretném hogy** láthassam a beköltözések/kiköltözések teljes előzményét egy diákhoz,  
+**Hogy** biztosan nyomon követhetem az elhelyezéseket.
+
+## Archivált diákok
+
+### 17. User Story: Főtitkár lekérdezi végzett diákokat
+**Mint** főtitkár,  
+**Szeretném hogy** lekérdezhetem az archivált diákokat (végzett, kiköltözött),  
+**Hogy** statisztikákat tudjak készíteni.
+
+## Havi kimutatás
+
+### 18. User Story: Főtitkár generál havi kimutatást
+**Mint** főtitkár,  
+**Szeretném hogy** generálhatok egy havi riportot (szobák, diákok, statisztikák),  
+**Hogy** megküldhetem a vezetésnek. 
