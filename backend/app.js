@@ -2,13 +2,23 @@ const express = require('express');
 const cors = require('cors');
 const { testConnection } = require('./config/database');
 const db = require('./models');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS Configuration - read from environment variables
+const getAllowedOrigins = () => {
+  if (process.env.ALLOWED_ORIGINS) {
+    return process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+  }
+  // Fallback for development
+  return ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+};
+
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'], // Frontend URLs
+  origin: getAllowedOrigins(),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']

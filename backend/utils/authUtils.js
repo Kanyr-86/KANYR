@@ -3,7 +3,15 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 // JWT secret key - should be in environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'kanyr_admin_secret_key_2026';
+// WARNING: In production, JWT_SECRET MUST be set via environment variable
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  WARNING: JWT_SECRET is not set in environment variables. Using development default.');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('CRITICAL: JWT_SECRET must be set in production environment!');
+  }
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || 'kanyr_development_secret_key_2026_min_32_characters_required';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 /**
