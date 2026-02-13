@@ -156,4 +156,37 @@ router.post(
   }
 );
 
+/**
+ * POST /api/auth/test-user-token
+ * Generate test non-admin user token (1 hour expiration) - FOR TESTING ONLY
+ */
+router.post(
+  '/test-user-token',
+  (req, res) => {
+    try {
+      // Generate test user token with 1 hour expiration
+      const testToken = generateToken({
+        userId: 2, // Test non-admin user ID
+        admin: false
+      }, '1h'); // 1 hour expiration for testing
+
+      res.json({
+        success: true,
+        data: {
+          token: testToken,
+          expiresIn: '1h',
+          userId: 2,
+          admin: false
+        },
+        message: 'Teszt user token generálva (1 óra érvényes)'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Hiba a teszt token generálása közben'
+      });
+    }
+  }
+);
+
 module.exports = router;

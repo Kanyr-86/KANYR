@@ -48,6 +48,15 @@
             >
               {{ loading ? 'Token generálása...' : 'Teszt admin token' }}
             </button>
+            <div style="height:6px"></div>
+            <button 
+              class="btn btn-outline-secondary btn-xs" 
+              @click="useTestUser"
+              :disabled="loading"
+              style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"
+            >
+              {{ loading ? 'Token generálása...' : 'Teszt user' }}
+            </button>
           </div>
         </div>
       </div>
@@ -213,12 +222,33 @@ export default {
       }
     }
 
+    const useTestUser = async () => {
+      loading.value = true
+      try {
+        const response = await authService.getTestUserToken()
+        if (response.success) {
+          authStore.setToken(response.data.token)
+          authStore.setUser({ userId: response.data.userId, admin: response.data.admin })
+          toast.success('Teszt user token sikeresen generálva!')
+          router.push('/dashboard')
+        } else {
+          toast.error(response.error || 'Hiba a teszt token generálása közben')
+        }
+      } catch (error) {
+        console.error('Test user token error:', error)
+        toast.error(error.error || 'Hiba a teszt token generálása közben')
+      } finally {
+        loading.value = false
+      }
+    }
+
     return {
       email,
       password,
       loading,
       handleLogin,
       useTestToken
+      ,useTestUser
     }
   }
 }
