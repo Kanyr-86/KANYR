@@ -2,75 +2,170 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2>Szülők kezelése</h2>
-          <button class="btn btn-primary" @click="showCreateModal = true">
-            Szülő felvétele
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 class="mb-1">Szülők kezelése</h2>
+            <p class="text-muted mb-0">Szülők adatainak kezelése és gyerekeik nyomon követése</p>
+          </div>
+          <button class="btn btn-primary btn-lg" @click="showCreateModal = true">
+            <i class="bi bi-plus-circle me-2"></i>Szülő felvétele
           </button>
         </div>
         
-        <div class="card">
-          <div class="card-body">
-            <div class="row mb-3">
-              <div class="col-md-5">
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  placeholder="Szülő keresése név vagy email alapján..."
-                  v-model="searchQuery"
-                  @input="debouncedSearch"
-                >
-              </div>
-              <div class="col-md-5">
-                <select class="form-select" v-model="selectedCity">
-                  <option value="">Összes város</option>
-                  <option v-for="city in uniqueCities" :key="city" :value="city">
-                    {{ city }}
-                  </option>
-                </select>
-              </div>
-              <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" @click="clearFilters">
-                  Szűrők törlése
-                </button>
+        <!-- Szűrők és statisztikák -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">Keresés</label>
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Név vagy email alapján..."
+                        v-model="searchQuery"
+                        @input="debouncedSearch"
+                      >
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">Város</label>
+                    <select class="form-select" v-model="selectedCity">
+                      <option value="">Összes város</option>
+                      <option v-for="city in uniqueCities" :key="city" :value="city">
+                        {{ city }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" @click="clearFilters">
+                      <i class="bi bi-x-circle me-2"></i>Szűrők törlése
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Név</th>
-                    <th>Email</th>
-                    <th>Telefonszám</th>
-                    <th>Lakcím</th>
-                    <th>Diákok</th>
-                    <th>Műveletek</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="parent in filteredParents" :key="parent.szulo_id">
-                    <td>{{ parent.nev }}</td>
-                    <td>{{ parent.email }}</td>
-                    <td>{{ parent.telefonszam }}</td>
-                    <td>{{ parent.lakcim ? `${parent.lakcim.varos}, ${parent.lakcim.utca_hazszam}` : 'Nincs megadva' }}</td>
-                    <td>
-                      <span class="badge bg-info">{{ parent.diaks ? parent.diaks.length : 0 }}</span>
-                    </td>
-                    <td>
-                      <button class="btn btn-sm btn-outline-primary me-2" @click="viewParent(parent)">
-                        Megtekintés
-                      </button>
-                      <button class="btn btn-sm btn-outline-warning me-2" @click="editParent(parent)">
-                        Szerkesztés
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" @click="deleteParent(parent)">
-                        Törlés
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          </div>
+          <div class="col-md-4">
+            <div class="row">
+              <div class="col-6">
+                <div class="card bg-primary text-white">
+                  <div class="card-body text-center">
+                    <h6 class="card-title mb-1">Összes szülő</h6>
+                    <h3 class="mb-0">{{ parents.length }}</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="card bg-info text-white">
+                  <div class="card-body text-center">
+                    <h6 class="card-title mb-1">Összes gyerek</h6>
+                    <h3 class="mb-0">{{ totalChildrenCount }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Szülők kártyák -->
+        <div class="row">
+          <div class="col-md-6 col-lg-4" v-for="parent in filteredParents" :key="parent.szulo_id">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="mb-0">{{ parent.nev }}</h5>
+                    <small class="text-muted">{{ getRelationTypeLabel(parent.kapcsolat_tipusa) }}</small>
+                  </div>
+                  <div>
+                    <span class="badge bg-info">
+                      {{ parent.diaks ? parent.diaks.length : 0 }} gyerek
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-envelope-fill text-primary me-2"></i>
+                      <div>
+                        <div class="fw-semibold">{{ parent.email }}</div>
+                        <small class="text-muted">Email</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-telephone-fill text-success me-2"></i>
+                      <div>
+                        <div class="fw-semibold">{{ parent.telefonszam }}</div>
+                        <small class="text-muted">Telefon</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <div class="d-flex align-items-start">
+                    <i class="bi bi-geo-alt-fill text-warning me-2 mt-1"></i>
+                    <div>
+                      <div class="fw-semibold">
+                        {{ parent.lakcim ? `${parent.lakcim.varos}, ${parent.lakcim.utca_hazszam}` : 'Nincs megadva' }}
+                      </div>
+                      <small class="text-muted">Lakcím</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <div v-if="parent.diaks && parent.diaks.length > 0">
+                  <h6 class="mb-2">Gyerekek:</h6>
+                  <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center" 
+                         v-for="diak in parent.diaks" :key="diak.diak_id">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                          {{ diak.nev.charAt(0).toUpperCase() }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ diak.nev }}</div>
+                          <small class="text-muted">{{ formatDate(diak.szuletesi_datum) }}</small>
+                        </div>
+                      </div>
+                      <span class="badge bg-primary">
+                        {{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div v-else>
+                  <div class="alert alert-light border text-center mb-0">
+                    <i class="bi bi-emoji-frown text-muted me-2"></i>
+                    <span class="text-muted">Nincs hozzárendelve gyerek</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer bg-white border-0">
+                <div class="d-flex justify-content-between">
+                  <button class="btn btn-outline-primary btn-sm" @click="viewParent(parent)">
+                    <i class="bi bi-eye me-1"></i>Megtekintés
+                  </button>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-outline-warning btn-sm" @click="editParent(parent)">
+                      <i class="bi bi-pencil me-1"></i>Szerkesztés
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" @click="deleteParent(parent)">
+                      <i class="bi bi-trash me-1"></i>Törlés
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -455,6 +550,12 @@ export default {
       return result
     })
 
+    const totalChildrenCount = computed(() => {
+      return parents.value.reduce((total, parent) => {
+        return total + (parent.diaks ? parent.diaks.length : 0)
+      }, 0)
+    })
+
     const uniqueCities = computed(() => {
       const cities = new Set()
       parents.value.forEach(parent => {
@@ -589,7 +690,7 @@ export default {
     const debouncedSearch = debounce(async () => {
       if (searchQuery.value.trim()) {
         try {
-        const response = await api.get('/szulos', {
+          const response = await api.get('/szulos', {
             params: {
               search: searchQuery.value
             }

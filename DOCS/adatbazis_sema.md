@@ -1,4 +1,4 @@
-# Adatbázis séma – V2
+# Adatbázis séma – V3
 
 A rendszer egy kollégiumi nyilvántartó alkalmazás, amely a kollégiumban lakó diákok,
 szüleik/gondviselőik, valamint a szobák és beköltözések adatait kezeli.
@@ -63,6 +63,11 @@ Ez a tábla a diákok szobába történő beköltözésének és kiköltözésé
 ## Felhasználó tábla
 - user_id (PK)
 - username
+- email
+- password
 - admin (boolean)
+- diak_id (FK → Diák, lehet NULL)
 
 A Felhasználó tábla az alkalmazásba belépő felhasználók és jogosultságaik kezelésére szolgál.
+Admin felhasználók (titkár) nem rendelkeznek diák azonosítóval, diákokhoz pedig hozzárendelhető
+a diák azonosító a személyes adatok eléréséhez.

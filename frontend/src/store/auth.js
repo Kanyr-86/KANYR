@@ -59,6 +59,47 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Computed properties for role-based access
+    isAdmin() {
+      return this.user && this.user.admin === true
+    },
+
+    isStudent() {
+      return this.user && this.user.admin === false
+    },
+
+    // Redirect to appropriate dashboard based on role
+    getDashboardRoute() {
+      if (this.isAdmin) {
+        return '/dashboard'
+      } else if (this.isStudent) {
+        return '/student-dashboard'
+      }
+      return '/login'
+    },
+
+    // Check if user has access to specific routes
+    hasAccess(routeName) {
+      if (!this.isAuthenticated) {
+        return false
+      }
+      
+      switch (routeName) {
+        case 'dashboard':
+        case 'students':
+        case 'parents':
+        case 'rooms':
+        case 'reports':
+          return this.isAdmin
+        case 'student-dashboard':
+        case 'student-rooms':
+        case 'student-notifications':
+          return this.isStudent
+        default:
+          return true
+      }
+    },
+
     // Login action that updates store
     async login(email, password) {
       this.loading = true

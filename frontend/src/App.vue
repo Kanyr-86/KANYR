@@ -1,12 +1,8 @@
 <template>
   <div id="app">
-    <Navbar v-if="!isLoginPage" @menu-click="toggleSidebar" />
-    <Sidebar v-if="!isLoginPage" :open="sidebarOpen" @close="toggleSidebar" />
+    <Navbar v-if="!isLoginPage" />
     
-    <div
-      class="main-content"
-      :class="{ 'sidebar-open': sidebarOpen && !isLoginPage }"
-    >
+    <div class="main-content">
       <ErrorBoundary>
         <router-view />
       </ErrorBoundary>
@@ -18,28 +14,21 @@
 import { defineComponent, ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
-import Sidebar from './components/Sidebar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
     Navbar,
-    Sidebar,
     ErrorBoundary
   },
   setup() {
-    const sidebarOpen = ref(false)
     const route = useRoute()
     
     // Ellenőrizzük, hogy a login oldalon vagyunk-e
     const isLoginPage = computed(() => {
       return route.path === '/login'
     })
-    
-    const toggleSidebar = () => {
-      sidebarOpen.value = !sidebarOpen.value
-    }
 
     // Ensure app is mounted only after auth store is initialized
     const appReady = ref(false)
@@ -52,8 +41,6 @@ export default defineComponent({
     })
 
     return {
-      sidebarOpen,
-      toggleSidebar,
       isLoginPage
     }
   }
@@ -78,8 +65,6 @@ html, body {
 .main-content {
   flex: 1;
   padding: 12px;
-  transition: margin-left 0.3s;
-  margin-left: 0;
   width: 100%;
   box-sizing: border-box;
   background-color: #2c4a5a !important;
@@ -88,16 +73,6 @@ html, body {
 @media (min-width: 768px) {
   .main-content {
     padding: 24px;
-  }
-}
-
-.main-content.sidebar-open {
-  margin-left: 240px;
-}
-
-@media (max-width: 991px) {
-  .main-content.sidebar-open {
-    margin-left: 0;
   }
 }
 

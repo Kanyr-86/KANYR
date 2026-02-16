@@ -40,8 +40,33 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/student-dashboard',
+      name: 'StudentDashboard',
+      component: () => import('../views/StudentDashboard.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/student-rooms',
+      name: 'StudentRooms',
+      component: () => import('../views/StudentRoomsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/student-notifications',
+      name: 'StudentNotifications',
+      component: () => import('../views/StudentNotificationsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/',
-      redirect: '/dashboard'
+      redirect: (to) => {
+        // Import auth store to check user role
+        const authStore = useAuthStore();
+        if (authStore.isAuthenticated) {
+          return authStore.isAdmin ? '/dashboard' : '/student-dashboard';
+        }
+        return '/login';
+      }
     }
   ]
 })
@@ -61,8 +86,30 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
+  // Initialize auth state if needed
+  if (!authStore.user && authStore.isAuthenticated) {
+    try {
+      await authStore.initializeAuth()
+    } catch (e) {
+      console.error('Failed to initialize auth:', e)
+    }
+  }
+  
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
+  } else if (to.meta.requiresAuth && authStore.isAuthenticated) {
+    // Check if user has access to the specific route
+    if (!authStore.hasAccess(to.name)) {
+      // Redirect to appropriate dashboard based on role
+      const dashboardRoute = authStore.isAdmin ? '/dashboard' : '/student-dashboard'
+      next(dashboardRoute)
+    } else {
+      next()
+    }
+  } else if (to.path === '/' && authStore.isAuthenticated) {
+    // Redirect to appropriate dashboard based on role
+    const dashboardRoute = authStore.isAdmin ? '/dashboard' : '/student-dashboard'
+    next(dashboardRoute)
   } else {
     next()
   }

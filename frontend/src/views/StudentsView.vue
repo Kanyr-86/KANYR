@@ -2,94 +2,156 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2>Diákok kezelése</h2>
-          <button class="btn btn-primary" @click="openEnrollModal">
-            Diák felvétele
-          </button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 class="mb-1">Diákok kezelése</h2>
+            <p class="text-muted mb-0">Diák adatok kezelése és szobába költöztetés</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-lg" @click="openEnrollModal">
+              <i class="bi bi-plus-circle me-2"></i>Diák felvétele
+            </button>
+          </div>
         </div>
         
-        <div class="card">
-          <div class="card-body">
-            <div class="row mb-3 g-2">
-              <div class="col-12 col-md-6">
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  placeholder="Keresés név, email vagy szoba alapján..."
-                  v-model="searchQuery"
-                >
-              </div>
-              <div class="col-12 col-sm-6 col-md-4">
-                <select class="form-select" v-model="selectedStatus">
-                  <option value="">Összes státusz</option>
-                  <option value="true">Aktív</option>
-                  <option value="false">Inaktív</option>
-                </select>
-              </div>
-              <div class="col-12 col-sm-6 col-md-2">
-                <button class="btn btn-outline-secondary w-100" @click="clearFilters">
-                  Szűrők törlése
-                </button>
+        <!-- Szűrők és statisztikák -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">Keresés</label>
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Név, email vagy szoba alapján..."
+                        v-model="searchQuery"
+                      >
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">Státusz</label>
+                    <select class="form-select" v-model="selectedStatus">
+                      <option value="">Összes státusz</option>
+                      <option value="true">Aktív</option>
+                      <option value="false">Inaktív</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" @click="clearFilters">
+                      <i class="bi bi-x-circle me-2"></i>Szűrők törlése
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            
+          </div>
+          <div class="col-md-4">
+            <div class="row">
+              <div class="col-6">
+                <div class="card bg-primary text-white">
+                  <div class="card-body text-center">
+                    <h6 class="card-title mb-1">Összes diák</h6>
+                    <h3 class="mb-0">{{ students.length }}</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="card bg-success text-white">
+                  <div class="card-body text-center">
+                    <h6 class="card-title mb-1">Aktív diákok</h6>
+                    <h3 class="mb-0">{{ activeStudentsCount }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Diákok táblázat -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-white border-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Diák lista</h6>
+              <span class="badge bg-light text-dark">{{ filteredStudents.length }} diák</span>
+            </div>
+          </div>
+          <div class="card-body p-0">
             <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
                   <tr>
-                    <th>Név</th>
+                    <th class="text-primary">Név</th>
                     <th class="d-none d-md-table-cell">Email</th>
                     <th class="d-none d-lg-table-cell">Telefonszám</th>
                     <th>Szoba</th>
                     <th>Státusz</th>
-                    <th>Műveletek</th>
+                    <th class="text-center">Műveletek</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="student in filteredStudents" :key="student.diak_id">
-                    <td>{{ student.nev }}</td>
-                    <td class="d-none d-md-table-cell">{{ student.email }}</td>
-                    <td class="d-none d-lg-table-cell">{{ student.telefonszam }}</td>
-                    <td>{{ student.szoba ? student.szoba.szoba_szama : 'Nincs' }}</td>
+                  <tr v-for="student in filteredStudents" :key="student.diak_id" class="align-middle">
                     <td>
-                      <span class="badge" :class="student.aktiv ? 'bg-success' : 'bg-danger'">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                          {{ student.nev.charAt(0).toUpperCase() }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ student.nev }}</div>
+                          <small class="text-muted">{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                      <span class="badge bg-light text-dark">{{ student.email }}</span>
+                    </td>
+                    <td class="d-none d-lg-table-cell">{{ student.telefonszam || '-' }}</td>
+                    <td>
+                      <span v-if="student.szoba" class="badge bg-info">
+                        <i class="bi bi-door-closed me-1"></i>{{ student.szoba.szoba_szama }}
+                      </span>
+                      <span v-else class="text-muted">Nincs szoba</span>
+                    </td>
+                    <td>
+                      <span class="badge" :class="student.aktiv ? 'bg-primary' : 'bg-danger'">
+                        <i class="bi" :class="student.aktiv ? 'bi-check-circle' : 'bi-x-circle'"></i>
                         {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </td>
-                    <td>
+                    <td class="text-center">
                       <div class="btn-group" role="group">
                         <button 
-                          class="btn btn-sm btn-outline-primary" 
+                          class="btn btn-outline-primary btn-sm" 
                           @click="viewStudent(student)"
-                          title="Megtekintés"
+                          title="Diák megtekintése"
                         >
-                          <span class="d-none d-xl-inline">Megtekintés</span>
-                          <span class="d-xl-none">👁</span>
+                          <i class="bi bi-eye me-1"></i>Megtekintés
                         </button>
                         <button 
-                          class="btn btn-sm btn-outline-warning" 
+                          class="btn btn-outline-warning btn-sm" 
                           @click="editStudent(student)"
-                          title="Szerkesztés"
+                          title="Diák szerkesztése"
                         >
-                          <span class="d-none d-xl-inline">Szerkesztés</span>
-                          <span class="d-xl-none">✏</span>
+                          <i class="bi bi-pencil me-1"></i>Szerkesztés
                         </button>
                         <button 
-                          class="btn btn-sm btn-outline-info" 
+                          class="btn btn-outline-info btn-sm" 
                           @click="transferStudent(student)"
-                          title="Költöztetés"
+                          title="Diák költöztetése"
                         >
-                          <span class="d-none d-xl-inline">Költöztetés</span>
-                          <span class="d-xl-none">↻</span>
+                          <i class="bi bi-arrow-right me-1"></i>Áthelyezés
                         </button>
                         <button 
-                          class="btn btn-sm btn-outline-danger" 
+                          class="btn btn-outline-danger btn-sm" 
                           @click="deleteStudent(student)"
-                          title="Törlés"
+                          title="Diák törlése"
                         >
-                          <span class="d-none d-xl-inline">Törlés</span>
-                          <span class="d-xl-none">🗑</span>
+                          <i class="bi bi-trash me-1"></i>Törlés
                         </button>
                       </div>
                     </td>
@@ -928,6 +990,10 @@ export default {
         }
       }
     }
+
+    const activeStudentsCount = computed(() => {
+      return students.value.filter(student => student.aktiv).length
+    })
 
     const filteredStudents = computed(() => {
       let result = students.value

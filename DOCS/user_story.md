@@ -65,7 +65,7 @@
 ## Szoba megtöltöttségi szintek
 
 ### 11. User Story: Főtitkár megtöltöttségi riportot kap
-**Mint** főtitkár,  
+**Mint** kollégiumi titkár,   
 **Szeretném hogy** riportot kapjak a szobák megtöltöttségi szintjéről (%),  
 **Hogy** nyomon követhetem a szobák kihasználtságát.
 
@@ -93,7 +93,7 @@
 ## Szoba lezárás
 
 ### 15. User Story: Főtitkár ideiglenesen lezárja a szobát
-**Mint** főtitkár,  
+**Mint** kollégiumi titkár,   
 **Szeretném hogy** ideiglenesen lezárhassak szobákat (felújítás, fertőtlenítés),  
 **Hogy** diákok nem helyezhetők oda.
 
@@ -107,13 +107,37 @@
 ## Archivált diákok
 
 ### 17. User Story: Főtitkár lekérdezi végzett diákokat
-**Mint** főtitkár,  
+**Mint** kollégiumi titkár,   
 **Szeretném hogy** lekérdezhetem az archivált diákokat (végzett, kiköltözött),  
 **Hogy** statisztikákat tudjak készíteni.
 
 ## Havi kimutatás
 
 ### 18. User Story: Főtitkár generál havi kimutatást
-**Mint** főtitkár,  
+**Mint** kollégiumi titkár, 
 **Szeretném hogy** generálhatok egy havi riportot (szobák, diákok, statisztikák),  
-**Hogy** megküldhetem a vezetésnek. 
+**Hogy** megküldhetem a vezetésnek.
+
+## Diák szobaváltoztatási kérelem leadása
+
+### 19. User Story: Diák szobaváltoztatási kérelem leadása
+**Mint** diák,  
+**Szeretném hogy** szobaváltoztatási kérelmet tudjak leadni, mert
+
+## Titkár szobaváltoztatási kérelmek kezelése
+
+### 20. User Story: Titkár szobaváltoztatási kérelmek kezelése
+**Mint** kollégiumi titkár,   
+**Szeretném hogy** szobaváltoztatási kérelmeket tudjak kezelni, engedélyezni és elutasítani
+
+## Diák szobájának megtekintése
+
+### 21. User Story: Diák szobájának megtekintése
+**Mint** diák,  
+**Szeretném hogy** megtekinthessem a jelenlegi szobámat és szobatársaim nevét  
+
+## Diák értesítések kezelése
+
+### 22. User Story: Diák értesítések kezelése
+**Mint** diák,  
+**Szeretném hogy** láthatsam a értesítéseket

@@ -1,16 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
     <div class="container-fluid">
-      <button 
-        class="navbar-toggler" 
-        type="button" 
-        @click="toggleSidebar"
-        aria-controls="sidebar"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
       
       <a class="navbar-brand" href="#">
         <span class="d-none d-sm-inline">KANYR - Kollégiumi Nyilvántartó</span>
@@ -23,9 +13,64 @@
       >
         <div class="navbar-nav ms-auto align-items-lg-center">
           <span class="navbar-text me-lg-3 mb-2 mb-lg-0">
-            {{ user.username }} ({{ user.admin ? 'Admin' : 'Felhasználó' }})
+            {{ user.username }} ({{ user.admin ? 'Titkár' : 'Diák' }})
           </span>
-          <router-link to="/dashboard" class="nav-link mb-2 mb-lg-0">Dashboard</router-link>
+          <router-link 
+            v-if="user.admin" 
+            to="/dashboard" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Admin Dashboard
+          </router-link>
+          <router-link 
+            v-if="user.admin" 
+            to="/students" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Diákok
+          </router-link>
+          <router-link 
+            v-if="user.admin" 
+            to="/parents" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Szülők
+          </router-link>
+          <router-link 
+            v-if="user.admin" 
+            to="/rooms" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Szobák
+          </router-link>
+          <router-link 
+            v-if="user.admin" 
+            to="/reports" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Riportok
+          </router-link>
+          <router-link 
+            v-if="!user.admin" 
+            to="/student-dashboard" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Diák Dashboard
+          </router-link>
+          <router-link 
+            v-if="!user.admin" 
+            to="/student-rooms" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Szobám
+          </router-link>
+          <router-link 
+            v-if="!user.admin" 
+            to="/student-notifications" 
+            class="nav-link mb-2 mb-lg-0"
+          >
+            Értesítések
+          </router-link>
           <button class="btn btn-outline-light btn-sm" @click="logout">Kijelentkezés</button>
         </div>
       </div>
@@ -47,10 +92,6 @@ export default defineComponent({
     
     const user = computed(() => authStore.user)
 
-    const toggleSidebar = () => {
-      emit('menu-click')
-    }
-
     const logout = () => {
       authStore.logout()
       router.push('/login')
@@ -58,7 +99,6 @@ export default defineComponent({
 
     return {
       user,
-      toggleSidebar,
       logout
     }
   }

@@ -2,105 +2,182 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2>Szobák kezelése</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 class="mb-1">Szobák kezelése</h2>
+            <p class="text-muted mb-0">Szobák kezelése és tömeges beköltöztetés</p>
+          </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-primary" @click="showCreateModal = true">
-              Szoba felvétele
+            <button class="btn btn-primary btn-lg" @click="showCreateModal = true">
+              <i class="bi bi-plus-circle me-2"></i>Szoba felvétele
             </button>
-            <button class="btn btn-info" @click="openBulkTransferModal">
-              Tömeges beköltöztetés / átköltöztetés
+            <button class="btn btn-info btn-lg" @click="openBulkTransferModal">
+              <i class="bi bi-people me-2"></i>Tömeges beköltöztetés
             </button>
           </div>
         </div>
         
-        <div class="card">
-          <div class="card-body">
-            <div class="row mb-3">
-              <div class="col-md-4">
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  placeholder="Szoba keresése szobaszám alapján..."
-                  v-model="searchQuery"
-                  @input="debouncedSearch"
-                >
-              </div>
-              <div class="col-md-3">
-                <select class="form-select" v-model="selectedCapacity">
-                  <option value="">Összes férőhely</option>
-                  <option value="1">1 fő</option>
-                  <option value="2">2 fő</option>
-                  <option value="3">3 fő</option>
-                  <option value="4">4 fő</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <select class="form-select" v-model="selectedStatus">
-                  <option value="">Összes státusz</option>
-                  <option value="empty">Üres</option>
-                  <option value="available">Van szabad hely</option>
-                  <option value="full">Tele</option>
-                </select>
-              </div>
-              <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" @click="clearFilters">
-                  Szűrők törlése
-                </button>
+        <!-- Szűrők és statisztikák -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">Keresés</label>
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Szobaszám alapján..."
+                        v-model="searchQuery"
+                        @input="debouncedSearch"
+                      >
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">Férőhely</label>
+                    <select class="form-select" v-model="selectedCapacity">
+                      <option value="">Összes férőhely</option>
+                      <option value="1">1 fő</option>
+                      <option value="2">2 fő</option>
+                      <option value="3">3 fő</option>
+                      <option value="4">4 fő</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">Státusz</label>
+                    <select class="form-select" v-model="selectedStatus">
+                      <option value="">Összes státusz</option>
+                      <option value="empty">Üres</option>
+                      <option value="available">Van szabad hely</option>
+                      <option value="full">Tele</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" @click="clearFilters">
+                      <i class="bi bi-x-circle me-2"></i>Szűrők törlése
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            
+          </div>
+          <div class="col-md-4">
             <div class="row">
-              <div class="col-md-4" v-for="room in filteredRooms" :key="room.szoba_id">
-                <div class="card mb-3">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>{{ room.szoba_szama }}</h5>
-                    <div>
-                      <span class="badge" :class="getRoomStatusClass(room)">
-                        {{ getRoomStatusText(room) }}
+              <div class="col-6">
+                <div class="card bg-info text-white">
+                  <div class="card-body text-center">
+                    <h6 class="card-title mb-1">Összes szoba</h6>
+                    <h3 class="mb-0">{{ rooms.length }}</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="card bg-warning text-white">
+                  <div class="card-body text-center">
+                    <h6 class="card-title mb-1">Elérhető szobák</h6>
+                    <h3 class="mb-0">{{ availableRoomsCount }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Szobák kártyák -->
+        <div class="row">
+          <div class="col-md-4" v-for="room in filteredRooms" :key="room.szoba_id">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="mb-0">{{ room.szoba_szama }}</h5>
+                  </div>
+                  <div>
+                    <span class="badge" :class="getRoomStatusClass(room)">
+                      {{ getRoomStatusText(room) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-people-fill text-primary me-2"></i>
+                      <div>
+                        <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
+                        <small class="text-muted">Férőhely</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-person-fill text-success me-2"></i>
+                      <div>
+                        <div class="fw-semibold">{{ room.currentOccupancy || 0 }} fő</div>
+                        <small class="text-muted">Jelenlegi lakók</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px;">
+                  <div class="progress-bar" 
+                       :class="getTransferRoomProgressClass(room)"
+                       :style="{ width: getOccupancyPercentage(room) + '%' }">
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between">
+                    <small class="text-muted">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
+                    <small class="text-muted">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                  </div>
+                </div>
+                
+                <div v-if="room.diakok && room.diakok.length > 0">
+                  <h6 class="mb-2">Lakók:</h6>
+                  <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center" 
+                         v-for="student in room.diakok" :key="student.diak_id">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                          {{ student.nev.charAt(0).toUpperCase() }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ student.nev }}</div>
+                        </div>
+                      </div>
+                      <span class="badge" :class="student.aktiv ? 'bg-success' : 'bg-danger'">
+                        {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </div>
                   </div>
-                  <div class="card-body">
-                    <p class="card-text">
-                      <strong>Férőhely:</strong> {{ room.osszes_hely }} fő
-                    </p>
-                    <p class="card-text">
-                      <strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}
-                    </p>
-                    <div class="progress mb-3">
-                      <div class="progress-bar" :style="{ width: getOccupancyPercentage(room) + '%' }">
-                        {{ getOccupancyPercentage(room) }}%
-                      </div>
-                    </div>
-                    
-                    <div v-if="room.diakok && room.diakok.length > 0">
-                      <h6>Diákok:</h6>
-                      <ul class="list-group list-group-flush">
-                        <li class="list-group-item" v-for="student in room.diakok" :key="student.diak_id">
-                          <div>
-                            <span>{{ student.nev }}</span>
-                            <span class="badge bg-success ms-2" v-if="student.aktiv">Aktív</span>
-                            <span class="badge bg-danger ms-2" v-else>Inaktív</span>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                    <div v-else>
-                      <p class="text-muted">Nincs bent lakó</p>
-                    </div>
-                    
-                    <div class="mt-3">
-                      <button class="btn btn-sm btn-outline-primary me-2" @click="viewRoomDetails(room)">
-                        Részletek
-                      </button>
-                      <button class="btn btn-sm btn-outline-warning me-2" @click="editRoom(room)">
-                        Szerkesztés
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" @click="deleteRoom(room)">
-                        Törlés
-                      </button>
-                    </div>
+                </div>
+                <div v-else>
+                  <div class="alert alert-light border text-center mb-0">
+                    <i class="bi bi-emoji-smile text-muted me-2"></i>
+                    <span class="text-muted">Nincs bent lakó</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer bg-white border-0">
+                <div class="d-flex justify-content-between">
+                  <button class="btn btn-outline-primary btn-sm" @click="viewRoomDetails(room)">
+                    <i class="bi bi-eye me-1"></i>Részletek
+                  </button>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-outline-warning btn-sm" @click="editRoom(room)">
+                      <i class="bi bi-pencil me-1"></i>Szerkesztés
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" @click="deleteRoom(room)">
+                      <i class="bi bi-trash me-1"></i>Törlés
+                    </button>
                   </div>
                 </div>
               </div>
@@ -205,9 +282,6 @@
                   </div>
                   <div class="card-body">
                     <p class="card-text mb-1">
-                      <small><strong>{{ getRoomGenderText(room) }}</strong></small>
-                    </p>
-                    <p class="card-text mb-1">
                       <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
                     </p>
                     <p class="card-text mb-1">
@@ -269,10 +343,6 @@
                           {{ getTransferRoomBadgeText(selectedRoomForTransfer) }}
                         </span>
                       </td>
-                    </tr>
-                    <tr>
-                      <td><strong>Nem:</strong></td>
-                      <td>{{ getRoomGenderText(selectedRoomForTransfer) }}</td>
                     </tr>
                     <tr>
                       <td><strong>Férőhely:</strong></td>
@@ -781,6 +851,14 @@ export default {
       }
     }
 
+    const availableRoomsCount = computed(() => {
+      return rooms.value.filter(room => {
+        const occupancy = room.currentOccupancy || 0
+        const capacity = room.osszes_hely
+        return occupancy < capacity
+      }).length
+    })
+
     const filteredRooms = computed(() => {
       let result = rooms.value
       
@@ -827,10 +905,10 @@ export default {
       const occupancy = room.currentOccupancy || 0
       const capacity = room.osszes_hely
       
-      if (occupancy === 0) return 'bg-secondary'
+      if (occupancy === 0) return 'bg-info'
       if (occupancy === capacity) return 'bg-danger'
       if (occupancy >= capacity * 0.8) return 'bg-warning'
-      return 'bg-success'
+      return 'bg-primary'
     }
 
     const getRoomStatusText = (room) => {

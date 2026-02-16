@@ -201,23 +201,23 @@
 
 /* Accessibility focus styles */
 :root {
-  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
-  --focus-ring-dark: 0 0 0 3px rgba(99, 102, 241, 0.8);
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --transition-fast: 0ms;
-    --transition-normal: 0ms;
-    --transition-slow: 0ms;
-  }
-}
-
-/* Print styles */
-@media print {
-  :root {
-    --shadow-card: none;
-    --shadow-elevated: none;
-  }
+  --primary-color: #0066cc;
+  --secondary-color: #3399ff;
+  --success-color: #0080ff;
+  --danger-color: #003d66;
+  --warning-color: #66b3ff;
+  --info-color: #e6f3ff;
+  --light-color: #f0f8ff;
+  --dark-color: #003366;
+  
+  --primary-hover: #0052a3;
+  --secondary-hover: #2684cc;
+  --success-hover: #0066cc;
+  --danger-hover: #002b4d;
+  --warning-hover: #4da6ff;
+  --info-hover: #cce6ff;
+  
+  --border-radius: 8px;
+  --box-shadow: 0 2px 10px rgba(0, 102, 204, 0.15);
+  --transition: all 0.3s ease;
 }

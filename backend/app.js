@@ -77,6 +77,10 @@ const startServer = async () => {
     app.use('/api/felhasznalos', require('./routes/FelhasznaloRoutes'));
     console.log('✓ Felhasznalo route-ok inicializálva');
 
+    // SzobaValtoztatas route-ok inicializálása
+    app.use('/api/szobavaltoztatas', require('./routes/SzobaValtoztatasRoutes'));
+    console.log('✓ SzobaValtoztatas route-ok inicializálva');
+
     // 404 handler - csak most regisztráljuk, miután minden route be van állítva
     app.use((req, res) => {
       res.status(404).json({

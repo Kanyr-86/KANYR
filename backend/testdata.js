@@ -268,23 +268,108 @@ async function seedDatabase() {
     
     // Jelszavak hash-elése
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
-    const userPasswordHash = await bcrypt.hash('user1234', 10);
+    const studentPasswordHash = await bcrypt.hash('student123', 10);
     
     const felhasznalok = await db.Felhasznalo.bulkCreate([
       {
         username: 'admin',
         email: 'admin@kanyr.hu',
         password: adminPasswordHash,
-        admin: true  // Főtitkár
+        admin: true,  // Titkár (admin)
+        diak_id: null
       },
       {
-        username: 'user',
-        email: 'user@kanyr.hu',
-        password: userPasswordHash,
-        admin: false  // Titkár
+        username: 'student1',
+        email: 'nagy.bernadett@student.hu',
+        password: studentPasswordHash,
+        admin: false,  // Diák
+        diak_id: diaks[0].diak_id  // Link to first student (Nagy Bernadett)
+      },
+      {
+        username: 'student2',
+        email: 'nagy.peter@student.hu',
+        password: studentPasswordHash,
+        admin: false,  // Diák
+        diak_id: diaks[1].diak_id  // Link to second student (Nagy Péter)
+      },
+      {
+        username: 'student3',
+        email: 'kovacs.zsofia@student.hu',
+        password: studentPasswordHash,
+        admin: false,  // Diák
+        diak_id: diaks[2].diak_id  // Link to third student (Kovács Zsófia)
+      },
+      {
+        username: 'student4',
+        email: 'szabo.katalin@student.hu',
+        password: studentPasswordHash,
+        admin: false,  // Diák
+        diak_id: diaks[3].diak_id  // Link to fourth student (Szabó Katalin)
+      },
+      {
+        username: 'student5',
+        email: 'bodnar.krisztina@student.hu',
+        password: studentPasswordHash,
+        admin: false,  // Diák
+        diak_id: diaks[4].diak_id  // Link to fifth student (Bodnár Krisztina)
+      },
+      {
+        username: 'student6',
+        email: 'kiss.tamas@student.hu',
+        password: studentPasswordHash,
+        admin: false,  // Diák
+        diak_id: diaks[5].diak_id  // Link to sixth student (Kiss Tamás)
       }
     ]);
     console.log(`✓ ${felhasznalok.length} felhasználó létrehozva\n`);
+
+    // ========== SZOBA VÁLTOZTATÁSI KÉRELMEK LÉTREHOZÁSA ==========
+    console.log('📝 Szoba változtatási kérelmek létrehozása...');
+    const valtoztatasok = await db.SzobaValtoztatas.bulkCreate([
+      {
+        diak_id: diaks[0].diak_id,
+        jelenlegi_szoba_id: szobak[0].szoba_id,
+        kivant_szoba_id: szobak[2].szoba_id,
+        statusz: 'pending',
+        indok: 'A jelenlegi szobában zajos szobatársak vannak, csendesebb környezetet szeretnék.',
+        academic_year: '2024-2025',
+        semester_count: 1
+      },
+      {
+        diak_id: diaks[4].diak_id,
+        jelenlegi_szoba_id: szobak[2].szoba_id,
+        kivant_szoba_id: szobak[0].szoba_id,
+        statusz: 'approved',
+        indok: 'Egyetemista barátommal szeretnék egy szobában lakni a tanuláshoz.',
+        academic_year: '2024-2025',
+        semester_count: 1
+      }
+    ]);
+    console.log(`✓ ${valtoztatasok.length} szoba változtatási kérelem létrehozva\n`);
+
+    // ========== ÉRTESÍTÉSEK LÉTREHOZÁSA ==========
+    console.log('🔔 Értesítések létrehozása...');
+    const notifikaciok = await db.Notification.bulkCreate([
+      {
+        diak_id: diaks[0].diak_id,
+        tipus: 'room_change_pending',
+        uzenet: 'A szoba változtatási kérelmedet feldolgoztuk. Kérjük, várj türelmesen a döntésre.',
+        elolvasva: false
+      },
+      {
+        diak_id: diaks[4].diak_id,
+        tipus: 'room_change_approved',
+        uzenet: 'Gratulálunk! A szoba változtatási kérelmedet elfogadtuk. Az új szobaszámod: A-101. Kérjük, 3 munkanapon belül költözz át.',
+        elolvasva: false
+      },
+      {
+        diak_id: diaks[1].diak_id,
+        tipus: 'room_change_pending',
+        uzenet: 'Ne feledd, hogy a következő hónapban esedékes a szobafoglalás. Kérjük, ellenőrizd a számládat.',
+        elolvasva: false
+      }
+    ]);
+    console.log(`✓ ${notifikaciok.length} értesítés létrehozva\n`);
 
     // ========== STATISZTIKA ==========
     console.log('📊 Adatbázis feltöltési statisztika:');
@@ -294,10 +379,12 @@ async function seedDatabase() {
     console.log(`   • Szobák: ${szobak.length}`);
     console.log(`   • Beköltözések: ${bekoltozesek.length}`);
     console.log(`   • Felhasználók: ${felhasznalok.length}`);
+    console.log(`   • Szoba változtatási kérelmek: ${valtoztatasok.length}`);
+    console.log(`   • Értesítések: ${notifikaciok.length}`);
     console.log('\n✅ Adatbázis sikeresen feltöltve tesztadatokkal!');
     console.log('\n📝 Alapértelmezett hozzáférési adatok:');
-    console.log('   Főtitkár (admin): admin / admin123');
-    console.log('   Titkár (user): user / user1234');
+    console.log('   Titkár (admin): admin@kanyr.hu / admin123');
+    console.log('   Diák (user): {diak_nev}@student.hu / student123');
 
   } catch (error) {
     console.error('❌ Hiba az adatbázis feltöltésekor:', error);

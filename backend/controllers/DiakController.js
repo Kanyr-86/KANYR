@@ -549,6 +549,249 @@ class DiakController {
       });
     }
   }
+
+  /**
+   * GET /api/diaks/:id/room-history
+   * Diák szobaváltási történetének lekérése
+   */
+  async getStudentRoomHistory(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvénytelen diák ID'
+        });
+      }
+
+      const student = await this.diakService.getStudentWithFullHistory(parseInt(id));
+      
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: 'A diák nem található'
+        });
+      }
+
+      // Szűrjük a szobaváltási kérelmeket az adott diákra
+      const roomChanges = student.szobavaltoztatasok || [];
+
+      res.json({
+        success: true,
+        data: roomChanges
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/diaks/:id/room-change
+   * Diák szobaváltási kérelem benyújtása
+   */
+  async submitRoomChangeRequest(req, res) {
+    try {
+      const { id } = req.params;
+      const { kivant_szoba_id, indok } = req.body;
+
+      if (!id || isNaN(id) || !kivant_szoba_id || isNaN(kivant_szoba_id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvénytelen paraméterek'
+        });
+      }
+
+      // Ellenőrizzük, hogy a diák létezik-e
+      const student = await this.diakService.getStudentWithFullHistory(parseInt(id));
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: 'A diák nem található'
+        });
+      }
+
+      // Ellenőrizzük, hogy van-e aktív beköltözése
+      const currentBekoltozes = student.bekoltozesek.find(b => !b.kikoltozes_datum);
+      if (!currentBekoltozes) {
+        return res.status(400).json({
+          success: false,
+          error: 'A diáknak nincs aktív szobája'
+        });
+      }
+
+      // Ellenőrizzük a szobaváltási korlátot
+      const currentYear = new Date().getFullYear();
+      const academicYear = `${currentYear}-${currentYear + 1}`;
+      const pendingOrApproved = student.szobavaltoztatasok.filter(r => 
+        r.academic_year === academicYear && 
+        (r.statusz === 'pending' || r.statusz === 'approved')
+      );
+      
+      if (pendingOrApproved.length >= 3) {
+        return res.status(400).json({
+          success: false,
+          error: 'Elérte a félévi szobaváltási korlátot (3 alkalom)'
+        });
+      }
+
+      // Létrehozzuk a szobaváltási kérelmet
+      const SzobaValtoztatas = this.db.models.SzobaValtoztatas;
+      const roomChange = await SzobaValtoztatas.create({
+        diak_id: parseInt(id),
+        jelenlegi_szoba_id: currentBekoltozes.szoba_id,
+        kivant_szoba_id: parseInt(kivant_szoba_id),
+        indok: indok || null,
+        statusz: 'pending',
+        academic_year: academicYear
+      });
+
+      res.status(201).json({
+        success: true,
+        data: roomChange,
+        message: 'Szobaváltási kérelem sikeresen benyújtva'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/diaks/:id/notifications
+   * Diák értesítéseinek lekérése
+   */
+  async getStudentNotifications(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvénytelen diák ID'
+        });
+      }
+
+      // Ellenőrizzük, hogy a diák létezik-e
+      const student = await this.diakService.getStudentWithFullHistory(parseInt(id));
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: 'A diák nem található'
+        });
+      }
+
+      const Notification = this.db.models.Notification;
+      const notifications = await Notification.findAll({
+        where: { diak_id: parseInt(id) },
+        order: [['created_at', 'DESC']]
+      });
+
+      res.json({
+        success: true,
+        data: notifications
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * PUT /api/diaks/:id/notifications/:notificationId/read
+   * Értesítés olvasottnak jelölése
+   */
+  async markNotificationAsRead(req, res) {
+    try {
+      const { id, notificationId } = req.params;
+
+      if (!id || isNaN(id) || !notificationId || isNaN(notificationId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvénytelen paraméterek'
+        });
+      }
+
+      const Notification = this.db.models.Notification;
+      const notification = await Notification.findByPk(parseInt(notificationId));
+      
+      if (!notification) {
+        return res.status(404).json({
+          success: false,
+          error: 'Az értesítés nem található'
+        });
+      }
+
+      // Ellenőrizzük, hogy az értesítés a megfelelő diákhoz tartozik-e
+      if (notification.diak_id !== parseInt(id)) {
+        return res.status(403).json({
+          success: false,
+          error: 'Nincs jogosultsága az értesítés elolvasásához'
+        });
+      }
+
+      await notification.update({ elolvasva: true });
+
+      res.json({
+        success: true,
+        message: 'Értesítés sikeresen olvasottnak jelölve'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * PUT /api/diaks/:id/notifications/read-all
+   * Összes értesítés olvasottnak jelölése
+   */
+  async markAllNotificationsAsRead(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvénytelen diák ID'
+        });
+      }
+
+      // Ellenőrizzük, hogy a diák létezik-e
+      const student = await this.diakService.getStudentWithFullHistory(parseInt(id));
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: 'A diák nem található'
+        });
+      }
+
+      const Notification = this.db.models.Notification;
+      await Notification.update(
+        { elolvasva: true },
+        { where: { diak_id: parseInt(id), elolvasva: false } }
+      );
+
+      res.json({
+        success: true,
+        message: 'Összes értesítés sikeresen olvasottnak jelölve'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = DiakController;

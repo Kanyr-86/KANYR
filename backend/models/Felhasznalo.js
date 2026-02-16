@@ -57,6 +57,14 @@ module.exports = (sequelize) => {
           msg: 'Az admin mező csak true vagy false értéket vehet fel'
         }
       }
+    },
+    diak_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'diaks',
+        key: 'diak_id'
+      }
     }
   }, {
     tableName: 'felhasznalos',
