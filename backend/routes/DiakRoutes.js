@@ -115,93 +115,201 @@ router.get('/:id/room', authenticate, validateId, (req, res) => {
 });
 
 // Student dashboard endpoint - gets current room for authenticated student
-router.get('/students/room', authenticate, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  const studentId = req.user?.userId; // Get student ID from authenticated user
-  
-  if (!studentId) {
-    return res.status(400).json({
+router.get('/students/room', authenticate, async (req, res) => {
+  try {
+    const controller = initializeController(req.app.locals.db);
+    const userId = req.user?.userId; // Get user ID from authenticated user
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nem sikerült azonosítani a felhasználót'
+      });
+    }
+
+    // Get the diak_id from the Felhasznalo table
+    const Felhasznalo = controller.db.Felhasznalo;
+    const user = await Felhasznalo.findByPk(userId);
+    
+    if (!user || !user.diak_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'A felhasználóhoz nem tartozik diák azonosító'
+      });
+    }
+
+    return controller.getStudentRoom({ params: { id: user.diak_id } }, res);
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Nem sikerült azonosítani a diákot'
+      error: 'Hiba a szoba lekérésekor'
     });
   }
-  
-  return controller.getStudentRoom({ params: { id: studentId } }, res);
 });
 
 // Student room history endpoint
-router.get('/students/room-history', authenticate, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  const studentId = req.user?.userId; // Get student ID from authenticated user
-  
-  if (!studentId) {
-    return res.status(400).json({
+router.get('/students/room-history', authenticate, async (req, res) => {
+  try {
+    const controller = initializeController(req.app.locals.db);
+    const userId = req.user?.userId; // Get user ID from authenticated user
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nem sikerült azonosítani a felhasználót'
+      });
+    }
+
+    // Get the diak_id from the Felhasznalo table
+    const Felhasznalo = controller.db.Felhasznalo;
+    const user = await Felhasznalo.findByPk(userId);
+    
+    if (!user || !user.diak_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'A felhasználóhoz nem tartozik diák azonosító'
+      });
+    }
+
+    return controller.getStudentRoomHistory({ params: { id: user.diak_id } }, res);
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Nem sikerült azonosítani a diákot'
+      error: 'Hiba a szobaváltási történet lekérésekor'
     });
   }
-  
-  return controller.getStudentRoomHistory({ params: { id: studentId } }, res);
 });
 
 // Student room change request endpoint
-router.post('/students/room-change', authenticate, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  const studentId = req.user?.userId; // Get student ID from authenticated user
-  
-  if (!studentId) {
-    return res.status(400).json({
+router.post('/students/room-change', authenticate, async (req, res) => {
+  try {
+    const controller = initializeController(req.app.locals.db);
+    const userId = req.user?.userId; // Get user ID from authenticated user
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nem sikerült azonosítani a felhasználót'
+      });
+    }
+
+    // Get the diak_id from the Felhasznalo table
+    const Felhasznalo = controller.db.Felhasznalo;
+    const user = await Felhasznalo.findByPk(userId);
+    
+    if (!user || !user.diak_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'A felhasználóhoz nem tartozik diák azonosító'
+      });
+    }
+
+    return controller.submitRoomChangeRequest({ params: { id: user.diak_id }, body: req.body }, res);
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Nem sikerült azonosítani a diákot'
+      error: 'Hiba a szobaváltási kérelem benyújtásakor'
     });
   }
-  
-  return controller.submitRoomChangeRequest({ params: { id: studentId }, body: req.body }, res);
 });
 
 // Student notifications endpoint
-router.get('/students/notifications', authenticate, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  const studentId = req.user?.userId; // Get student ID from authenticated user
-  
-  if (!studentId) {
-    return res.status(400).json({
+router.get('/students/notifications', authenticate, async (req, res) => {
+  try {
+    const controller = initializeController(req.app.locals.db);
+    const userId = req.user?.userId; // Get user ID from authenticated user
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nem sikerült azonosítani a felhasználót'
+      });
+    }
+
+    // Get the diak_id from the Felhasznalo table
+    const Felhasznalo = controller.db.Felhasznalo;
+    const user = await Felhasznalo.findByPk(userId);
+    
+    if (!user || !user.diak_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'A felhasználóhoz nem tartozik diák azonosító'
+      });
+    }
+
+    return controller.getStudentNotifications({ params: { id: user.diak_id } }, res);
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Nem sikerült azonosítani a diákot'
+      error: 'Hiba az értesítések lekérésekor'
     });
   }
-  
-  return controller.getStudentNotifications({ params: { id: studentId } }, res);
 });
 
 // Mark notification as read endpoint
-router.put('/students/notifications/:notificationId/read', authenticate, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  const studentId = req.user?.userId; // Get student ID from authenticated user
-  
-  if (!studentId) {
-    return res.status(400).json({
+router.put('/students/notifications/:notificationId/read', authenticate, async (req, res) => {
+  try {
+    const controller = initializeController(req.app.locals.db);
+    const userId = req.user?.userId; // Get user ID from authenticated user
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nem sikerült azonosítani a felhasználót'
+      });
+    }
+
+    // Get the diak_id from the Felhasznalo table
+    const Felhasznalo = controller.db.Felhasznalo;
+    const user = await Felhasznalo.findByPk(userId);
+    
+    if (!user || !user.diak_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'A felhasználóhoz nem tartozik diák azonosító'
+      });
+    }
+
+    return controller.markNotificationAsRead({ params: { id: user.diak_id, notificationId: req.params.notificationId } }, res);
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Nem sikerült azonosítani a diákot'
+      error: 'Hiba az értesítés olvasásakor'
     });
   }
-  
-  return controller.markNotificationAsRead({ params: { id: studentId, notificationId: req.params.notificationId } }, res);
 });
 
 // Mark all notifications as read endpoint
-router.put('/students/notifications/read-all', authenticate, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  const studentId = req.user?.userId; // Get student ID from authenticated user
-  
-  if (!studentId) {
-    return res.status(400).json({
+router.put('/students/notifications/read-all', authenticate, async (req, res) => {
+  try {
+    const controller = initializeController(req.app.locals.db);
+    const userId = req.user?.userId; // Get user ID from authenticated user
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nem sikerült azonosítani a felhasználót'
+      });
+    }
+
+    // Get the diak_id from the Felhasznalo table
+    const Felhasznalo = controller.db.Felhasznalo;
+    const user = await Felhasznalo.findByPk(userId);
+    
+    if (!user || !user.diak_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'A felhasználóhoz nem tartozik diák azonosító'
+      });
+    }
+
+    return controller.markAllNotificationsAsRead({ params: { id: user.diak_id } }, res);
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Nem sikerült azonosítani a diákot'
+      error: 'Hiba az értesítések olvasásakor'
     });
   }
-  
-  return controller.markAllNotificationsAsRead({ params: { id: studentId } }, res);
 });
 
 // Létrehozás, módosítás, törlés - csak főtitkár

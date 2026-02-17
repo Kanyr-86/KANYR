@@ -151,6 +151,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth';
 import api from '../services/api';
+import { studentApi } from '../services/api';
 
 export default {
   name: 'StudentRooms',
@@ -179,7 +180,7 @@ export default {
     const getCurrentRoom = async () => {
       loadingRoom.value = true;
       try {
-        const response = await api.get('/students/room');
+        const response = await studentApi.get('/students/room');
         currentRoom.value = response.data.data;
       } catch (error) {
         console.error('Hiba a szoba lekérésekor:', error);
@@ -191,7 +192,7 @@ export default {
     const getRoomHistory = async () => {
       loadingHistory.value = true;
       try {
-        const response = await api.get('/students/room-history');
+        const response = await studentApi.get('/students/room-history');
         roomHistory.value = response.data.data;
         
         // Ellenőrizzük a szobaváltási korlátot
@@ -231,7 +232,7 @@ export default {
       }
 
       try {
-        await api.post('/students/room-change', {
+        await studentApi.post('/students/room-change', {
           kivant_szoba_id: selectedRoomId.value,
           indok: reason.value
         });
@@ -343,6 +344,15 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
+}
+
+/* Két kártya egymás mellett, a történet kártya alul */
+.room-content > .card:not(.history-card) {
+  grid-column: span 1;
+}
+
+.history-card {
+  grid-column: 1 / -1;
 }
 
 .card {

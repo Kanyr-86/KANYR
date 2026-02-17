@@ -518,12 +518,21 @@ class DiakController {
         });
       }
 
+      // Ellenőrizzük, hogy van-e egyáltalán beköltözési rekord
+      if (!student.bekoltozesek || student.bekoltozesek.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'A diáknak nincs szobabeosztása'
+        });
+      }
+
+      // Keresünk aktív beköltözést (nincs kiköltözési dátum)
       const currentBekoltozes = student.bekoltozesek.find(b => !b.kikoltozes_datum);
 
       if (!currentBekoltozes) {
         return res.status(404).json({
           success: false,
-          error: 'A diáknak nincs aktív szobája'
+          error: 'A diáknak nincs aktív szobája (már kiköltözött)'
         });
       }
 
@@ -639,7 +648,7 @@ class DiakController {
       }
 
       // Létrehozzuk a szobaváltási kérelmet
-      const SzobaValtoztatas = this.db.models.SzobaValtoztatas;
+      const SzobaValtoztatas = this.db.SzobaValtoztatas;
       const roomChange = await SzobaValtoztatas.create({
         diak_id: parseInt(id),
         jelenlegi_szoba_id: currentBekoltozes.szoba_id,
@@ -686,7 +695,8 @@ class DiakController {
         });
       }
 
-      const Notification = this.db.models.Notification;
+      // Használjuk a megfelelő modelleket a db objektumból
+      const Notification = this.db.Notification;
       const notifications = await Notification.findAll({
         where: { diak_id: parseInt(id) },
         order: [['created_at', 'DESC']]
@@ -719,7 +729,8 @@ class DiakController {
         });
       }
 
-      const Notification = this.db.models.Notification;
+      // Használjuk a megfelelő modelleket a db objektumból
+      const Notification = this.db.Notification;
       const notification = await Notification.findByPk(parseInt(notificationId));
       
       if (!notification) {
@@ -775,7 +786,8 @@ class DiakController {
         });
       }
 
-      const Notification = this.db.models.Notification;
+      // Használjuk a megfelelő modelleket a db objektumból
+      const Notification = this.db.Notification;
       await Notification.update(
         { elolvasva: true },
         { where: { diak_id: parseInt(id), elolvasva: false } }

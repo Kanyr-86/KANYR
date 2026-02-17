@@ -190,7 +190,7 @@ export default {
         const response = await authStore.login(email.value, password.value)
         if (response.success) {
           toast.success('Sikeres bejelentkezés!')
-          router.push('/dashboard')
+          router.push(authStore.getDashboardRoute())
         } else {
           toast.error(response.error || 'Hibás bejelentkezési adatok')
         }
@@ -228,9 +228,9 @@ export default {
         const response = await authService.getTestUserToken()
         if (response.success) {
           authStore.setToken(response.data.token)
-          authStore.setUser({ userId: response.data.userId, admin: response.data.admin })
+          authStore.setUser({ userId: response.data.userId, admin: false })
           toast.success('Teszt user token sikeresen generálva!')
-          router.push('/dashboard')
+          router.push(authStore.getDashboardRoute())
         } else {
           toast.error(response.error || 'Hiba a teszt token generálása közben')
         }

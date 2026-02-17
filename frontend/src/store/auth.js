@@ -22,6 +22,17 @@ export const useAuthStore = defineStore('auth', {
     }
   },
   
+  getters: {
+    // Computed properties for role-based access
+    isAdmin() {
+      return this.user && this.user.admin === true
+    },
+
+    isStudent() {
+      return this.user && this.user.admin === false
+    }
+  },
+  
   actions: {
     setToken(token) {
       this.token = token
@@ -57,15 +68,6 @@ export const useAuthStore = defineStore('auth', {
           this.logout()
         }
       }
-    },
-
-    // Computed properties for role-based access
-    isAdmin() {
-      return this.user && this.user.admin === true
-    },
-
-    isStudent() {
-      return this.user && this.user.admin === false
     },
 
     // Redirect to appropriate dashboard based on role

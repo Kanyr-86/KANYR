@@ -76,7 +76,7 @@ export const authService = {
         localStorage.setItem('token', response.data.data.token)
         localStorage.setItem('user', JSON.stringify({
           userId: response.data.data.userId,
-          admin: response.data.data.admin
+          admin: false  // Explicitly set as non-admin (student)
         }))
       }
       return response.data

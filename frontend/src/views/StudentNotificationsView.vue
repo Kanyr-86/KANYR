@@ -72,6 +72,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth';
 import api from '../services/api';
+import { studentApi } from '../services/api';
 
 export default {
   name: 'StudentNotifications',
@@ -92,7 +93,7 @@ export default {
     const getNotifications = async () => {
       loadingNotifications.value = true;
       try {
-        const response = await api.get('/students/notifications');
+        const response = await studentApi.get('/students/notifications');
         notifications.value = response.data.data;
       } catch (error) {
         console.error('Hiba az értesítések lekérésekor:', error);
@@ -103,7 +104,7 @@ export default {
 
     const markAsRead = async (notificationId) => {
       try {
-        await api.put(`/students/notifications/${notificationId}/read`);
+        await studentApi.put(`/students/notifications/${notificationId}/read`);
         const notification = notifications.value.find(n => n.notification_id === notificationId);
         if (notification) {
           notification.elolvasva = true;
@@ -115,7 +116,7 @@ export default {
 
     const markAllAsRead = async () => {
       try {
-        await api.put('/students/notifications/read-all');
+        await studentApi.put('/students/notifications/read-all');
         notifications.value.forEach(notification => {
           notification.elolvasva = true;
         });

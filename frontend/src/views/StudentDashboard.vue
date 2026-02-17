@@ -4,7 +4,6 @@
       <h1>Diák Irányítópult</h1>
       <div class="user-info">
         <span class="welcome-text">Üdvözöljük, {{ user?.username }}!</span>
-        <button @click="logout" class="logout-btn">Kijelentkezés</button>
       </div>
     </div>
 
@@ -47,100 +46,6 @@
           </div>
         </div>
 
-        <!-- Room Change Request Card -->
-        <div class="card">
-          <div class="card-header">
-            <h2>Szobaváltási kérelem</h2>
-          </div>
-          <div class="card-content">
-            <div v-if="loadingRooms" class="loading">Betöltés...</div>
-            <form v-else @submit.prevent="submitRoomChangeRequest" class="room-change-form">
-              <div class="form-group">
-                <label for="roomSelect">Kívánt szoba:</label>
-                <select 
-                  v-model="selectedRoomId" 
-                  id="roomSelect" 
-                  class="form-select"
-                  required
-                >
-                  <option value="">Válasszon szobát...</option>
-                  <option 
-                    v-for="room in availableRooms" 
-                    :key="room.szoba_id" 
-                    :value="room.szoba_id"
-                    :disabled="!room.isAvailable"
-                  >
-                    {{ room.szoba_szama }} ({{ room.osszes_hely }} férőhely)
-                    <span v-if="!room.isAvailable" class="unavailable-badge">Nem elérhető</span>
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="reason">Indok:</label>
-                <textarea 
-                  v-model="reason" 
-                  id="reason" 
-                  class="form-textarea"
-                  placeholder="Kérjük, írja le röviden az indokát a szobaváltásra..."
-                  rows="4"
-                ></textarea>
-              </div>
-
-              <div v-if="roomChangeLimitReached" class="limit-warning">
-                Elérte a félévi szobaváltási korlátot (3 alkalom)
-              </div>
-
-              <button 
-                type="submit" 
-                class="submit-btn"
-                :disabled="!canSubmit"
-              >
-                Szobaváltási kérelem benyújtása
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <!-- Room Change History Card -->
-        <div class="card history-card">
-          <div class="card-header">
-            <h2>Szobaváltási történet</h2>
-          </div>
-          <div class="card-content">
-            <div v-if="loadingHistory" class="loading">Betöltés...</div>
-            <div v-else-if="roomHistory.length === 0" class="no-history">
-              Nincs szobaváltási történet
-            </div>
-            <div v-else class="history-list">
-              <div 
-                v-for="request in roomHistory" 
-                :key="request.valtoztatas_id" 
-                class="history-item"
-                :class="request.statusz"
-              >
-                <div class="history-header">
-                  <span class="date">{{ formatDate(request.created_at) }}</span>
-                  <span class="status" :class="request.statusz">{{ getStatusText(request.statusz) }}</span>
-                </div>
-                <div class="history-details">
-                  <div class="detail-row">
-                    <span class="label">Jelenlegi szoba:</span>
-                    <span class="value">{{ request.jelenlegi_szoba.szoba_szama }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Kívánt szoba:</span>
-                    <span class="value">{{ request.kivant_szoba.szoba_szama }}</span>
-                  </div>
-                  <div v-if="request.indok" class="detail-row">
-                    <span class="label">Indok:</span>
-                    <span class="value">{{ request.indok }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Notifications Card -->
         <div class="card notifications-card">
@@ -179,6 +84,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth';
 import api from '../services/api';
+import { studentApi } from '../services/api';
 
 export default {
   name: 'StudentDashboard',
@@ -209,7 +115,7 @@ export default {
     const getCurrentRoom = async () => {
       loadingRoom.value = true;
       try {
-        const response = await api.get('/students/room');
+        const response = await studentApi.get('/students/room');
         currentRoom.value = response.data.data;
       } catch (error) {
         console.error('Hiba a szoba lekérésekor:', error);
@@ -221,7 +127,7 @@ export default {
     const getRoomHistory = async () => {
       loadingHistory.value = true;
       try {
-        const response = await api.get('/students/room-history');
+        const response = await studentApi.get('/students/room-history');
         roomHistory.value = response.data.data;
         
         // Ellenőrizzük a szobaváltási korlátot
@@ -242,7 +148,7 @@ export default {
     const getNotifications = async () => {
       loadingNotifications.value = true;
       try {
-        const response = await api.get('/students/notifications');
+        const response = await studentApi.get('/students/notifications');
         notifications.value = response.data.data;
       } catch (error) {
         console.error('Hiba az értesítések lekérésekor:', error);
@@ -273,7 +179,7 @@ export default {
       }
 
       try {
-        await api.post('/students/room-change', {
+        await studentApi.post('/students/room-change', {
           kivant_szoba_id: selectedRoomId.value,
           indok: reason.value
         });
@@ -291,7 +197,7 @@ export default {
 
     const markAsRead = async (notificationId) => {
       try {
-        await api.put(`/students/notifications/${notificationId}/read`);
+        await studentApi.put(`/students/notifications/${notificationId}/read`);
         const notification = notifications.value.find(n => n.notification_id === notificationId);
         if (notification) {
           notification.elolvasva = true;
@@ -381,20 +287,6 @@ export default {
 .welcome-text {
   font-weight: 500;
   color: #666;
-}
-
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.logout-btn:hover {
-  background-color: #c82333;
 }
 
 .dashboard-grid {
@@ -488,177 +380,31 @@ export default {
   font-size: 0.9rem;
 }
 
-.room-change-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-weight: 500;
-  color: #333;
-  font-size: 0.875rem;
-}
-
-.form-select, .form-textarea {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
-}
-
-.form-select:focus, .form-textarea:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.unavailable-badge {
-  margin-left: auto;
-  font-size: 0.75rem;
-  color: #666;
-  background-color: #f0f0f0;
-  padding: 0.125rem 0.25rem;
-  border-radius: 4px;
-}
-
-.submit-btn {
-  padding: 0.75rem 1.5rem;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background-color: #218838;
-}
-
-.submit-btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.limit-warning {
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  color: #856404;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.history-card {
-  grid-column: 1 / -1;
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.history-item {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 1rem;
-  transition: all 0.2s;
-}
-
-.history-item:hover {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.history-item.pending {
-  border-left: 4px solid #ffc107;
-}
-
-.history-item.approved {
-  border-left: 4px solid #28a745;
-}
-
-.history-item.denied {
-  border-left: 4px solid #dc3545;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.history-header .date {
-  font-size: 0.875rem;
-  color: #666;
-}
-
-.status {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.status.pending {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status.approved {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status.denied {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.history-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.detail-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
 
 .notifications-card {
-  grid-column: 1 / -1;
+  grid-column: span 1;
+  max-height: 600px;
+  overflow: hidden;
 }
 
 .notifications-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  max-height: 450px;
+  overflow-y: auto;
 }
 
 .notification-item {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  padding: 1rem;
+  padding: 0.5rem;
   transition: all 0.2s;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 0.85rem;
 }
 
 .notification-item:hover {
@@ -673,25 +419,30 @@ export default {
 .notification-content {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
+  flex: 1;
 }
 
 .notification-message {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80%;
 }
 
 .notification-date {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #666;
 }
 
 .unread-indicator {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background-color: #007bff;
   border-radius: 50%;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
 }
 
 /* Responsive design */
