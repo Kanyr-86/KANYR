@@ -81,21 +81,24 @@ export const useAuthStore = defineStore('auth', {
     },
 
     // Check if user has access to specific routes
+    // NOTE: routeName must match the PascalCase names defined in router/index.js
     hasAccess(routeName) {
       if (!this.isAuthenticated) {
         return false
       }
       
       switch (routeName) {
-        case 'dashboard':
-        case 'students':
-        case 'parents':
-        case 'rooms':
-        case 'reports':
+        // Admin-only routes (match PascalCase route names from router)
+        case 'Dashboard':
+        case 'Students':
+        case 'Parents':
+        case 'Rooms':
+        case 'Reports':
           return this.isAdmin
-        case 'student-dashboard':
-        case 'student-rooms':
-        case 'student-notifications':
+        // Student-only routes
+        case 'StudentDashboard':
+        case 'StudentRooms':
+        case 'StudentNotifications':
           return this.isStudent
         default:
           return true

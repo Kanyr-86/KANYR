@@ -75,9 +75,15 @@ class DiakController {
         });
       }
 
+      // Computed fields hozzáadása (ugyanaz a logika, mint DiakRepository.findAll post-processing)
+      const diakJSON = diak.toJSON();
+      const activeBekoltozes = diakJSON.bekoltozesek?.find(b => b.kikoltozes_datum === null);
+      diakJSON.aktiv = !!activeBekoltozes;
+      diakJSON.szoba = activeBekoltozes?.szoba || null;
+
       res.json({
         success: true,
-        data: diak
+        data: diakJSON
       });
     } catch (error) {
       res.status(500).json({
@@ -496,20 +502,21 @@ class DiakController {
 
   /**
    * GET /api/diaks/:id/room
-   * Diák szobájának lekérése
+   * Diák szobájának lekérése (szobatársakkal együtt)
    */
   async getStudentRoom(req, res) {
     try {
       const { id } = req.params;
+      const diakId = parseInt(id);
 
-      if (!id || isNaN(id)) {
+      if (!id || isNaN(diakId)) {
         return res.status(400).json({
           success: false,
           error: 'Érvénytelen diák ID'
         });
       }
 
-      const student = await this.diakService.getStudentWithFullHistory(parseInt(id));
+      const student = await this.diakService.getStudentWithFullHistory(diakId);
       
       if (!student) {
         return res.status(404).json({
@@ -536,18 +543,44 @@ class DiakController {
         });
       }
 
+      const szoba = currentBekoltozes.szoba;
+
+      // Szobatársak lekérése (mindenki ugyanabban a szobában, kivéve az aktuális diák)
+      const { Op } = require('sequelize');
+      const szobatarsBekoltozesek = await this.db.SzobaBekoltozes.findAll({
+        where: {
+          szoba_id: szoba.szoba_id,
+          kikoltozes_datum: null,
+          diak_id: { [Op.ne]: diakId }
+        },
+        include: [{
+          model: this.db.Diak,
+          as: 'diak',
+          attributes: ['nev', 'email', 'telefonszam']
+        }]
+      });
+
+      const szobatarsak = szobatarsBekoltozesek.map(b => ({
+        nev: b.diak.nev,
+        email: b.diak.email,
+        telefonszam: b.diak.telefonszam
+      }));
+
       res.json({
         success: true,
         data: {
           diak: {
             id: student.diak_id,
-            név: student.nev
+            nev: student.nev,
+            email: student.email,
+            telefonszam: student.telefonszam
           },
           szoba: {
-            id: currentBekoltozes.szoba.szoba_id,
-            szoba_szama: currentBekoltozes.szoba.szoba_szama,
-            osszes_hely: currentBekoltozes.szoba.osszes_hely
+            id: szoba.szoba_id,
+            szoba_szama: szoba.szoba_szama,
+            osszes_hely: szoba.osszes_hely
           },
+          szobatarsak,
           bekoltozes_datum: currentBekoltozes.bekoltozes_datum
         }
       });
@@ -562,29 +595,41 @@ class DiakController {
   /**
    * GET /api/diaks/:id/room-history
    * Diák szobaváltási történetének lekérése
+   *
+   * MEGJEGYZÉS: A Diak modell nem definiál hasMany(SzobaValtoztatas) asszociációt,
+   * ezért getStudentWithFullHistory() nem tudja betölteni – közvetlen lekérdezéssel
+   * dolgozunk, hogy ne függjünk a hiányzó asszociációtól.
    */
   async getStudentRoomHistory(req, res) {
     try {
       const { id } = req.params;
+      const diakId = parseInt(id);
 
-      if (!id || isNaN(id)) {
+      if (!id || isNaN(diakId)) {
         return res.status(400).json({
           success: false,
           error: 'Érvénytelen diák ID'
         });
       }
 
-      const student = await this.diakService.getStudentWithFullHistory(parseInt(id));
-      
-      if (!student) {
+      // Ellenőrizzük, hogy a diák létezik-e
+      const diak = await this.db.Diak.findByPk(diakId);
+      if (!diak) {
         return res.status(404).json({
           success: false,
           error: 'A diák nem található'
         });
       }
 
-      // Szűrjük a szobaváltási kérelmeket az adott diákra
-      const roomChanges = student.szobavaltoztatasok || [];
+      // Közvetlen lekérdezés – nem függ a Diak<->SzobaValtoztatas asszociációtól
+      const roomChanges = await this.db.SzobaValtoztatas.findAll({
+        where: { diak_id: diakId },
+        include: [
+          { model: this.db.Szoba, as: 'jelenlegi_szoba', attributes: ['szoba_id', 'szoba_szama', 'osszes_hely'] },
+          { model: this.db.Szoba, as: 'kivant_szoba',    attributes: ['szoba_id', 'szoba_szama', 'osszes_hely'] }
+        ],
+        order: [['created_at', 'DESC']]
+      });
 
       res.json({
         success: true,
@@ -632,15 +677,19 @@ class DiakController {
         });
       }
 
-      // Ellenőrizzük a szobaváltási korlátot
+      // Ellenőrizzük a szobaváltási korlátot – közvetlen DB lekérdezés,
+      // mert getStudentWithFullHistory() nem tölti be a szobavaltoztatasok asszociációt
       const currentYear = new Date().getFullYear();
       const academicYear = `${currentYear}-${currentYear + 1}`;
-      const pendingOrApproved = student.szobavaltoztatasok.filter(r => 
-        r.academic_year === academicYear && 
-        (r.statusz === 'pending' || r.statusz === 'approved')
-      );
-      
-      if (pendingOrApproved.length >= 3) {
+      const pendingOrApprovedCount = await this.db.SzobaValtoztatas.count({
+        where: {
+          diak_id: parseInt(id),
+          academic_year: academicYear,
+          statusz: ['pending', 'approved']
+        }
+      });
+
+      if (pendingOrApprovedCount >= 3) {
         return res.status(400).json({
           success: false,
           error: 'Elérte a félévi szobaváltási korlátot (3 alkalom)'

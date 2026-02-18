@@ -202,26 +202,26 @@ export default {
       }
     }
 
+    // Quick-login as admin using the seeded admin credentials
     const useTestToken = async () => {
       loading.value = true
       try {
-        const response = await authService.getTestAdminToken()
+        const response = await authStore.login('admin@kanyr.hu', 'Admin@123456')
         if (response.success) {
-          authStore.setToken(response.data.token)
-          authStore.setUser({ userId: response.data.userId, admin: response.data.admin })
-          toast.success('Teszt admin token sikeresen generálva!')
-          router.push('/dashboard')
+          toast.success('Teszt admin bejelentkezés sikeres!')
+          router.push(authStore.getDashboardRoute())
         } else {
-          toast.error(response.error || 'Hiba a teszt token generálása közben')
+          toast.error(response.error || 'Hiba a teszt bejelentkezés közben')
         }
       } catch (error) {
-        console.error('Test token error:', error)
-        toast.error(error.error || 'Hiba a teszt token generálása közben')
+        console.error('Test admin login error:', error)
+        toast.error(error.error || 'Hiba a teszt bejelentkezés közben')
       } finally {
         loading.value = false
       }
     }
 
+    // Quick-login as student via the dev-only token endpoint
     const useTestUser = async () => {
       loading.value = true
       try {

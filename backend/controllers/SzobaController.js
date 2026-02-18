@@ -17,7 +17,8 @@ class SzobaController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          errors: errors.array()
+          error: 'Validációs hiba',
+          details: errors.array()
         });
       }
 
@@ -121,7 +122,8 @@ class SzobaController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          errors: errors.array()
+          error: 'Validációs hiba',
+          details: errors.array()
         });
       }
 
@@ -282,7 +284,8 @@ class SzobaController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          errors: errors.array()
+          error: 'Validációs hiba',
+          details: errors.array()
         });
       }
 
@@ -349,7 +352,8 @@ class SzobaController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          errors: errors.array()
+          error: 'Validációs hiba',
+          details: errors.array()
         });
       }
 

@@ -3,12 +3,8 @@ const SzuloRepository = require('../repositories/SzuloRepository');
 
 class SzuloController {
   constructor(db) {
-    console.log('SzuloController constructor called with db:', db ? 'db object exists' : 'db is null/undefined');
-    console.log('Available models in db:', db ? Object.keys(db).filter(key => key !== 'sequelize') : 'no db');
-
     this.db = db;
     this.szuloRepository = new SzuloRepository(db);
-    console.log('SzuloRepository created:', this.szuloRepository ? 'success' : 'failed');
   }
 
   /**

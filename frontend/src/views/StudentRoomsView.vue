@@ -27,7 +27,7 @@
               </div>
               <div class="detail-item">
                 <span class="label">Jelenlegi lakók:</span>
-                <span class="value">{{ currentRoom.jelenlegi_lakok }}</span>
+                <span class="value">{{ currentRoom.szobatarsak.length + 1 }}</span>
               </div>
             </div>
             
@@ -213,10 +213,11 @@ export default {
     const getAvailableRooms = async () => {
       loadingRooms.value = true;
       try {
-        const response = await api.get('/szobas');
+        // /szobas/available already filters to rooms with free capacity
+        const response = await api.get('/szobas/available');
         availableRooms.value = response.data.data.map(room => ({
           ...room,
-          isAvailable: room.osszes_hely > 0 // Egyszerűsített ellenőrzés
+          isAvailable: true
         }));
       } catch (error) {
         console.error('Hiba a szobák lekérésekor:', error);

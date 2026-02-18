@@ -59,9 +59,11 @@ const initializeController = (db) => {
       .isInt().withMessage('Az ID-nek egész számnak kell lennie')
   ];
 
-  // Public routes
+  // User creation is admin-only — self-registration is not supported
   router.post(
     '/',
+    authenticate,
+    isAdmin,
     userValidationRules,
     (req, res) => initializeController(req.app.locals.db).createUser(req, res)
   );

@@ -99,8 +99,8 @@ class DiakService {
         cim_id: lakcim.cim_id
       }, { transaction });
 
-      // 4. Szoba elérhetőség ellenőrzése
-      await this.checkRoomAvailability(szoba_id);
+      // 4. Szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
+      await this.checkRoomAvailability(szoba_id, transaction);
 
       // 5. Beköltözés rögzítése
       await this.SzobaBekoltozes.create({
@@ -153,8 +153,8 @@ class DiakService {
         kikoltozes_datum: atcsatolas_datum
       }, { transaction });
 
-      // Új szoba elérhetőség ellenőrzése
-      await this.checkRoomAvailability(uj_szoba_id);
+      // Új szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
+      await this.checkRoomAvailability(uj_szoba_id, transaction);
 
       // Új beköltözés létrehozása
       await this.SzobaBekoltozes.create({
@@ -210,11 +210,12 @@ class DiakService {
   /**
    * Szoba elérhetőségének ellenőrzése
    * @param {number} szoba_id - szoba ID
+   * @param {Object|null} transaction - Sequelize tranzakció (opcionális, de szükséges a race condition elkerüléséhez)
    * @returns {Promise<boolean>} - elérhető-e
    */
-  async checkRoomAvailability(szoba_id) {
+  async checkRoomAvailability(szoba_id, transaction = null) {
     try {
-      const szoba = await this.Szoba.findByPk(szoba_id);
+      const szoba = await this.Szoba.findByPk(szoba_id, { transaction });
       if (!szoba) {
         throw new Error('A szoba nem található!');
       }
@@ -223,7 +224,8 @@ class DiakService {
         where: {
           szoba_id,
           kikoltozes_datum: null
-        }
+        },
+        transaction
       });
 
       if (currentOccupancy >= szoba.osszes_hely) {
@@ -400,40 +402,35 @@ class DiakService {
 
   /**
    * Diákok tömeges beiratkozása CSV-ből vagy JSON-ből
+   * Megjegyzés: minden egyes enrollStudent() saját tranzakcióban fut,
+   * ezért az eredmények függetlenek egymástól (partial success lehetséges).
    * @param {Array} studentsData - diákok adatok tömbje
    * @returns {Promise<Object>} - beiratkozás eredménye
    */
   async bulkEnrollStudents(studentsData) {
-    const transaction = await this.db.sequelize.transaction();
     const results = {
       successful: [],
       failed: []
     };
 
-    try {
-      for (const studentData of studentsData) {
-        try {
-          const result = await this.enrollStudent(studentData);
-          results.successful.push({
-            student: result.nev,
-            id: result.diak_id,
-            status: 'success'
-          });
-        } catch (error) {
-          results.failed.push({
-            student: studentData.diakData?.nev || 'Unknown',
-            error: error.message,
-            status: 'failed'
-          });
-        }
+    for (const studentData of studentsData) {
+      try {
+        const result = await this.enrollStudent(studentData);
+        results.successful.push({
+          student: result.nev,
+          id: result.diak_id,
+          status: 'success'
+        });
+      } catch (error) {
+        results.failed.push({
+          student: studentData.diakData?.nev || 'Unknown',
+          error: error.message,
+          status: 'failed'
+        });
       }
-
-      await transaction.commit();
-      return results;
-    } catch (error) {
-      await transaction.rollback();
-      throw new Error(`Hiba a tömeges beiratkozás során: ${error.message}`);
     }
+
+    return results;
   }
 
   /**

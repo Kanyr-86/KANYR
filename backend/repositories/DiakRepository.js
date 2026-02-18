@@ -343,9 +343,9 @@ class DiakRepository {
    * @param {Object} diakData - diák adatok
    */
   validateDiakData(diakData) {
-    const required = ['nev', 'email', 'telefonszam', 'szuletesi_datum', 
-                     'szemelyi_igazolvany_szam', 'taj_szam', 'diakigazolvany_szam', 
-                     'szulo_id', 'kapcsolat_tipusa', 'cim_id'];
+    const required = ['nev', 'email', 'telefonszam', 'szuletesi_datum',
+                     'szemelyi_igazolvany_szam', 'taj_szam', 'diakigazolvany_szam',
+                     'szulo_id', 'kapcsolat_tipusa', 'cim_id', 'nem'];
 
     const missing = required.filter(field => !diakData[field]);
     if (missing.length > 0) {

@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
@@ -28,16 +28,6 @@ export default defineComponent({
     // Ellenőrizzük, hogy a login oldalon vagyunk-e
     const isLoginPage = computed(() => {
       return route.path === '/login'
-    })
-
-    // Ensure app is mounted only after auth store is initialized
-    const appReady = ref(false)
-    
-    onMounted(() => {
-      // Small delay to ensure Pinia store is initialized
-      setTimeout(() => {
-        appReady.value = true
-      }, 100)
     })
 
     return {

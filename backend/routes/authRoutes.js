@@ -123,70 +123,42 @@ router.get(
   }
 );
 
-/**
- * POST /api/auth/test-admin-token
- * Generate test admin token (1 hour expiration) - FOR TESTING ONLY
- */
-router.post(
-  '/test-admin-token',
-  (req, res) => {
+// ─── Development/test-only endpoints ─────────────────────────────────────────
+// These routes are intentionally disabled in production to prevent token forgery.
+if (process.env.NODE_ENV !== 'production') {
+  /**
+   * POST /api/auth/test-admin-token
+   * Generate test admin token (1 hour expiration) - FOR TESTING ONLY
+   */
+  router.post('/test-admin-token', (req, res) => {
     try {
-      // Generate test admin token with 1 hour expiration
-      const testToken = generateToken({
-        userId: 1, // Test admin user ID
-        admin: true
-      }, '1h'); // 1 hour expiration for testing
-
+      const testToken = generateToken({ userId: 1, admin: true }, '1h');
       res.json({
         success: true,
-        data: {
-          token: testToken,
-          expiresIn: '1h',
-          userId: 1,
-          admin: true
-        },
+        data: { token: testToken, expiresIn: '1h', userId: 1, admin: true },
         message: 'Teszt admin token generálva (1 óra érvényes)'
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: 'Hiba a teszt token generálása közben'
-      });
+      res.status(500).json({ success: false, error: 'Hiba a teszt token generálása közben' });
     }
-  }
-);
+  });
 
-/**
- * POST /api/auth/test-user-token
- * Generate test non-admin user token (1 hour expiration) - FOR TESTING ONLY
- */
-router.post(
-  '/test-user-token',
-  (req, res) => {
+  /**
+   * POST /api/auth/test-user-token
+   * Generate test non-admin user token (1 hour expiration) - FOR TESTING ONLY
+   */
+  router.post('/test-user-token', (req, res) => {
     try {
-      // Generate test user token with 1 hour expiration
-      const testToken = generateToken({
-        userId: 2, // Test non-admin user ID
-        admin: false
-      }, '1h'); // 1 hour expiration for testing
-
+      const testToken = generateToken({ userId: 2, admin: false }, '1h');
       res.json({
         success: true,
-        data: {
-          token: testToken,
-          expiresIn: '1h',
-          userId: 2,
-          admin: false
-        },
+        data: { token: testToken, expiresIn: '1h', userId: 2, admin: false },
         message: 'Teszt user token generálva (1 óra érvényes)'
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: 'Hiba a teszt token generálása közben'
-      });
+      res.status(500).json({ success: false, error: 'Hiba a teszt token generálása közben' });
     }
-  }
-);
+  });
+}
 
 module.exports = router;

@@ -309,13 +309,15 @@ class FelhasznaloController {
 
       const { user, newPassword } = await this.felhasznaloService.resetPassword(parseInt(id));
 
+      // Az új jelszót visszaadjuk az adminnak, hogy el tudja juttatni a felhasználóhoz.
+      // Ez az egyetlen alkalom, amikor a jelszó plaintext-ben megjelenik a válaszban.
       res.json({
         success: true,
         data: {
           user,
-          newPassword // Note: In production, this should not be returned
+          temporaryPassword: newPassword
         },
-        message: 'Jelszó sikeresen visszaállítva'
+        message: `Jelszó sikeresen visszaállítva. Ideiglenes jelszó: ${newPassword}`
       });
     } catch (error) {
       if (error.message.includes('nem található')) {

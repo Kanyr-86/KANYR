@@ -559,6 +559,7 @@ export default defineComponent({
       clearFilters,
       formatDate,
       calculateOccupancyPercentage,
+      getOccupancyProgressClass,
       handleGenerateReport,
       handleExport
     }

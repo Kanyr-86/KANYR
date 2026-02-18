@@ -1,121 +1,76 @@
 import axios from 'axios'
 
+// ─── Shared interceptor logic ───────────────────────────────────────────────
+
+function applyAuthInterceptors(instance) {
+  // Attach JWT from localStorage on every request
+  instance.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    },
+    (error) => Promise.reject(error)
+  )
+
+  // Unified error handling
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response) {
+        const status = error.response.status
+        const message = error.response.data?.error || error.message || 'Server error'
+
+        if (status === 401) {
+          // Unauthorized – clear stored auth and redirect to login
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+        } else if (status === 403) {
+          console.error('Access forbidden:', message)
+        } else if (status >= 500) {
+          console.error('Server error:', message)
+        }
+      } else if (error.request) {
+        console.error('Network error - no response received:', error.message)
+      } else {
+        console.error('Request error:', error.message)
+      }
+
+      return Promise.reject(error)
+    }
+  )
+}
+
+// ─── Axios instances ─────────────────────────────────────────────────────────
+
+/** General API instance – used by admin views */
 const api = axios.create({
-  baseURL: '/api', // Using proxy configuration instead of hardcoded URL
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  timeout: 10000, // 10 second timeout
-  withCredentials: true // Include cookies for CORS
+  baseURL: '/api',
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
+  withCredentials: true
 })
+applyAuthInterceptors(api)
 
-// Student API instance with correct base URL
+/**
+ * Student API instance.
+ * baseURL is '/api/diaks' so a call like studentApi.get('/students/room')
+ * resolves to GET /api/diaks/students/room  (matches DiakRoutes.js)
+ */
 const studentApi = axios.create({
-  baseURL: '/api/diaks', // Student endpoints are mounted at /api/diaks/students/*
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  timeout: 10000, // 10 second timeout
-  withCredentials: true // Include cookies for CORS
+  baseURL: '/api/diaks',
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
+  withCredentials: true
 })
+applyAuthInterceptors(studentApi)
 
-// Request interceptor for student API
-studentApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// Response interceptor for student API
-studentApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle different error scenarios
-    if (error.response) {
-      // Server responded with error status
-      const status = error.response.status
-      const message = error.response.data?.error || error.message || 'Server error'
-      
-      if (status === 401) {
-        // Unauthorized - clear auth and redirect to login
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        window.location.href = '/login'
-      } else if (status === 403) {
-        // Forbidden - show error message
-        console.error('Access forbidden:', message)
-      } else if (status >= 500) {
-        // Server error
-        console.error('Server error:', message)
-      }
-    } else if (error.request) {
-      // Network error - no response received
-      console.error('Network error - no response received:', error.message)
-    } else {
-      // Something else happened
-      console.error('Request error:', error.message)
-    }
-    
-    return Promise.reject(error)
-  }
-)
-
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
-// Response interceptor to handle errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle different error scenarios
-    if (error.response) {
-      // Server responded with error status
-      const status = error.response.status
-      const message = error.response.data?.error || error.message || 'Server error'
-      
-      if (status === 401) {
-        // Unauthorized - clear auth and redirect to login
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        window.location.href = '/login'
-      } else if (status === 403) {
-        // Forbidden - show error message
-        console.error('Access forbidden:', message)
-      } else if (status >= 500) {
-        // Server error
-        console.error('Server error:', message)
-      }
-    } else if (error.request) {
-      // Network error - no response received
-      console.error('Network error - no response received:', error.message)
-    } else {
-      // Something else happened
-      console.error('Request error:', error.message)
-    }
-    
-    return Promise.reject(error)
-  }
-)
-
-// Helper function to handle API errors consistently
+/** Normalise axios errors into a standard shape */
 export const handleApiError = (error) => {
   if (error.response) {
     return {

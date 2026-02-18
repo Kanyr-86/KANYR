@@ -1,5 +1,4 @@
 const { Op } = require('sequelize');
-const { Diak, Szoba, SzobaValtoztatas, Notification } = require('../models');
 
 class SzobaValtoztatasController {
   constructor(db) {
@@ -23,12 +22,12 @@ class SzobaValtoztatasController {
       const diakId = felhasznalo.diak_id;
       
       // Diák aktuális szobájának lekérése
-      const diak = await Diak.findByPk(diakId, {
+      const diak = await this.db.Diak.findByPk(diakId, {
         include: [{
           model: this.db.SzobaBekoltozes,
           as: 'bekoltozesek',
           include: [{
-            model: Szoba,
+            model: this.db.Szoba,
             as: 'szoba'
           }],
           where: {
@@ -59,7 +58,7 @@ class SzobaValtoztatasController {
       // Szobatársak lekérése
       const szobatarsak = await this.db.SzobaBekoltozes.findAll({
         include: [{
-          model: Diak,
+          model: this.db.Diak,
           as: 'diak',
           attributes: ['nev', 'email', 'telefonszam']
         }],
@@ -118,12 +117,12 @@ class SzobaValtoztatasController {
       const { kivant_szoba_id, indok } = req.body;
 
       // Ellenőrizzük, hogy a diák már van-e szobában
-      const diak = await Diak.findByPk(diakId, {
+      const diak = await this.db.Diak.findByPk(diakId, {
         include: [{
           model: this.db.SzobaBekoltozes,
           as: 'bekoltozesek',
           include: [{
-            model: Szoba,
+            model: this.db.Szoba,
             as: 'szoba'
           }],
           where: {
@@ -152,7 +151,7 @@ class SzobaValtoztatasController {
       const aktualisSzoba = aktivalisBekoltozes.szoba;
 
       // Ellenőrizzük, hogy a kívánt szoba létezik-e
-      const kivantSzoba = await Szoba.findByPk(kivant_szoba_id);
+      const kivantSzoba = await this.db.Szoba.findByPk(kivant_szoba_id);
       if (!kivantSzoba) {
         return res.status(404).json({
           success: false,
@@ -172,7 +171,7 @@ class SzobaValtoztatasController {
       const currentYear = new Date().getFullYear();
       const academicYear = `${currentYear}-${currentYear + 1}`;
       
-      const existingRequests = await SzobaValtoztatas.count({
+      const existingRequests = await this.db.SzobaValtoztatas.count({
         where: {
           diak_id: diakId,
           academic_year: academicYear,
@@ -190,7 +189,7 @@ class SzobaValtoztatasController {
       }
 
       // Új szobaváltási kérelem létrehozása
-      const ujKerelem = await SzobaValtoztatas.create({
+      const ujKerelem = await this.db.SzobaValtoztatas.create({
         diak_id: diakId,
         jelenlegi_szoba_id: aktualisSzoba.szoba_id,
         kivant_szoba_id: kivantSzoba.szoba_id,
@@ -227,21 +226,21 @@ class SzobaValtoztatasController {
         whereClause.statusz = status;
       }
 
-      const kerelemek = await SzobaValtoztatas.findAll({
+      const kerelemek = await this.db.SzobaValtoztatas.findAll({
         where: whereClause,
         include: [
           {
-            model: Diak,
+            model: this.db.Diak,
             as: 'diak',
             attributes: ['nev', 'email', 'telefonszam']
           },
           {
-            model: Szoba,
+            model: this.db.Szoba,
             as: 'jelenlegi_szoba',
             attributes: ['szoba_szama']
           },
           {
-            model: Szoba,
+            model: this.db.Szoba,
             as: 'kivant_szoba',
             attributes: ['szoba_szama']
           }
@@ -275,7 +274,7 @@ class SzobaValtoztatasController {
         });
       }
 
-      const kerelem = await SzobaValtoztatas.findByPk(id);
+      const kerelem = await this.db.SzobaValtoztatas.findByPk(id);
       if (!kerelem) {
         return res.status(404).json({
           success: false,
@@ -283,26 +282,81 @@ class SzobaValtoztatasController {
         });
       }
 
-      // Ha jóváhagyják, akkor át kell költöztetni a diákot
-      if (statusz === 'approved') {
-        // Diák átköltöztetése az új szobába
-        // (Ez a logika itt lenne, de most csak a státuszt változtatjuk)
+      if (kerelem.statusz !== 'pending') {
+        return res.status(400).json({
+          success: false,
+          error: `A kérelem már ${kerelem.statusz} státuszban van, nem módosítható`
+        });
       }
 
-      kerelem.statusz = statusz;
-      await kerelem.save();
+      // Ha jóváhagyják, akkor ténylegesen át kell költöztetni a diákot
+      if (statusz === 'approved') {
+        await this.db.sequelize.transaction(async (transaction) => {
+          const today = new Date().toISOString().split('T')[0];
 
-      // Értesítés létrehozása a diáknak
-      const uzenet = statusz === 'approved' 
-        ? `Szobaváltási kérelme jóváhagyva lett. Kívánt szobája: ${kerelem.kivant_szoba_id}`
-        : `Szobaváltási kérelme elutasítva lett.`;
+          // 1. Régi aktív beköltözés lezárása
+          const activeBekoltozes = await this.db.SzobaBekoltozes.findOne({
+            where: {
+              diak_id: kerelem.diak_id,
+              kikoltozes_datum: null
+            },
+            transaction
+          });
 
-      await Notification.create({
-        diak_id: kerelem.diak_id,
-        szoba_valtoztatas_id: kerelem.valtoztatas_id,
-        tipus: statusz === 'approved' ? 'room_change_approved' : 'room_change_denied',
-        uzenet: uzenet
-      });
+          if (activeBekoltozes) {
+            await activeBekoltozes.update({ kikoltozes_datum: today }, { transaction });
+          }
+
+          // 2. Ellenőrzés: a kívánt szoba nem telt-e meg azóta
+          const kivantSzoba = await this.db.Szoba.findByPk(kerelem.kivant_szoba_id, { transaction });
+          if (!kivantSzoba) {
+            throw new Error('A kívánt szoba nem található');
+          }
+
+          const currentOccupancy = await this.db.SzobaBekoltozes.count({
+            where: {
+              szoba_id: kerelem.kivant_szoba_id,
+              kikoltozes_datum: null
+            },
+            transaction
+          });
+
+          if (currentOccupancy >= kivantSzoba.osszes_hely) {
+            throw new Error('A kívánt szoba időközben megtelt, a kérelem nem hajtható végre');
+          }
+
+          // 3. Új beköltözés létrehozása a kívánt szobába
+          await this.db.SzobaBekoltozes.create({
+            diak_id: kerelem.diak_id,
+            szoba_id: kerelem.kivant_szoba_id,
+            bekoltozes_datum: today,
+            kikoltozes_datum: null
+          }, { transaction });
+
+          // 4. Kérelem státuszának frissítése
+          await kerelem.update({ statusz: 'approved' }, { transaction });
+
+          // 5. Értesítés létrehozása a diáknak
+          const kivantSzobaInfo = await this.db.Szoba.findByPk(kerelem.kivant_szoba_id, { transaction });
+          await this.db.Notification.create({
+            diak_id: kerelem.diak_id,
+            szoba_valtoztatas_id: kerelem.valtoztatas_id,
+            tipus: 'room_change_approved',
+            uzenet: `Szobaváltási kérelme jóváhagyva lett. Új szobája: ${kivantSzobaInfo ? kivantSzobaInfo.szoba_szama : kerelem.kivant_szoba_id}`
+          }, { transaction });
+        });
+      } else {
+        // Elutasítás esetén csak a státusz változik
+        await kerelem.update({ statusz: 'denied' });
+
+        // Értesítés létrehozása a diáknak
+        await this.db.Notification.create({
+          diak_id: kerelem.diak_id,
+          szoba_valtoztatas_id: kerelem.valtoztatas_id,
+          tipus: 'room_change_denied',
+          uzenet: 'Szobaváltási kérelme elutasítva lett.'
+        });
+      }
 
       res.json({
         success: true,
@@ -316,7 +370,7 @@ class SzobaValtoztatasController {
       console.error('Hiba a szobaváltási kérelem frissítésekor:', error);
       res.status(500).json({
         success: false,
-        error: 'Hiba történt a szobaváltási kérelem frissítésekor'
+        error: error.message || 'Hiba történt a szobaváltási kérelem frissítésekor'
       });
     }
   }
@@ -337,18 +391,18 @@ class SzobaValtoztatasController {
       
       const diakId = felhasznalo.diak_id;
 
-      const tortenet = await SzobaValtoztatas.findAll({
+      const tortenet = await this.db.SzobaValtoztatas.findAll({
         where: {
           diak_id: diakId
         },
         include: [
           {
-            model: Szoba,
+            model: this.db.Szoba,
             as: 'jelenlegi_szoba',
             attributes: ['szoba_szama']
           },
           {
-            model: Szoba,
+            model: this.db.Szoba,
             as: 'kivant_szoba',
             attributes: ['szoba_szama']
           }
@@ -385,7 +439,7 @@ class SzobaValtoztatasController {
       
       const diakId = felhasznalo.diak_id;
 
-      const notifications = await Notification.findAll({
+      const notifications = await this.db.Notification.findAll({
         where: {
           diak_id: diakId
         },
@@ -409,12 +463,30 @@ class SzobaValtoztatasController {
   async markNotificationAsRead(req, res) {
     try {
       const { id } = req.params;
+      const userId = req.user.userId;
 
-      const notification = await Notification.findByPk(id);
+      // Felhasználóhoz tartozó diák ID lekérése
+      const felhasznalo = await this.db.Felhasznalo.findByPk(userId);
+      if (!felhasznalo || !felhasznalo.diak_id) {
+        return res.status(403).json({
+          success: false,
+          error: 'A felhasználóhoz nem tartozik diák'
+        });
+      }
+
+      const notification = await this.db.Notification.findByPk(id);
       if (!notification) {
         return res.status(404).json({
           success: false,
           error: 'Értesítés nem található'
+        });
+      }
+
+      // Tulajdonjog ellenőrzése
+      if (notification.diak_id !== felhasznalo.diak_id) {
+        return res.status(403).json({
+          success: false,
+          error: 'Nincs jogosultsága az értesítés olvasásához'
         });
       }
 
@@ -441,7 +513,7 @@ class SzobaValtoztatasController {
   // Admin értesítéseinek lekérése
   async getAdminNotifications(req, res) {
     try {
-      const notifications = await Notification.findAll({
+      const notifications = await this.db.Notification.findAll({
         include: [
           {
             model: this.db.Diak,
@@ -449,16 +521,16 @@ class SzobaValtoztatasController {
             attributes: ['nev', 'email', 'telefonszam']
           },
           {
-            model: SzobaValtoztatas,
+            model: this.db.SzobaValtoztatas,
             as: 'szoba_valtoztatas',
             include: [
               {
-                model: Szoba,
+                model: this.db.Szoba,
                 as: 'jelenlegi_szoba',
                 attributes: ['szoba_szama']
               },
               {
-                model: Szoba,
+                model: this.db.Szoba,
                 as: 'kivant_szoba',
                 attributes: ['szoba_szama']
               }
@@ -486,7 +558,7 @@ class SzobaValtoztatasController {
     try {
       const { id } = req.params;
 
-      const notification = await Notification.findByPk(id);
+      const notification = await this.db.Notification.findByPk(id);
       if (!notification) {
         return res.status(404).json({
           success: false,

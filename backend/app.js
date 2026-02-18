@@ -35,11 +35,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// API végpontok
-app.use('/api/diaks', require('./routes/DiakRoutes'));
-// Szoba route-ok inicializálása csak az adatbázis elérés után
-let szobaRoutes;
-
 // Szerver indítása
 const startServer = async () => {
   try {
@@ -55,6 +50,10 @@ const startServer = async () => {
     // Database available to routes via app.locals
     app.locals.db = db;
     console.log('✓ Adatbázis elérhető a route-ok számára');
+
+    // Diak route-ok inicializálása (az adatbázis után, hogy app.locals.db elérhető legyen)
+    app.use('/api/diaks', require('./routes/DiakRoutes'));
+    console.log('✓ Diak route-ok inicializálva');
 
     // Szoba route-ok inicializálása
     const SzobaRoutes = require('./routes/SzobaRoutes');

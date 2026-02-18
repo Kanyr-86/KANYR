@@ -1,5 +1,4 @@
 const { verifyToken } = require('../utils/authUtils');
-const { Felhasznalo } = require('../models');
 
 /**
  * Authentication middleware - verifies JWT token
@@ -22,7 +21,17 @@ async function authenticate(req, res, next) {
 
     // Verify token
     const decoded = verifyToken(token);
-    const user = await Felhasznalo.findByPk(decoded.userId);
+
+    // Use db from app.locals (synced instance) to avoid stale model references
+    const db = req.app.locals.db;
+    if (!db) {
+      return res.status(500).json({
+        success: false,
+        error: 'Az adatbázis még nem elérhető'
+      });
+    }
+
+    const user = await db.Felhasznalo.findByPk(decoded.userId);
 
     if (!user) {
       return res.status(401).json({

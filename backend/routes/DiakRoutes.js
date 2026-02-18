@@ -98,23 +98,9 @@ router.get('/statistics', authenticate, isAdmin, (req, res) => {
   return controller.getStatistics(req, res);
 });
 
-// Részletes nézet - minden bejelentkezett felhasználó
-router.get('/:id', authenticate, validateId, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.getDiakById(req, res);
-});
-
-router.get('/:id/report', authenticate, isAdmin, validateId, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.generateStudentReport(req, res);
-});
-
-router.get('/:id/room', authenticate, validateId, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.getStudentRoom(req, res);
-});
-
 // Student dashboard endpoint - gets current room for authenticated student
+// FONTOS: Ezeknek a /students/* route-oknak a /:id ELŐTT kell lenniük,
+// különben az Express a "students" szót ID-ként értelmezi!
 router.get('/students/room', authenticate, async (req, res) => {
   try {
     const controller = initializeController(req.app.locals.db);
@@ -310,6 +296,40 @@ router.put('/students/notifications/read-all', authenticate, async (req, res) =>
       error: 'Hiba az értesítések olvasásakor'
     });
   }
+});
+
+// Részletes nézet - minden bejelentkezett felhasználó
+router.get('/:id', authenticate, validateId, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.getDiakById(req, res);
+});
+
+router.get('/:id/report', authenticate, isAdmin, validateId, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.generateStudentReport(req, res);
+});
+
+router.get('/:id/room', authenticate, validateId, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.getStudentRoom(req, res);
+});
+
+// Teljes beiratkozás (diák + szülő + lakcím + szoba) - főtitkár és titkár is
+const validateEnroll = [
+  body('diakData').notEmpty().withMessage('A diák adatai kötelezők'),
+  body('szuloData').notEmpty().withMessage('A szülő adatai kötelezők'),
+  body('szoba_id').isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell lennie')
+];
+
+router.post('/enroll', authenticate, canModify, validateEnroll, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.enrollStudent(req, res);
+});
+
+// Tömeges beiratkozás - csak főtitkár
+router.post('/bulk-enroll', authenticate, isAdmin, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.bulkEnrollStudents(req, res);
 });
 
 // Létrehozás, módosítás, törlés - csak főtitkár
