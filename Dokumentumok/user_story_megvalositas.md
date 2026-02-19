@@ -1,4 +1,4 @@
-# User Story Implementation Summary
+# User Story Megvalósítás Összefoglaló
 
 ## User Story: Kollégiumi Titkár Diák Kezelése
 

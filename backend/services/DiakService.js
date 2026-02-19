@@ -215,7 +215,12 @@ class DiakService {
    */
   async checkRoomAvailability(szoba_id, transaction = null) {
     try {
-      const szoba = await this.Szoba.findByPk(szoba_id, { transaction });
+      // OPTIMALIZÁLVA: Row locking a race condition elkerüléséhez
+      const szoba = await this.Szoba.findByPk(szoba_id, {
+        transaction,
+        lock: transaction ? transaction.LOCK.UPDATE : undefined
+      });
+      
       if (!szoba) {
         throw new Error('A szoba nem található!');
       }
@@ -270,24 +275,59 @@ class DiakService {
    */
   async getDetailedStatistics() {
     try {
-      const totalStudents = await this.Diak.count();
-      
-      const activeStudents = await this.Diak.count({
-        include: [{
-          model: this.SzobaBekoltozes,
-          as: 'bekoltozesek',
-          where: {
-            kikoltozes_datum: null
-          },
-          required: true
-        }]
+      const { sequelize } = this.db;
+
+      // OPTIMALIZÁLVA: Párhuzamos lekérdezések Promise.all-lal
+      const [totalStudents, activeStudents, totalRooms, allRooms, occupancyData, latestMoveInRecord, latestMoveOutRecord] = await Promise.all([
+        // Összes diák
+        this.Diak.count(),
+        
+        // Aktív diákok
+        this.Diak.count({
+          include: [{
+            model: this.SzobaBekoltozes,
+            as: 'bekoltozesek',
+            where: { kikoltozes_datum: null },
+            required: true
+          }]
+        }),
+
+        // Szobák száma
+        this.Szoba.count(),
+
+        // Összes szoba kapacitás
+        this.Szoba.findAll({ attributes: ['szoba_id', 'szoba_szama', 'osszes_hely'] }),
+
+        // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
+        this.SzobaBekoltozes.findAll({
+          attributes: [
+            'szoba_id',
+            [sequelize.fn('COUNT', sequelize.col('bekoltozes_id')), 'occupancy']
+          ],
+          where: { kikoltozes_datum: null },
+          group: ['szoba_id'],
+          raw: true
+        }),
+
+        // Legutóbbi beköltözés
+        this.SzobaBekoltozes.findOne({
+          order: [['bekoltozes_datum', 'DESC']]
+        }),
+
+        // Legutóbbi kiköltözés
+        this.SzobaBekoltozes.findOne({
+          where: { kikoltozes_datum: { [Op.ne]: null } },
+          order: [['kikoltozes_datum', 'DESC']]
+        })
+      ]);
+
+      // Occupancy adatok map-elése gyors kereséshez
+      const occupancyMap = new Map();
+      occupancyData.forEach(item => {
+        occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
       });
 
-      // Szobák száma
-      const totalRooms = await this.Szoba.count();
-
-      // Összes férőhely és foglalt hely kiszámítása
-      const allRooms = await this.Szoba.findAll();
+      // Statisztikák kiszámítása
       let totalCapacity = 0;
       let totalOccupied = 0;
       let mostOccupiedRoom = null;
@@ -295,12 +335,7 @@ class DiakService {
 
       for (const szoba of allRooms) {
         totalCapacity += szoba.osszes_hely;
-        const occupancy = await this.SzobaBekoltozes.count({
-          where: {
-            szoba_id: szoba.szoba_id,
-            kikoltozes_datum: null
-          }
-        });
+        const occupancy = occupancyMap.get(szoba.szoba_id) || 0;
         totalOccupied += occupancy;
 
         // Legmagasabb foglaltságú szoba meghatározása
@@ -316,20 +351,6 @@ class DiakService {
 
       // Átlagos foglaltsági ráta százalékban
       const averageOccupancy = totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
-
-      // Legutóbbi beköltözés és kiköltözés lekérdezése
-      const latestMoveInRecord = await this.SzobaBekoltozes.findOne({
-        order: [['bekoltozes_datum', 'DESC']]
-      });
-
-      const latestMoveOutRecord = await this.SzobaBekoltozes.findOne({
-        where: {
-          kikoltozes_datum: {
-            [Op.ne]: null
-          }
-        },
-        order: [['kikoltozes_datum', 'DESC']]
-      });
 
       const latestMoveIn = latestMoveInRecord 
         ? new Date(latestMoveInRecord.bekoltozes_datum).toLocaleDateString('hu-HU')

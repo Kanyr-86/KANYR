@@ -1,21 +1,21 @@
-# Delete Button Fixes - Összefoglalás
+# Törlés Gomb Javítások - Összefoglalás
 
 ## Azonosított Hibák
 
-### 1. **Backend: Inkonzisztens Error Válaszok**
-**Probléma**: A SzobaController `message` mezőt használt az error valid helyett `error` mezőt
+### 1. **Backend: Inkonzisztens Hiba Válaszok**
+**Probléma**: A SzobaController `message` mezőt használt a hiba jelzésére az `error` mező helyett
 - **Fájl**: `backend/controllers/SzobaController.js`
-- **Status**: ✅ JAVÍTOTT
+- **Státusz**: ✅ JAVÍTOTT
 
 ### 2. **Frontend: Hibaüzenet Nem Jelenik Meg**
-**Probléma**: Az error response-ban az error/message mező tartalma nem kerül megjelenítésre
+**Probléma**: A hiba válaszban az error/message mező tartalma nem kerül megjelenítésre
 - **Fájlok**: 
   - `frontend/src/views/StudentsView.vue`
   - `frontend/src/views/ParentsView.vue`
   - `frontend/src/views/RoomsView.vue`
-- **Status**: ✅ JAVÍTOTT
+- **Státusz**: ✅ JAVÍTOTT
 
-**Javítás**: Mindhárom view-ban módosítottam a confirmDelete funkciókat:
+**Javítás**: Mindhárom nézetben módosítottam a confirmDelete funkciókat:
 ```javascript
 // Régi - csak általános hiba üzenet
 catch (error) {
@@ -29,17 +29,17 @@ catch (error) {
 }
 ```
 
-### 3. **Backend: Error Handling Konzisztencia**
+### 3. **Backend: Hiba Kezelés Konzisztencia**
 **Állapot**: ✅ Rendben van
 
-Ellenőrzött Controllers:
+Ellenőrzött Controllerek:
 - ✅ DiakController - `error` mező
 - ✅ SzuloController - `error` mező  
 - ✅ LakcimController - `error` mező
 - ✅ SzobaController - JAVÍTOTT: `message` → `error`
 - ✅ FelhasznaloController - `error` mező
 
-### 4. **Error Üzenetek Validálása Controller-ekben**
+### 4. **Hiba Üzenetek Validálása Controllerekben**
 
 #### DiakController
 ```javascript
@@ -73,7 +73,7 @@ Ellenőrzött Controllers:
 
 ## Tesztelendő Végpontok
 
-### 1. Student Delete
+### 1. Diák Törlés
 ```bash
 DELETE /api/diaks/:id
 ```
@@ -81,7 +81,7 @@ DELETE /api/diaks/:id
 - ✅ Nem létezik (404)
 - ✅ Aktív beköltözés (400)
 
-### 2. Parent Delete  
+### 2. Szülő Törlés  
 ```bash
 DELETE /api/szulos/:id
 ```
@@ -89,7 +89,7 @@ DELETE /api/szulos/:id
 - ✅ Nem létezik (404)
 - ✅ Van kapcsolódó diákok (400)
 
-### 3. Room Delete
+### 3. Szoba Törlés
 ```bash
 DELETE /api/szobas/:id
 ```
@@ -97,7 +97,7 @@ DELETE /api/szobas/:id
 - ✅ Nem létezik (404)
 - ✅ Aktív beköltözés (400)
 
-### 4. Address Delete
+### 4. Cím Törlés
 ```bash
 DELETE /api/lakcims/:id
 ```
@@ -105,31 +105,31 @@ DELETE /api/lakcims/:id
 - ✅ Nem létezik (404)
 - ✅ Van kapcsolódó diákok/szülők (400)
 
-### 5. User Delete
+### 5. Felhasználó Törlés
 ```bash
 DELETE /api/felhasznalos/:id
 ```
 - ✅ Sikeres törlés
 - ✅ Nem létezik (404)
 
-## Frontend Fixes Applied
+## Frontend Javítások Alkalmazva
 
 ### StudentsView.vue
-- ✅ Error üzenek megjelenítés
+- ✅ Hiba üzenetek megjelenítése
 - ✅ Modal záródás hiba esetén (else blokk)
 
 ### ParentsView.vue  
-- ✅ Error üzenek megjelenítés
+- ✅ Hiba üzenetek megjelenítése
 - ✅ Modal záródás hiba esetén (else blokk)
 
 ### RoomsView.vue
-- ✅ Error üzenek megjelenítés
+- ✅ Hiba üzenetek megjelenítése
 - ✅ Modal záródás hiba esetén (else blokk)
 
 ## Validálás
 
 A módosítások biztosítják, hogy:
-1. ✅ Error response-ok konzisztensek (mindig `error` mező)
-2. ✅ Frontend megjeleníti az specifikus error üzeneteket
+1. ✅ Hiba válaszok konzisztensek (mindig `error` mező)
+2. ✅ Frontend megjeleníti a specifikus hiba üzeneteket
 3. ✅ Modal nyitva marad hiba esetén (felhasználó újra próbálkozhat)
-4. ✅ Loading státusz helyesen kezeltetik (finally blokk)
+4. ✅ Betöltési státusz helyesen kezelve (finally blokk)

@@ -44,31 +44,35 @@ class SzobaService {
    */
   async getAllSzobas(options = {}) {
     try {
-      const szobak = await this.SzobaRepository.getAllSzobas(options);
-      
-      // Kiegészítjük a szobákat a beköltözésekkel
-      const szobakWithBekoltozesek = await Promise.all(szobak.map(async (szoba) => {
-        const szobaData = szoba.toJSON ? szoba.toJSON() : szoba;
-        
-        // Aktív beköltözések lekérdezése
-        const bekoltozesek = await this.db.SzobaBekoltozes.findAll({
-          where: {
-            szoba_id: szobaData.szoba_id,
-            kikoltozes_datum: null
-          },
+      const { Op } = require('sequelize');
+      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
+
+      const where = {};
+      if (prefix) {
+        where.szoba_szama = {
+          [Op.startsWith]: prefix
+        };
+      }
+
+      // OPTIMALIZÁLVA: Egyetlen lekérdezés eager loading-gal (N+1 probléma megoldva)
+      const szobak = await this.db.Szoba.findAll({
+        where,
+        order: [[sort, order]],
+        limit,
+        offset,
+        include: [{
+          model: this.db.SzobaBekoltozes,
+          as: 'bekoltozesek',
+          where: { kikoltozes_datum: null },
+          required: false,
           include: [{
             model: this.db.Diak,
             as: 'diak'
           }]
-        });
-        
-        return {
-          ...szobaData,
-          bekoltozesek: bekoltozesek.map(b => b.toJSON ? b.toJSON() : b)
-        };
-      }));
+        }]
+      });
       
-      return szobakWithBekoltozesek;
+      return szobak.map(szoba => szoba.toJSON ? szoba.toJSON() : szoba);
     } catch (error) {
       throw new Error(`Hiba a szobák listázásakor: ${error.message}`);
     }
@@ -133,24 +137,48 @@ class SzobaService {
    */
   async getRoomStatistics() {
     try {
-      const allRooms = await this.SzobaRepository.getAllSzobas({ limit: 1000 });
+      const { sequelize } = this.db;
+      const { Op } = require('sequelize');
 
-      const roomStatistics = await Promise.all(allRooms.map(async (szoba) => {
-        const occupancy = await this.db.SzobaBekoltozes.count({
-          where: {
-            szoba_id: szoba.szoba_id,
-            kikoltozes_datum: null
-          }
-        });
+      // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
+      const occupancyData = await this.db.SzobaBekoltozes.findAll({
+        attributes: [
+          'szoba_id',
+          [sequelize.fn('COUNT', sequelize.col('bekoltozes_id')), 'occupancy']
+        ],
+        where: {
+          kikoltozes_datum: null
+        },
+        group: ['szoba_id'],
+        raw: true
+      });
 
+      // Szobák lekérdezése
+      const allRooms = await this.db.Szoba.findAll({
+        order: [['szoba_id', 'ASC']]
+      });
+
+      // Occupancy adatok map-elése gyors kereséshez
+      const occupancyMap = new Map();
+      occupancyData.forEach(item => {
+        occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
+      });
+
+      // Statisztikák összeállítása
+      const roomStatistics = allRooms.map(szoba => {
+        const szobaData = szoba.toJSON ? szoba.toJSON() : szoba;
+        const occupancy = occupancyMap.get(szobaData.szoba_id) || 0;
+        
         return {
-          szoba_id: szoba.szoba_id,
-          szoba_szama: szoba.szoba_szama,
-          osszes_hely: szoba.osszes_hely,
+          szoba_id: szobaData.szoba_id,
+          szoba_szama: szobaData.szoba_szama,
+          osszes_hely: szobaData.osszes_hely,
           aktualis_szam: occupancy,
-          kihasznaltseg: ((occupancy / szoba.osszes_hely) * 100).toFixed(1) + '%'
+          kihasznaltseg: szobaData.osszes_hely > 0 
+            ? ((occupancy / szobaData.osszes_hely) * 100).toFixed(1) + '%'
+            : '0.0%'
         };
-      }));
+      });
 
       return roomStatistics;
     } catch (error) {

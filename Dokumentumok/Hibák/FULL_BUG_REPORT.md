@@ -1,149 +1,77 @@
-# Teljes Bug Report - Frontend/Backend Hibák
+# KANYR - Teljes Hibajelentés
 
-## 🔴 KRITIKUS HIBÁK
-
-### 1. ✅ JAVÍTVA - ReportsView API Végpont Eltérések
-**Status**: JAVÍTVA
-
-3 kritikus hiba a ReportsView.vue-ban:
-- `/diak/statistics` → `/diaks/statistics` (311. sor)
-- `/szoba` → `/szobas` (317. sor)  
-- `/szoba/bekoltozesek` → `/szobas/bekoltozesek` (344. sor)
+Ez a dokumentum a KANYR rendszer összes azonosított és javított hibáját tartalmazza.
 
 ---
 
-### 2. 🔴 **SzobaController - Vegyes Error/Message Formátum**
-**Severity**: MAGAS  
+## ✅ JAVÍTOTT HIBÁK
+
+### 1. [2026.02.19] Race Condition - Szoba Beköltözés
+**Fájl**: `backend/controllers/SzobaValtoztatasController.js`  
+**Probléma**: Párhuzamos szobaváltási kérelmek esetén a szoba kapacitás túlléphető volt.  
+**Megoldás**: 
+- SERIALIZABLE izolációs szint a tranzakcióhoz
+- Row locking (LOCK.UPDATE) a szoba rekordon
+- Atomikus kapacitás ellenőrzés
+
+### 2. [2026.02.19] N+1 Query Problémák
+**Fájlok**: `backend/services/SzobaService.js`, `backend/services/DiakService.js`  
+**Probléma**: A `getAllSzobas()`, `getRoomStatistics()` és `getDetailedStatistics()` metódusok ciklusban végeztek adatbázis hívásokat.  
+**Megoldás**:
+- Eager loading `include` opcióval
+- GROUP BY aggregáció
+- Promise.all párhuzamos lekérdezésekhez
+
+### 3. [2026.02.18] API Végpont Eltérések
+**Fájl**: `frontend/src/views/ReportsView.vue`  
+**Probléma**: Helytelen API végpontok a frontendben.  
+**Megoldás**:
+- `/diak/statistics` → `/diaks/statistics`
+- `/szoba` → `/szobas`
+- `/szoba/bekoltozesek` → `/szobas/bekoltozesek`
+
+### 4. [2026.02.18] Route Inicializáció
+**Fájl**: `backend/app.js`  
+**Probléma**: Route-ok az adatbázis kapcsolat előtt inicializálódtak.  
+**Megoldás**: Route-ok betöltése a DB sync után, `app.locals.db` beállítása először.
+
+### 5. [2025.02.13] JWT_SECRET Hardcoded
+**Fájl**: `backend/utils/authUtils.js`  
+**Probléma**: A JWT titkos kulcs hardcoded volt a kódban.  
+**Megoldás**: `.env` fájl és környezeti változók használata.
+
+### 6. [2025.02.13] CORS Hardcoded
+**Fájl**: `backend/app.js`  
+**Probléma**: CORS origins hardcoded voltak.  
+**Megoldás**: `ALLOWED_ORIGINS` környezeti változó bevezetése.
+
+### 7. [2025.02.13] Error Response Inkonzisztencia
 **Fájl**: `backend/controllers/SzobaController.js`  
-**Probléma**: A controller **vegyes formátumot** használ az error válaszokhoz:
-
-#### Inkonzisztens Error Response Formátum
-A sikeres válaszok nem konzisztensek:
-- Néha: `{ success: true, message: '...', data: ... }`
-- Néha: `{ success: true, data: ... }` (nincs message)
-
-Az error válaszok szintén vegyes:
-- Néha: `{ success: false, message: '...' }`
-- Néha: `{ success: false, error: '...' }`
-
-#### Érintett Helyek:
-| Sor | Típus | Formátum |
-|-----|-------|----------|
-| 19-20 | error | `message:` ❌ |
-| 33, 39 | success/error | vegyes |
-| 56, 65 | error | `message:` ❌ |
-| 142, 173 | success | csak `message:` (nincs data) |
-| 203, 216 | error | `message:` ❌ |
-| 237, 268 | error | `message:` ❌ |
-| 305, 335 | error | `message:` ❌ |
-| 366, 372 | error | `message:` ❌ |
-| 401 | error | `message:` ❌ |
-
-#### Megoldás szükséges:
-A konzisztencia érdekében az összes error response-nak `error` mezőt kellene használnia, mint a többi controller:
-
-```javascript
-// Rossz (jelenleg):
-res.status(400).json({
-  success: false,
-  message: error.message  // ❌ Más kontrollerek ezt 'error' mezővel küldik
-});
-
-// Helyes:
-res.status(400).json({
-  success: false,
-  error: error.message  // ✅ Konzisztens az összes controllerrel
-});
-```
+**Probléma**: Vegyes `message` és `error` mező használata a hiba válaszokban.  
+**Megoldás**: Egységes `error` mező használata minden controllerben.
 
 ---
 
-## ⚠️ KÖZEPES FONTOSSÁGÚ HIBÁK
+## 📊 HIBASTATISZTIKA
 
-### 3. **Frontend Error Handling - Vegyes Formátum Elfogadása**
-**Severity**: KÖZEPES  
-**Fájl**: `frontend/src/views/RoomsView.vue`, `ParentsView.vue`  
-**Probléma**: A frontend az alábbi kódot használja:
-
-```javascript
-const errorMsg = response.data.error || response.data.message || 'Ismeretlen hiba'
-```
-
-Ez azt jelenti, hogy a frontend **adaptálódik** az inkonzisztens backend formátumhoz, de nem ideális.
-
-**Ajánlás**: 
-- Backend konzisztensen `error` mezőt küldjön
-- Frontend csak `error` mezőre támaszkodjon
+| Dátum | Hibák száma | Státusz |
+|-------|-------------|---------|
+| 2026.02.19 | 4 | ✅ Mind javítva |
+| 2026.02.18 | 2 | ✅ Mind javítva |
+| 2025.02.13 | 3 | ✅ Mind javítva |
 
 ---
 
-## ℹ️ EGYÉB MEGFIGYELÉSEK
+## 🔍 ISMERT PROBLÉMÁK (TODO)
 
-### 4. **Diak Model - cim_id Mező**
-**Status**: OK (működik)  
-**Megjegyzés**: A Diak modellben van `cim_id` mező diákok lakcímének tárolásához, amely szükséges az `enrollStudent` folyamatban.
+### Magas prioritás
+- [ ] Validation Error Messages szanitálása
+- [ ] Database migrations implementálása
 
-### 5. **Advisory Tábla Index Gyakorlatok**
-**Status**: Helyes
-
-Az alábbi modellek helyes kapcsolatokkal vannak definiálva:
-- ✅ Diak → Szulo (belongsTo)
-- ✅ Diak → Lakcim (belongsTo) 
-- ✅ Diak → SzobaBekoltozes (hasMany)
-- ✅ Szoba → SzobaBekoltozes (hasMany)
-- ✅ SzobaBekoltozes → Diak (belongsTo)
-- ✅ SzobaBekoltozes → Szoba (belongsTo)
+### Közepes prioritás
+- [ ] Toast library teljes integrálása
+- [ ] API dokumentáció (Swagger/OpenAPI)
 
 ---
 
-## 🔧 JAVASOLT JAVA SORREND
-
-### Lépés 1: SzobaController javítása (KRITIKUS)
-**Módosítandó**: `backend/controllers/SzobaController.js`
-
-Helyettesítendő az összes `message:` error mezőt `error:` mezővel:
-
-```javascript
-// Cseréli ki az összes error response-ot:
-res.status(xxx).json({
-  success: false,
-  message: error.message  // ❌
-});
-
-// Helyére ezt:
-res.status(xxx).json({
-  success: false,
-  error: error.message  // ✅
-});
-```
-
-Körülbelül **20+ hely** van amit módosítani kell.
-
-### Lépés 2: Sikeres Válaszok Konzisztenciája (OPCIONÁLIS)
-**Javasolt formátum**:
-```javascript
-// Success válasz formato
-{
-  success: true,
-  data: {...},
-  message: 'Tetszés szerinti üzenet' // OPCIONÁLIS
-}
-```
-
-Ezt követően a frontend használhatja:
-```javascript
-if (response.data.success) {
-  // Sikeres
-}
-```
-
----
-
-## 📊 ÖSSZEGZÉS
-
-| Hiba | Típus | Status | Megoldás Ideje |
-|------|-------|--------|-----------------|
-| ReportsView API végpontok | API | ✅ JAVÍTVA | - |
-| SzobaController error/message | Controller | ⚠️ NYITOTT | ~30 perc |
-| Frontend error handling | Frontend | ℹ️ MŰKÖDIK | Opcionális |
-
+**Utolsó frissítés**: 2026.02.19

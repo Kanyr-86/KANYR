@@ -291,7 +291,9 @@ class SzobaValtoztatasController {
 
       // Ha jóváhagyják, akkor ténylegesen át kell költöztetni a diákot
       if (statusz === 'approved') {
-        await this.db.sequelize.transaction(async (transaction) => {
+        await this.db.sequelize.transaction({
+          isolationLevel: this.db.sequelize.constructor.Transaction.ISOLATION_LEVELS.SERIALIZABLE
+        }, async (transaction) => {
           const today = new Date().toISOString().split('T')[0];
 
           // 1. Régi aktív beköltözés lezárása
@@ -307,8 +309,12 @@ class SzobaValtoztatasController {
             await activeBekoltozes.update({ kikoltozes_datum: today }, { transaction });
           }
 
-          // 2. Ellenőrzés: a kívánt szoba nem telt-e meg azóta
-          const kivantSzoba = await this.db.Szoba.findByPk(kerelem.kivant_szoba_id, { transaction });
+          // 2. Ellenőrzés: a kívánt szoba nem telt-e meg azóta (LOCK során)
+          // LOCK-okkal biztosítjuk, hogy ne legyen race condition
+          const kivantSzoba = await this.db.Szoba.findByPk(kerelem.kivant_szoba_id, {
+            transaction,
+            lock: transaction.LOCK.UPDATE
+          });
           if (!kivantSzoba) {
             throw new Error('A kívánt szoba nem található');
           }
