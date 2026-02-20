@@ -152,7 +152,7 @@
 <style scoped>
 .dashboard-title {
   color: #ffffff !important;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   margin-bottom: 1.5rem;
   font-weight: 600;
 }

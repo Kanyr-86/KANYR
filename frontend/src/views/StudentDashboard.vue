@@ -269,13 +269,14 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--steel-blue, #82a0bc);
 }
 
 .dashboard-header h1 {
   margin: 0;
-  color: #333;
+  color: #ffffff;
   font-size: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .user-info {
@@ -286,7 +287,7 @@ export default {
 
 .welcome-text {
   font-weight: 500;
-  color: #666;
+  color: var(--powder-blue, #a7cced);
 }
 
 .dashboard-grid {
@@ -303,15 +304,15 @@ export default {
 }
 
 .card-header {
-  background-color: #f8f9fa;
+  background-color: var(--blue-slate, #545e75);
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--steel-blue, #82a0bc);
 }
 
 .card-header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #333;
+  color: #ffffff;
 }
 
 .card-content {
@@ -412,8 +413,8 @@ export default {
 }
 
 .notification-item.unread {
-  background-color: #f8f9fa;
-  border-left: 4px solid #007bff;
+  background-color: var(--powder-blue, #a7cced);
+  border-left: 4px solid var(--cool-sky, #63adf2);
 }
 
 .notification-content {

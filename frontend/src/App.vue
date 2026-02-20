@@ -38,9 +38,9 @@ export default defineComponent({
 </script>
 
 <style>
-/* Sötétebb kék háttérszín - szemkímélő, pihentető */
+/* Yale Blue háttérszín - KANYR téma */
 html, body {
-  background-color: #2c4a5a !important;
+  background-color: var(--yale-blue, #304d6d) !important;
 }
 
 #app {
@@ -49,7 +49,7 @@ html, body {
   min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
-  background-color: #2c4a5a !important;
+  background-color: var(--yale-blue, #304d6d) !important;
 }
 
 .main-content {
@@ -57,7 +57,7 @@ html, body {
   padding: 12px;
   width: 100%;
   box-sizing: border-box;
-  background-color: #2c4a5a !important;
+  background-color: var(--yale-blue, #304d6d) !important;
 }
 
 @media (min-width: 768px) {
@@ -70,6 +70,6 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
-  background-color: #2c4a5a !important;
+  background-color: var(--yale-blue, #304d6d) !important;
 }
 </style>

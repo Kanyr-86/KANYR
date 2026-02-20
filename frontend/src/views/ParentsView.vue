@@ -753,3 +753,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Címek színe - KANYR téma */
+h2 {
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.text-muted {
+  color: var(--powder-blue, #a7cced) !important;
+}
+</style>

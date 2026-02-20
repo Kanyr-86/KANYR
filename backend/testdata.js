@@ -352,20 +352,23 @@ async function seedDatabase() {
     const notifikaciok = await db.Notification.bulkCreate([
       {
         diak_id: diaks[0].diak_id,
+        szoba_valtoztatas_id: valtoztatasok[0].valtoztatas_id,
         tipus: 'room_change_pending',
         uzenet: 'A szoba változtatási kérelmedet feldolgoztuk. Kérjük, várj türelmesen a döntésre.',
         elolvasva: false
       },
       {
         diak_id: diaks[4].diak_id,
+        szoba_valtoztatas_id: valtoztatasok[1].valtoztatas_id,
         tipus: 'room_change_approved',
         uzenet: 'Gratulálunk! A szoba változtatási kérelmedet elfogadtuk. Az új szobaszámod: A-101. Kérjük, 3 munkanapon belül költözz át.',
         elolvasva: false
       },
       {
-        diak_id: diaks[1].diak_id,
-        tipus: 'room_change_pending',
-        uzenet: 'Ne feledd, hogy a következő hónapban esedékes a szobafoglalás. Kérjük, ellenőrizd a számládat.',
+        diak_id: diaks[2].diak_id,
+        szoba_valtoztatas_id: null,
+        tipus: 'room_change_denied',
+        uzenet: 'A szoba változtatási kérelmedet elutasítottuk. A kért szobában nincs szabad hely.Új kérelmet benyújthatsz a következő félévben.',
         elolvasva: false
       }
     ]);

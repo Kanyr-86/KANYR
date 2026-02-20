@@ -106,9 +106,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Élénk kék háttér a fejlécnek */
+/* Blue Slate háttér a fejlécnek - KANYR téma */
 .custom-navbar {
-  background-color: #1e88e5 !important;
+  background-color: var(--navbar-bg, #545e75) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 

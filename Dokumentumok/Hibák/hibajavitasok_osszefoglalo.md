@@ -38,8 +38,8 @@
 ### 4. **Admin Felhasználó Seed Script**
 **Fájl**: `backend/seed_database.js` (meglévő)
 
-- ✅ Admin (főtitkár) felhasználó: `admin@kanyr.hu` / `admin123`
-- ✅ Regular (titkár) felhasználó: `user@kanyr.hu` / `user1234`
+- ✅ Admin (titkár) felhasználó: `admin@kanyr.hu` / `admin123`
+- ✅ Regular (diák) felhasználó: `user@kanyr.hu` / `user1234`
 - ✅ Szülők, lakcímek, diákok, szobák, beköltözések feltöltve
 
 **Státusz**: 🟢 **MŰKÖDIK** - Adatbázis seed kész

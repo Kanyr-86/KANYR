@@ -65,7 +65,7 @@
 </template>
 
 <style scoped>
-/* Sötét kék háttér - illeszkedik az alkalmazás témájához */
+/* Yale Blue háttér - KANYR téma */
 .login-page {
   position: fixed;
   top: 0;
@@ -76,7 +76,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2c4a5a;
+  background-color: var(--yale-blue, #304d6d);
 }
 
 .login-container {
@@ -98,9 +98,9 @@
   padding: 0.75rem 1rem;
 }
 
-/* Material Design kék háttér a bejelentkező oldalhoz */
+/* Blue Slate háttér a bejelentkező oldalhoz - KANYR téma */
 .bg-material-blue {
-  background-color: #1e88e5 !important;
+  background-color: var(--blue-slate, #545e75) !important;
 }
 
 .card-header h5 {
@@ -206,7 +206,7 @@ export default {
     const useTestToken = async () => {
       loading.value = true
       try {
-        const response = await authStore.login('admin@kanyr.hu', 'Admin@123456')
+        const response = await authStore.login('admin@kanyr.hu', 'admin123')
         if (response.success) {
           toast.success('Teszt admin bejelentkezés sikeres!')
           router.push(authStore.getDashboardRoute())

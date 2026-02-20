@@ -4,7 +4,6 @@
       <h1>Értesítések</h1>
       <div class="user-info">
         <span class="welcome-text">Üdvözöljük, {{ user?.username }}!</span>
-        <button @click="logout" class="logout-btn">Kijelentkezés</button>
       </div>
     </div>
 
@@ -69,7 +68,6 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth';
 import api from '../services/api';
 import { studentApi } from '../services/api';
@@ -77,18 +75,12 @@ import { studentApi } from '../services/api';
 export default {
   name: 'StudentNotifications',
   setup() {
-    const router = useRouter();
     const authStore = useAuthStore();
     
     const notifications = ref([]);
     const loadingNotifications = ref(false);
 
     const user = computed(() => authStore.user);
-
-    const logout = () => {
-      authStore.logout();
-      router.push('/login');
-    };
 
     const getNotifications = async () => {
       loadingNotifications.value = true;
@@ -146,7 +138,6 @@ export default {
       notifications,
       loadingNotifications,
       user,
-      logout,
       markAsRead,
       markAllAsRead,
       formatDate,
@@ -170,13 +161,14 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--steel-blue, #82a0bc);
 }
 
 .page-header h1 {
   margin: 0;
-  color: #333;
+  color: #ffffff;
   font-size: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .user-info {
@@ -187,21 +179,7 @@ export default {
 
 .welcome-text {
   font-weight: 500;
-  color: #666;
-}
-
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.logout-btn:hover {
-  background-color: #c82333;
+  color: var(--powder-blue, #a7cced);
 }
 
 .notifications-content {
@@ -218,15 +196,15 @@ export default {
 }
 
 .card-header {
-  background-color: #f8f9fa;
+  background-color: var(--blue-slate, #545e75);
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--steel-blue, #82a0bc);
 }
 
 .card-header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #333;
+  color: #ffffff;
 }
 
 .card-content {
@@ -268,8 +246,8 @@ export default {
 }
 
 .notification-item.unread {
-  background-color: #f8f9fa;
-  border-left: 4px solid #007bff;
+  background-color: var(--powder-blue, #a7cced);
+  border-left: 4px solid var(--cool-sky, #63adf2);
 }
 
 .notification-content {
@@ -334,7 +312,7 @@ export default {
 
 .mark-all-btn {
   padding: 0.75rem 1.5rem;
-  background-color: #007bff;
+  background-color: var(--cool-sky, #63adf2);
   color: white;
   border: none;
   border-radius: 4px;
@@ -345,7 +323,7 @@ export default {
 }
 
 .mark-all-btn:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-hover, #4d9fe8);
 }
 
 /* Responsive design */

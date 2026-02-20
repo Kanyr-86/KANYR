@@ -64,7 +64,7 @@
 
 ## Szoba megtöltöttségi szintek
 
-### 11. User Story: Főtitkár megtöltöttségi riportot kap
+### 11. User Story: Titkár megtöltöttségi riportot kap
 **Mint** kollégiumi titkár,   
 **Szeretném hogy** riportot kapjak a szobák megtöltöttségi szintjéről (%),  
 **Hogy** nyomon követhetem a szobák kihasználtságát.
@@ -92,7 +92,7 @@
 
 ## Szoba lezárás
 
-### 15. User Story: Főtitkár ideiglenesen lezárja a szobát
+### 15. User Story: Titkár ideiglenesen lezárja a szobát
 **Mint** kollégiumi titkár,   
 **Szeretném hogy** ideiglenesen lezárhassak szobákat (felújítás, fertőtlenítés),  
 **Hogy** diákok nem helyezhetők oda.
@@ -106,14 +106,14 @@
 
 ## Archivált diákok
 
-### 17. User Story: Főtitkár lekérdezi végzett diákokat
+### 17. User Story: Titkár lekérdezi végzett diákokat
 **Mint** kollégiumi titkár,   
 **Szeretném hogy** lekérdezhetem az archivált diákokat (végzett, kiköltözött),  
 **Hogy** statisztikákat tudjak készíteni.
 
 ## Havi kimutatás
 
-### 18. User Story: Főtitkár generál havi kimutatást
+### 18. User Story: Titkár generál havi kimutatást
 **Mint** kollégiumi titkár, 
 **Szeretném hogy** generálhatok egy havi riportot (szobák, diákok, statisztikák),  
 **Hogy** megküldhetem a vezetésnek.

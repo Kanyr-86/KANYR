@@ -1,27 +1,48 @@
 :root {
-  /* Color Palette */
-  --primary-50: #eef2ff;
-  --primary-100: #e0e7ff;
-  --primary-200: #c7d2fe;
-  --primary-300: #a5b4fc;
-  --primary-400: #818cf8;
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
-  --primary-700: #4338ca;
-  --primary-800: #3730a3;
-  --primary-900: #312e81;
+  /* KANYR Color Palette - Blue Slate Theme */
+  --blue-slate: #545e75;
+  --cool-sky: #63adf2;
+  --powder-blue: #a7cced;
+  --yale-blue: #304d6d;
+  --steel-blue: #82a0bc;
 
-  --secondary-50: #f8fafc;
-  --secondary-100: #f1f5f9;
-  --secondary-200: #e2e8f0;
-  --secondary-300: #cbd5e1;
-  --secondary-400: #94a3b8;
-  --secondary-500: #64748b;
-  --secondary-600: #475569;
-  --secondary-700: #334155;
-  --secondary-800: #1e293b;
-  --secondary-900: #0f172a;
+  /* Primary Colors (Cool Sky based) */
+  --primary-50: #e8f4fc;
+  --primary-100: #d1e9f9;
+  --primary-200: #a8d3f3;
+  --primary-300: #7fbcde;
+  --primary-400: #63adf2;
+  --primary-500: #4d9fe8;
+  --primary-600: #3b8fd4;
+  --primary-700: #307fc0;
+  --primary-800: #2a6fa8;
+  --primary-900: #1f5a8a;
 
+  /* Secondary Colors (Blue Slate based) */
+  --secondary-50: #e9ecf1;
+  --secondary-100: #d3d9e3;
+  --secondary-200: #a7b3c7;
+  --secondary-300: #7b8dab;
+  --secondary-400: #545e75;
+  --secondary-500: #475569;
+  --secondary-600: #3d4a5c;
+  --secondary-700: #333f4f;
+  --secondary-800: #2a3442;
+  --secondary-900: #1e252f;
+
+  /* Neutral Colors (Steel Blue based) */
+  --neutral-50: #f0f4f8;
+  --neutral-100: #e1e9f0;
+  --neutral-200: #c3d3e1;
+  --neutral-300: #a5bcd2;
+  --neutral-400: #82a0bc;
+  --neutral-500: #6b8aa6;
+  --neutral-600: #557091;
+  --neutral-700: #445775;
+  --neutral-800: #333d4f;
+  --neutral-900: #242c38;
+
+  /* Success Colors */
   --success-50: #ecfdf5;
   --success-100: #d1fae5;
   --success-200: #a7f3d0;
@@ -33,6 +54,7 @@
   --success-800: #065f46;
   --success-900: #064e3b;
 
+  /* Danger Colors */
   --danger-50: #fef2f2;
   --danger-100: #fee2e2;
   --danger-200: #fecaca;
@@ -44,6 +66,7 @@
   --danger-800: #991b1b;
   --danger-900: #7f1d1d;
 
+  /* Warning Colors */
   --warning-50: #fffbeb;
   --warning-100: #fef3c7;
   --warning-200: #fde68a;
@@ -55,16 +78,17 @@
   --warning-800: #92400e;
   --warning-900: #78350f;
 
-  --info-50: #eff6ff;
-  --info-100: #dbeafe;
-  --info-200: #bfdbfe;
-  --info-300: #93c5fd;
-  --info-400: #60a5fa;
-  --info-500: #3b82f6;
-  --info-600: #2563eb;
-  --info-700: #1d4ed8;
-  --info-800: #1e40af;
-  --info-900: #1e3a8a;
+  /* Info Colors (Powder Blue based) */
+  --info-50: #f0f7fd;
+  --info-100: #e1effb;
+  --info-200: #c3dff7;
+  --info-300: #a7cced;
+  --info-400: #8bbde3;
+  --info-500: #6aadd8;
+  --info-600: #4d9bc9;
+  --info-700: #3b8ab8;
+  --info-800: #2c79a6;
+  --info-900: #1f6089;
 
   /* Typography */
   --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -101,10 +125,10 @@
   --space-24: 6rem;     /* 96px */
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 2px 0 rgba(48, 77, 109, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(48, 77, 109, 0.15), 0 2px 4px -1px rgba(48, 77, 109, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(48, 77, 109, 0.15), 0 4px 6px -2px rgba(48, 77, 109, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(48, 77, 109, 0.15), 0 10px 10px -5px rgba(48, 77, 109, 0.08);
 
   /* Borders */
   --border-radius-sm: 0.375rem;  /* 6px */
@@ -141,18 +165,18 @@
 :root {
   /* Semantic Colors */
   --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
+  --bg-secondary: #f0f4f8;
+  --bg-tertiary: #e1e9f0;
   --bg-card: #ffffff;
-  --bg-muted: #f8fafc;
+  --bg-muted: #f0f4f8;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #64748b;
+  --text-primary: #1e252f;
+  --text-secondary: #333f4f;
+  --text-tertiary: #545e75;
   --text-inverse: #ffffff;
 
-  --border-primary: #e2e8f0;
-  --border-secondary: #cbd5e1;
+  --border-primary: #a5bcd2;
+  --border-secondary: #82a0bc;
 
   --shadow-card: var(--shadow-md);
   --shadow-elevated: var(--shadow-lg);
@@ -161,19 +185,19 @@
 /* Dark Theme */
 [data-theme="dark"] {
   /* Semantic Colors */
-  --bg-primary: #0f172a;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1f2937;
-  --bg-card: #111827;
-  --bg-muted: #0b1220;
+  --bg-primary: #1e252f;
+  --bg-secondary: #242c38;
+  --bg-tertiary: #333d4f;
+  --bg-card: #242c38;
+  --bg-muted: #1a2129;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
-  --text-inverse: #0f172a;
+  --text-primary: #f0f4f8;
+  --text-secondary: #c3d3e1;
+  --text-tertiary: #82a0bc;
+  --text-inverse: #1e252f;
 
-  --border-primary: #334155;
-  --border-secondary: #475569;
+  --border-primary: #445775;
+  --border-secondary: #557091;
 
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
@@ -201,23 +225,32 @@
 
 /* Accessibility focus styles */
 :root {
-  --primary-color: #0066cc;
-  --secondary-color: #3399ff;
-  --success-color: #0080ff;
-  --danger-color: #003d66;
-  --warning-color: #66b3ff;
-  --info-color: #e6f3ff;
-  --light-color: #f0f8ff;
-  --dark-color: #003366;
+  /* Primary semantic colors */
+  --primary-color: #63adf2;
+  --secondary-color: #82a0bc;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #a7cced;
+  --light-color: #e8f4fc;
+  --dark-color: #304d6d;
   
-  --primary-hover: #0052a3;
-  --secondary-hover: #2684cc;
-  --success-hover: #0066cc;
-  --danger-hover: #002b4d;
-  --warning-hover: #4da6ff;
-  --info-hover: #cce6ff;
+  /* Hover states */
+  --primary-hover: #4d9fe8;
+  --secondary-hover: #6b8aa6;
+  --success-hover: #059669;
+  --danger-hover: #dc2626;
+  --warning-hover: #d97706;
+  --info-hover: #8bbde3;
+  
+  /* Theme colors for components */
+  --navbar-bg: #545e75;
+  --app-bg: #304d6d;
+  --card-bg: #ffffff;
+  --link-color: #63adf2;
+  --link-hover: #4d9fe8;
   
   --border-radius: 8px;
-  --box-shadow: 0 2px 10px rgba(0, 102, 204, 0.15);
+  --box-shadow: 0 2px 10px rgba(48, 77, 109, 0.15);
   --transition: all 0.3s ease;
 }
