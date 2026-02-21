@@ -1,0 +1,67 @@
+# KANYR Docker Compose Configuration
+# Development environment setup
+
+version: '3.8'
+
+services:
+  # Backend Service - Node.js/Express API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kanyr-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:5173
+    volumes:
+      # SQLite database persistence - database file is stored in the config folder
+      - kanyr-db-data:/app/config
+      # Mount .env file if it exists (read-only)
+      - ./backend/.env:/app/.env:ro
+    networks:
+      - kanyr-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend Service - Vue.js with nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kanyr-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - kanyr-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+# Named volumes for data persistence
+volumes:
+  kanyr-db-data:
+    driver: local
+    name: kanyr-sqlite-data
+
+# Network configuration
+networks:
+  kanyr-network:
+    driver: bridge
+    name: kanyr-network

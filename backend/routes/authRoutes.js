@@ -4,6 +4,7 @@ const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
 const { authenticate } = require('../middleware/authMiddleware');
 const { generateToken } = require('../utils/authUtils');
+const { loginLimiter, generalLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -32,9 +33,11 @@ const loginValidationRules = [
 /**
  * POST /api/auth/login
  * User login
+ * Protected by strict rate limiting: 5 attempts per 15 minutes
  */
 router.post(
   '/login',
+  loginLimiter,
   loginValidationRules,
   async (req, res) => {
     try {

@@ -1,8 +1,13 @@
 <template>
   <div id="app">
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">
+      Ugrás a tartalomhoz
+    </a>
+    
     <Navbar v-if="!isLoginPage" />
     
-    <div class="main-content">
+    <div class="main-content" id="main-content">
       <ErrorBoundary>
         <router-view />
       </ErrorBoundary>
@@ -11,8 +16,9 @@
 </template>
 
 <script>
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useThemeStore } from './store/theme'
 import Navbar from './components/Navbar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
 
@@ -24,10 +30,16 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute()
+    const themeStore = useThemeStore()
     
     // Ellenőrizzük, hogy a login oldalon vagyunk-e
     const isLoginPage = computed(() => {
       return route.path === '/login'
+    })
+
+    // Téma betöltése alkalmazás induláskor
+    onMounted(() => {
+      themeStore.loadTheme()
     })
 
     return {
@@ -38,9 +50,9 @@ export default defineComponent({
 </script>
 
 <style>
-/* Yale Blue háttérszín - KANYR téma */
+/* App container styles - using CSS variables for theme support */
 html, body {
-  background-color: var(--yale-blue, #304d6d) !important;
+  background-color: var(--app-bg) !important;
 }
 
 #app {
@@ -49,7 +61,7 @@ html, body {
   min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
-  background-color: var(--yale-blue, #304d6d) !important;
+  background-color: var(--app-bg) !important;
 }
 
 .main-content {
@@ -57,19 +69,12 @@ html, body {
   padding: 12px;
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--yale-blue, #304d6d) !important;
+  background-color: var(--app-bg) !important;
 }
 
 @media (min-width: 768px) {
   .main-content {
     padding: 24px;
   }
-}
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  overflow-x: hidden;
-  background-color: var(--yale-blue, #304d6d) !important;
 }
 </style>

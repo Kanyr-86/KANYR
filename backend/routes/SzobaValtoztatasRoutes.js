@@ -14,8 +14,8 @@ const validateRoomChangeRequest = [
   body('indok').optional().isString().withMessage('Az indok szöveg formátumban kell legyen')
 ];
 
-const validateUpdateRequest = [
-  body('statusz').isIn(['approved', 'denied']).withMessage('A státusz csak approved vagy denied lehet')
+const validateRejectRequest = [
+  body('indok').optional().isString().withMessage('Az elutasítás indoka szöveg formátumban kell legyen')
 ];
 
 const validateStatusQuery = [
@@ -35,57 +35,106 @@ const initializeController = (db) => {
 // Import authentication middleware
 const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 
-// Route definitions
+// ==================== ÚJ VÉGPONTOK ====================
 
-// Diák szobájának és szobatársainak lekérése - minden bejelentkezett felhasználó (diák)
+/**
+ * Szobaváltási kérelem jóváhagyása (admin)
+ * PUT /api/szobavaltoztatas/:id/approve
+ */
+router.put('/:id/approve', authenticate, isAdmin, validateId, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.approveRoomChangeRequest(req, res);
+});
+
+/**
+ * Szobaváltási kérelem elutasítása (admin)
+ * PUT /api/szobavaltoztatas/:id/reject
+ */
+router.put('/:id/reject', authenticate, isAdmin, validateId, validateRejectRequest, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.rejectRoomChangeRequest(req, res);
+});
+
+// ==================== DIÁK VÉGPONTOK ====================
+
+/**
+ * Diák szobájának és szobatársainak lekérése
+ * GET /api/szobavaltoztatas/students/room
+ */
 router.get('/students/room', authenticate, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getCurrentRoom(req, res);
 });
 
-// Szobaváltási kérelem benyújtása - minden bejelentkezett felhasználó (diák)
+/**
+ * Szobaváltási kérelem benyújtása (diák)
+ * POST /api/szobavaltoztatas/students/room-change
+ */
 router.post('/students/room-change', authenticate, validateRoomChangeRequest, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.requestRoomChange(req, res);
 });
 
-// Szobaváltási kérelmek listázása - csak titkár
-router.get('/students/room-change-requests', authenticate, isAdmin, validateStatusQuery, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.getRoomChangeRequests(req, res);
-});
-
-// Szobaváltási kérelem jóváhagyása vagy elutasítása - csak titkár
-router.put('/students/room-change-requests/:id', authenticate, isAdmin, validateId, validateUpdateRequest, (req, res) => {
-  const controller = initializeController(req.app.locals.db);
-  return controller.updateRoomChangeRequest(req, res);
-});
-
-// Diák szobaváltási történetének lekérése - minden bejelentkezett felhasználó (diák)
+/**
+ * Diák szobaváltási történetének lekérése
+ * GET /api/szobavaltoztatas/students/room-history
+ */
 router.get('/students/room-history', authenticate, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getRoomChangeHistory(req, res);
 });
 
-// Diák értesítéseinek lekérése - minden bejelentkezett felhasználó (diák)
+/**
+ * Diák értesítéseinek lekérése
+ * GET /api/szobavaltoztatas/students/notifications
+ */
 router.get('/students/notifications', authenticate, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getNotifications(req, res);
 });
 
-// Diák értesítésének megjelölése olvasottnak - minden bejelentkezett felhasználó (diák)
+/**
+ * Diák értesítésének megjelölése olvasottnak
+ * PUT /api/szobavaltoztatas/students/notifications/:id/read
+ */
 router.put('/students/notifications/:id/read', authenticate, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.markNotificationAsRead(req, res);
 });
 
-// Admin értesítéseinek lekérése - csak admin
+// ==================== ADMIN VÉGPONTOK ====================
+
+/**
+ * Szobaváltási kérelmek listázása (admin)
+ * GET /api/szobavaltoztatas/students/room-change-requests
+ */
+router.get('/students/room-change-requests', authenticate, isAdmin, validateStatusQuery, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.getRoomChangeRequests(req, res);
+});
+
+/**
+ * Szobaváltási kérelem jóváhagyása vagy elutasítása (régi végpont - kompatibilitásért)
+ * PUT /api/szobavaltoztatas/students/room-change-requests/:id
+ */
+router.put('/students/room-change-requests/:id', authenticate, isAdmin, validateId, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.updateRoomChangeRequest(req, res);
+});
+
+/**
+ * Admin értesítéseinek lekérése
+ * GET /api/szobavaltoztatas/admin/notifications
+ */
 router.get('/admin/notifications', authenticate, isAdmin, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAdminNotifications(req, res);
 });
 
-// Admin értesítésének megjelölése olvasottnak - csak admin
+/**
+ * Admin értesítésének megjelölése olvasottnak
+ * PUT /api/szobavaltoztatas/admin/notifications/:id/read
+ */
 router.put('/admin/notifications/:id/read', authenticate, isAdmin, validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.markNotificationAsReadByAdmin(req, res);

@@ -1,5 +1,33 @@
 node_modules/
 *.sqlite
-*.sqlite-journal.env
+*.sqlite-journal
+
+# Environment files - match in any directory
+.env
+**/.env
 .env.local
 .env.*.local
+.env.prod
+
+# Docker volumes (local)
+.docker/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Log files
+*.log
+npm-debug.log*

@@ -8,34 +8,43 @@ module.exports = (sequelize) => {
       autoIncrement: true,
       allowNull: false
     },
-    diak_id: {
+    cimzett_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'diaks',
-        key: 'diak_id'
-      }
+      comment: 'Címzett ID-ja (diak_id, szulo_id, vagy user_id)'
     },
-    szoba_valtoztatas_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'szobavaltoztatas',
-        key: 'valtoztatas_id'
-      }
+    cimzett_tipus: {
+      type: DataTypes.ENUM('diak', 'szulo', 'admin'),
+      allowNull: false,
+      defaultValue: 'diak',
+      comment: 'Címzett típusa: diak, szulo vagy admin'
     },
     tipus: {
-      type: DataTypes.ENUM('room_change_approved', 'room_change_denied', 'room_change_pending'),
-      allowNull: false
+      type: DataTypes.ENUM('szobavaltas', 'hatarido', 'rendszer', 'egyeb'),
+      allowNull: false,
+      defaultValue: 'egyeb',
+      comment: 'Értesítés típusa'
+    },
+    cim: {
+      type: DataTypes.STRING(200),
+      allowNull: false,
+      comment: 'Rövid cím'
     },
     uzenet: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      comment: 'Részletes üzenet'
     },
-    elolvasva: {
+    adat: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: 'Opcionális metaadatok (pl. szoba_id, diak_id, hatarido)'
+    },
+    olvasva: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: false,
+      comment: 'Olvasott-e az értesítés'
     }
   }, {
     tableName: 'notifications',
@@ -46,16 +55,24 @@ module.exports = (sequelize) => {
 
   // Kapcsolatok definiálása
   Notification.associate = (models) => {
-    // Egy értesítéshez tartozik egy diák
+    // Egy értesítéshez tartozhat egy diák (ha cimzett_tipus = 'diak')
     Notification.belongsTo(models.Diak, {
-      foreignKey: 'diak_id',
-      as: 'diak'
+      foreignKey: 'cimzett_id',
+      as: 'diak_cimzett',
+      constraints: false,
+      scope: {
+        cimzett_tipus: 'diak'
+      }
     });
 
-    // Egy értesítéshez tartozhat egy szobaváltás
-    Notification.belongsTo(models.SzobaValtoztatas, {
-      foreignKey: 'szoba_valtoztatas_id',
-      as: 'szoba_valtoztatas'
+    // Egy értesítéshez tartozhat egy szülő (ha cimzett_tipus = 'szulo')
+    Notification.belongsTo(models.Szulo, {
+      foreignKey: 'cimzett_id',
+      as: 'szulo_cimzett',
+      constraints: false,
+      scope: {
+        cimzett_tipus: 'szulo'
+      }
     });
   };
 

@@ -1,11 +1,11 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-family-base, system-ui, Avenir, Helvetica, Arial, sans-serif);
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: var(--yale-blue, #304d6d);
+  color-scheme: light;
+  color: var(--text-primary, #1e252f);
+  background-color: var(--app-bg, #304d6d);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,19 +15,20 @@
 
 a {
   font-weight: 500;
-  color: var(--cool-sky, #63adf2);
+  color: var(--link-color, #63adf2);
   text-decoration: inherit;
 }
 a:hover {
-  color: var(--primary-hover, #4d9fe8);
+  color: var(--link-hover, #4d9fe8);
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--app-bg, #304d6d);
+  color: var(--text-primary, #1e252f);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1 {
@@ -44,18 +45,23 @@ button {
   font-family: inherit;
   background-color: var(--blue-slate, #545e75);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s, color 0.25s;
 }
 button:hover {
   border-color: var(--cool-sky, #63adf2);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--primary-color, #63adf2);
+  outline-offset: 2px;
 }
 
 .card {
   padding: 2em;
+  background-color: var(--card-bg, #ffffff);
+  border-color: var(--border-primary, #a5bcd2);
+  color: var(--text-primary, #1e252f);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 #app {
@@ -66,7 +72,7 @@ button:focus-visible {
   text-align: center;
 }
 
-/* Toastify ikonok méret korlátozás - ne jelenjenek meg nagyban */
+/* Toastify ikonok méret korlátozás */
 .Toastify__toast-icon svg {
   width: 20px !important;
   height: 20px !important;
@@ -82,15 +88,545 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: var(--text-primary, #1e252f);
-    background-color: var(--powder-blue, #a7cced);
+/* ===================== */
+/* SÖTÉT MÓD - GLOBÁLIS */
+/* ===================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--app-bg, #1a2129);
+  color: var(--text-primary, #f0f4f8);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - CARD */
+/* ===================== */
+[data-theme="dark"] .card {
+  background-color: var(--card-bg, #242c38) !important;
+  border-color: var(--border-primary, #445775) !important;
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .card-header {
+  background-color: var(--bg-tertiary, #333d4f) !important;
+  border-color: var(--border-primary, #445775) !important;
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .card-footer {
+  background-color: var(--bg-tertiary, #333d4f) !important;
+  border-color: var(--border-primary, #445775) !important;
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .card-body {
+  color: var(--text-primary, #f0f4f8);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - TÁBLÁZAT */
+/* ===================== */
+[data-theme="dark"] .table {
+  color: var(--text-primary, #f0f4f8);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .table > :not(caption) > * > * {
+  background-color: var(--card-bg, #242c38);
+  border-color: var(--border-primary, #445775);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .table-light {
+  background-color: var(--table-header-bg, #333d4f) !important;
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--table-row-stripe, #283040) !important;
+}
+
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: var(--table-row-hover, #2a3442) !important;
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - ŰRLAP */
+/* ===================== */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  background-color: var(--input-bg, #333d4f);
+  border-color: var(--input-border, #445775);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: var(--input-bg, #333d4f);
+  border-color: var(--input-focus-border, #63adf2);
+  color: var(--text-primary, #f0f4f8);
+  box-shadow: 0 0 0 0.25rem rgba(99, 173, 242, 0.25);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+  color: var(--text-tertiary, #82a0bc);
+}
+
+[data-theme="dark"] .form-control:disabled,
+[data-theme="dark"] .form-select:disabled {
+  background-color: var(--bg-tertiary, #333d4f);
+  color: var(--text-tertiary, #82a0bc);
+}
+
+[data-theme="dark"] .form-label {
+  color: var(--text-secondary, #c3d3e1);
+}
+
+[data-theme="dark"] .input-group-text {
+  background-color: var(--bg-tertiary, #333d4f);
+  border-color: var(--input-border, #445775);
+  color: var(--text-secondary, #c3d3e1);
+}
+
+[data-theme="dark"] .form-check-label {
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .form-check-input {
+  background-color: var(--input-bg, #333d4f);
+  border-color: var(--input-border, #445775);
+}
+
+[data-theme="dark"] .form-check-input:checked {
+  background-color: var(--primary-color, #63adf2);
+  border-color: var(--primary-color, #63adf2);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - GOMBOK */
+/* ===================== */
+[data-theme="dark"] .btn-primary {
+  background-color: var(--primary-color, #63adf2);
+  border-color: var(--primary-color, #63adf2);
+  color: var(--text-inverse, #1e252f);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background-color: var(--primary-hover, #4d9fe8);
+  border-color: var(--primary-hover, #4d9fe8);
+}
+
+[data-theme="dark"] .btn-secondary {
+  background-color: var(--secondary-600, #3d4a5c);
+  border-color: var(--secondary-600, #3d4a5c);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: var(--secondary-500, #475569);
+  border-color: var(--secondary-500, #475569);
+}
+
+[data-theme="dark"] .btn-success {
+  background-color: var(--success-600, #059669);
+  border-color: var(--success-600, #059669);
+}
+
+[data-theme="dark"] .btn-danger {
+  background-color: var(--danger-600, #dc2626);
+  border-color: var(--danger-600, #dc2626);
+}
+
+[data-theme="dark"] .btn-warning {
+  background-color: var(--warning-600, #d97706);
+  border-color: var(--warning-600, #d97706);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .btn-info {
+  background-color: var(--info-600, #4d9bc9);
+  border-color: var(--info-600, #4d9bc9);
+  color: var(--text-inverse, #1e252f);
+}
+
+/* Outline buttons */
+[data-theme="dark"] .btn-outline-primary {
+  color: var(--primary-color, #63adf2);
+  border-color: var(--primary-color, #63adf2);
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+  background-color: var(--primary-color, #63adf2);
+  color: var(--text-inverse, #1e252f);
+}
+
+[data-theme="dark"] .btn-outline-secondary {
+  color: var(--text-secondary, #c3d3e1);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background-color: var(--bg-tertiary, #333d4f);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .btn-outline-success {
+  color: var(--success-500, #10b981);
+  border-color: var(--success-500, #10b981);
+}
+
+[data-theme="dark"] .btn-outline-danger {
+  color: var(--danger-500, #ef4444);
+  border-color: var(--danger-500, #ef4444);
+}
+
+[data-theme="dark"] .btn-outline-warning {
+  color: var(--warning-500, #f59e0b);
+  border-color: var(--warning-500, #f59e0b);
+}
+
+[data-theme="dark"] .btn-outline-info {
+  color: var(--info-500, #6aadd8);
+  border-color: var(--info-500, #6aadd8);
+}
+
+[data-theme="dark"] .btn-outline-light {
+  color: var(--text-secondary, #c3d3e1);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .btn-outline-light:hover {
+  background-color: var(--bg-tertiary, #333d4f);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .btn-outline-dark {
+  color: var(--text-primary, #f0f4f8);
+  border-color: var(--text-primary, #f0f4f8);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - MODAL */
+/* ===================== */
+[data-theme="dark"] .modal-content {
+  background-color: var(--modal-bg, #242c38);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .modal-header {
+  background-color: var(--bg-tertiary, #333d4f);
+  border-color: var(--border-primary, #445775);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .modal-title {
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - DROPDOWN */
+/* ===================== */
+[data-theme="dark"] .dropdown-menu {
+  background-color: var(--dropdown-bg, #242c38);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .dropdown-item {
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+  background-color: var(--dropdown-hover, #333d4f);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .dropdown-divider {
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .dropdown-header {
+  color: var(--text-tertiary, #82a0bc);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - NAVIGATION */
+/* ===================== */
+[data-theme="dark"] .nav-tabs {
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link {
+  color: var(--text-secondary, #c3d3e1);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link:hover {
+  background-color: var(--bg-tertiary, #333d4f);
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  background-color: var(--card-bg, #242c38);
+  border-color: var(--border-primary, #445775);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .nav-pills .nav-link {
+  color: var(--text-secondary, #c3d3e1);
+}
+
+[data-theme="dark"] .nav-pills .nav-link.active {
+  background-color: var(--primary-color, #63adf2);
+  color: var(--text-inverse, #1e252f);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - BADGE */
+/* ===================== */
+[data-theme="dark"] .badge {
+  border: 1px solid transparent;
+}
+
+[data-theme="dark"] .bg-primary {
+  background-color: var(--primary-color, #63adf2) !important;
+  color: var(--text-inverse, #1e252f) !important;
+}
+
+[data-theme="dark"] .bg-secondary {
+  background-color: var(--secondary-600, #3d4a5c) !important;
+}
+
+[data-theme="dark"] .bg-success {
+  background-color: var(--success-600, #059669) !important;
+}
+
+[data-theme="dark"] .bg-danger {
+  background-color: var(--danger-600, #dc2626) !important;
+}
+
+[data-theme="dark"] .bg-warning {
+  background-color: var(--warning-600, #d97706) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .bg-info {
+  background-color: var(--info-600, #4d9bc9) !important;
+  color: var(--text-inverse, #1e252f) !important;
+}
+
+[data-theme="dark"] .bg-light {
+  background-color: var(--bg-tertiary, #333d4f) !important;
+  color: var(--text-primary, #f0f4f8) !important;
+}
+
+[data-theme="dark"] .bg-dark {
+  background-color: var(--bg-primary, #1e252f) !important;
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - ALERT */
+/* ===================== */
+[data-theme="dark"] .alert {
+  border-color: var(--border-primary, #445775);
+}
+
+[data-theme="dark"] .alert-primary {
+  background-color: rgba(99, 173, 242, 0.15);
+  border-color: rgba(99, 173, 242, 0.3);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .alert-secondary {
+  background-color: rgba(84, 94, 117, 0.3);
+  border-color: rgba(84, 94, 117, 0.5);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .alert-success {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .alert-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(167, 204, 237, 0.15);
+  border-color: rgba(167, 204, 237, 0.3);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .alert-light {
+  background-color: var(--bg-tertiary, #333d4f);
+  border-color: var(--border-primary, #445775);
+  color: var(--text-primary, #f0f4f8);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - LIST GROUP */
+/* ===================== */
+[data-theme="dark"] .list-group-item {
+  background-color: var(--card-bg, #242c38);
+  border-color: var(--border-primary, #445775);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .list-group-item-action:hover {
+  background-color: var(--dropdown-hover, #333d4f);
+  color: var(--text-primary, #f0f4f8);
+}
+
+[data-theme="dark"] .list-group-item-action:active {
+  background-color: var(--bg-tertiary, #333d4f);
+}
+
+[data-theme="dark"] .list-group-item.active {
+  background-color: var(--primary-color, #63adf2);
+  border-color: var(--primary-color, #63adf2);
+  color: var(--text-inverse, #1e252f);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - PROGRESS */
+/* ===================== */
+[data-theme="dark"] .progress {
+  background-color: var(--bg-tertiary, #333d4f);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - TEXT */
+/* ===================== */
+[data-theme="dark"] .text-muted {
+  color: var(--text-tertiary, #82a0bc) !important;
+}
+
+[data-theme="dark"] .text-dark {
+  color: var(--text-primary, #f0f4f8) !important;
+}
+
+[data-theme="dark"] .text-light {
+  color: var(--text-secondary, #c3d3e1) !important;
+}
+
+[data-theme="dark"] hr {
+  border-color: var(--border-primary, #445775);
+}
+
+/* ===================== */
+/* SÖTÉT MÓD - PLACEHOLDER */
+/* ===================== */
+[data-theme="dark"] .placeholder {
+  background-color: var(--bg-tertiary, #333d4f);
+}
+
+/* ===================== */
+/* FOCUS ÉS ACCESSIBILITY */
+/* ===================== */
+*:focus-visible {
+  outline: 2px solid var(--primary-color, #63adf2);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  box-shadow: 0 0 0 3px rgba(99, 173, 242, 0.4);
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary-color, #63adf2);
+  color: white;
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ===================== */
+/* TOUCH TARGET OPTIMALIZÁLÁS */
+/* ===================== */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
   }
-  a:hover {
-    color: var(--primary-hover, #4d9fe8);
+  
+  .btn-sm {
+    min-height: 36px;
+    padding: 0.5rem 0.75rem;
   }
-  button {
-    background-color: var(--steel-blue, #82a0bc);
+  
+  .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+  }
+  
+  .form-control,
+  .form-select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* ===================== */
+/* ANIMÁCIÓK ÉS ÁTMENETEK */
+/* ===================== */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

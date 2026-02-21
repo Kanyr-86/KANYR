@@ -94,7 +94,11 @@ export const useAuthStore = defineStore('auth', {
         case 'Parents':
         case 'Rooms':
         case 'Reports':
+        case 'RoomChangeRequests':
           return this.isAdmin
+        // Shared routes (both admin and student)
+        case 'Notifications':
+          return this.isAuthenticated
         // Student-only routes
         case 'StudentDashboard':
         case 'StudentRooms':

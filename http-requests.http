@@ -23,6 +23,91 @@ Content-Type: application/json
   "password": "admin123"
 }
 
+### ======================================
+### RATE LIMITING TESZTEK
+### ======================================
+
+### Rate Limit Teszt 1 - Bejelentkezési kísérlet (1/5)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "hibas_jelszo"
+}
+
+### Rate Limit Teszt 2 - Bejelentkezési kísérlet (2/5)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "hibas_jelszo"
+}
+
+### Rate Limit Teszt 3 - Bejelentkezési kísérlet (3/5)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "hibas_jelszo"
+}
+
+### Rate Limit Teszt 4 - Bejelentkezési kísérlet (4/5)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "hibas_jelszo"
+}
+
+### Rate Limit Teszt 5 - Bejelentkezési kísérlet (5/5) - Utolsó engedélyezett
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "hibas_jelszo"
+}
+
+### Rate Limit Teszt 6 - Bejelentkezési kísérlet (6.) - EL KELL UTASÍTANI (429)
+### Várt válasz: 429 Too Many Requests
+### Válasz tartalma: "Túl sok bejelentkezési kísérlet. Kérjük, próbálja újra később."
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "hibas_jelszo"
+}
+
+### Rate Limit Teszt - Ellenőrzés helyes bejelentkezéssel (szintén elutasításra kerül)
+### Ez is elutasításra kerül, mert a rate limit minden bejelentkezési kísérletet számol
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kanyr.hu",
+  "password": "admin123"
+}
+
+### ======================================
+### RATE LIMIT VÁLASZ FORMÁTUM PÉLDA
+### ======================================
+### Amikor a rate limit túllépésre kerül, a következő válasz érkezik:
+### HTTP/1.1 429 Too Many Requests
+### Content-Type: application/json
+### Retry-After: 895 (másodpercben)
+###
+### {
+###   "success": false,
+###   "error": "Túl sok bejelentkezési kísérlet. Kérjük, próbálja újra később.",
+###   "message": "Túl sok sikertelen bejelentkezési kísérlet. Kérjük, várjon 15 perc próbálkozzon újra.",
+###   "retryAfter": "15 perc"
+### }
+
 ### Felhasználó kijelentkezés
 POST http://localhost:3000/api/auth/logout
 Authorization: Bearer {{token}}

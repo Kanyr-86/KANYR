@@ -40,6 +40,18 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/notifications',
+      name: 'Notifications',
+      component: () => import('../views/StudentNotificationsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/room-change-requests',
+      name: 'RoomChangeRequests',
+      component: () => import('../views/RoomChangeRequestsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/student-dashboard',
       name: 'StudentDashboard',
       component: () => import('../views/StudentDashboard.vue'),

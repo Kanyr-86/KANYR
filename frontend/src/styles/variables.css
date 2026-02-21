@@ -1,12 +1,16 @@
+/* ========================================
+   KANYR Color Palette - Blue Slate Theme
+   ======================================== */
+
 :root {
-  /* KANYR Color Palette - Blue Slate Theme */
+  /* --- Base Brand Colors --- */
   --blue-slate: #545e75;
   --cool-sky: #63adf2;
   --powder-blue: #a7cced;
   --yale-blue: #304d6d;
   --steel-blue: #82a0bc;
 
-  /* Primary Colors (Cool Sky based) */
+  /* --- Primary Colors (Cool Sky based) --- */
   --primary-50: #e8f4fc;
   --primary-100: #d1e9f9;
   --primary-200: #a8d3f3;
@@ -18,7 +22,7 @@
   --primary-800: #2a6fa8;
   --primary-900: #1f5a8a;
 
-  /* Secondary Colors (Blue Slate based) */
+  /* --- Secondary Colors (Blue Slate based) --- */
   --secondary-50: #e9ecf1;
   --secondary-100: #d3d9e3;
   --secondary-200: #a7b3c7;
@@ -30,7 +34,7 @@
   --secondary-800: #2a3442;
   --secondary-900: #1e252f;
 
-  /* Neutral Colors (Steel Blue based) */
+  /* --- Neutral Colors (Steel Blue based) --- */
   --neutral-50: #f0f4f8;
   --neutral-100: #e1e9f0;
   --neutral-200: #c3d3e1;
@@ -42,7 +46,7 @@
   --neutral-800: #333d4f;
   --neutral-900: #242c38;
 
-  /* Success Colors */
+  /* --- Success Colors --- */
   --success-50: #ecfdf5;
   --success-100: #d1fae5;
   --success-200: #a7f3d0;
@@ -54,7 +58,7 @@
   --success-800: #065f46;
   --success-900: #064e3b;
 
-  /* Danger Colors */
+  /* --- Danger Colors --- */
   --danger-50: #fef2f2;
   --danger-100: #fee2e2;
   --danger-200: #fecaca;
@@ -66,7 +70,7 @@
   --danger-800: #991b1b;
   --danger-900: #7f1d1d;
 
-  /* Warning Colors */
+  /* --- Warning Colors --- */
   --warning-50: #fffbeb;
   --warning-100: #fef3c7;
   --warning-200: #fde68a;
@@ -78,7 +82,7 @@
   --warning-800: #92400e;
   --warning-900: #78350f;
 
-  /* Info Colors (Powder Blue based) */
+  /* --- Info Colors (Powder Blue based) --- */
   --info-50: #f0f7fd;
   --info-100: #e1effb;
   --info-200: #c3dff7;
@@ -90,19 +94,19 @@
   --info-800: #2c79a6;
   --info-900: #1f6089;
 
-  /* Typography */
+  /* --- Typography --- */
   --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  --font-size-5xl: 3rem;      /* 48px */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
 
   --font-weight-light: 300;
   --font-weight-normal: 400;
@@ -110,36 +114,35 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Spacing Scale (8px base unit) */
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
-  --space-24: 6rem;     /* 96px */
+  /* --- Spacing Scale (8px base unit) --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
 
-  /* Shadows */
+  /* --- Shadows --- */
   --shadow-sm: 0 1px 2px 0 rgba(48, 77, 109, 0.1);
   --shadow-md: 0 4px 6px -1px rgba(48, 77, 109, 0.15), 0 2px 4px -1px rgba(48, 77, 109, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(48, 77, 109, 0.15), 0 4px 6px -2px rgba(48, 77, 109, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(48, 77, 109, 0.15), 0 10px 10px -5px rgba(48, 77, 109, 0.08);
 
-  /* Borders */
-  --border-radius-sm: 0.375rem;  /* 6px */
-  --border-radius-md: 0.5rem;    /* 8px */
-  --border-radius-lg: 0.75rem;   /* 12px */
-  --border-radius-xl: 1rem;      /* 16px */
-  --border-radius-2xl: 1.5rem;   /* 24px */
-
+  /* --- Borders --- */
+  --border-radius-sm: 0.375rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  --border-radius-xl: 1rem;
+  --border-radius-2xl: 1.5rem;
   --border-width: 1px;
 
-  /* Z-index */
+  /* --- Z-index --- */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -148,62 +151,147 @@
   --z-popover: 1060;
   --z-tooltip: 1070;
 
-  /* Transitions */
+  /* --- Transitions --- */
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;
   --transition-slow: 500ms ease-in-out;
 
-  /* Breakpoints */
-  --breakpoint-sm: 576px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
-  --breakpoint-xl: 1200px;
-  --breakpoint-xxl: 1400px;
-}
-
-/* Light Theme */
-:root {
-  /* Semantic Colors */
+  /* ========================================
+     LIGHT THEME - Semantic Colors
+     ======================================== */
+  
+  /* Background Colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f0f4f8;
   --bg-tertiary: #e1e9f0;
   --bg-card: #ffffff;
   --bg-muted: #f0f4f8;
 
+  /* Text Colors */
   --text-primary: #1e252f;
   --text-secondary: #333f4f;
   --text-tertiary: #545e75;
   --text-inverse: #ffffff;
 
+  /* Border Colors */
   --border-primary: #a5bcd2;
   --border-secondary: #82a0bc;
 
+  /* Shadow */
   --shadow-card: var(--shadow-md);
   --shadow-elevated: var(--shadow-lg);
+
+  /* Component Colors */
+  --navbar-bg: #545e75;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #c3d3e1;
+  --input-focus-border: #63adf2;
+  --table-header-bg: #f0f4f8;
+  --table-row-hover: #f8fafc;
+  --table-row-stripe: #f0f4f8;
+  --modal-bg: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --dropdown-bg: #ffffff;
+  --dropdown-hover: #f0f4f8;
+
+  /* Status Colors */
+  --status-active-bg: #d1fae5;
+  --status-active-text: #065f46;
+  --status-inactive-bg: #fee2e2;
+  --status-inactive-text: #991b1b;
+
+  /* Badge Colors */
+  --badge-bg: #e1e9f0;
+  --badge-text: #333f4f;
+
+  /* Primary Semantic Colors */
+  --primary-color: #63adf2;
+  --secondary-color: #82a0bc;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #a7cced;
+  --light-color: #e8f4fc;
+  --dark-color: #304d6d;
+
+  /* Hover States */
+  --primary-hover: #4d9fe8;
+  --secondary-hover: #6b8aa6;
+  --success-hover: #059669;
+  --danger-hover: #dc2626;
+  --warning-hover: #d97706;
+  --info-hover: #8bbde3;
+
+  /* Theme Colors */
+  --app-bg: #304d6d;
+  --link-color: #63adf2;
+  --link-hover: #4d9fe8;
+
+  --border-radius: 8px;
+  --box-shadow: 0 2px 10px rgba(48, 77, 109, 0.15);
+  --transition: all 0.3s ease;
 }
 
-/* Dark Theme */
+/* ========================================
+   DARK THEME
+   ======================================== */
+
 [data-theme="dark"] {
-  /* Semantic Colors */
+  /* Background Colors */
   --bg-primary: #1e252f;
   --bg-secondary: #242c38;
   --bg-tertiary: #333d4f;
   --bg-card: #242c38;
   --bg-muted: #1a2129;
 
+  /* Text Colors */
   --text-primary: #f0f4f8;
   --text-secondary: #c3d3e1;
   --text-tertiary: #82a0bc;
   --text-inverse: #1e252f;
 
+  /* Border Colors */
   --border-primary: #445775;
   --border-secondary: #557091;
 
+  /* Shadow */
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+
+  /* Component Colors */
+  --navbar-bg: #333d4f;
+  --card-bg: #242c38;
+  --input-bg: #333d4f;
+  --input-border: #445775;
+  --input-focus-border: #63adf2;
+  --table-header-bg: #333d4f;
+  --table-row-hover: #2a3442;
+  --table-row-stripe: #283040;
+  --modal-bg: #242c38;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --dropdown-bg: #242c38;
+  --dropdown-hover: #333d4f;
+
+  /* Status Colors */
+  --status-active-bg: #065f46;
+  --status-active-text: #a7f3d0;
+  --status-inactive-bg: #7f1d1d;
+  --status-inactive-text: #fca5a5;
+
+  /* Badge Colors */
+  --badge-bg: #333d4f;
+  --badge-text: #c3d3e1;
+
+  /* Theme Colors */
+  --yale-blue: #1a2129;
+  --app-bg: #1a2129;
 }
 
-/* High Contrast Theme */
+/* ========================================
+   HIGH CONTRAST THEME
+   ======================================== */
+
 [data-theme="high-contrast"] {
   --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
@@ -221,36 +309,4 @@
 
   --shadow-card: none;
   --shadow-elevated: none;
-}
-
-/* Accessibility focus styles */
-:root {
-  /* Primary semantic colors */
-  --primary-color: #63adf2;
-  --secondary-color: #82a0bc;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  --info-color: #a7cced;
-  --light-color: #e8f4fc;
-  --dark-color: #304d6d;
-  
-  /* Hover states */
-  --primary-hover: #4d9fe8;
-  --secondary-hover: #6b8aa6;
-  --success-hover: #059669;
-  --danger-hover: #dc2626;
-  --warning-hover: #d97706;
-  --info-hover: #8bbde3;
-  
-  /* Theme colors for components */
-  --navbar-bg: #545e75;
-  --app-bg: #304d6d;
-  --card-bg: #ffffff;
-  --link-color: #63adf2;
-  --link-hover: #4d9fe8;
-  
-  --border-radius: 8px;
-  --box-shadow: 0 2px 10px rgba(48, 77, 109, 0.15);
-  --transition: all 0.3s ease;
 }

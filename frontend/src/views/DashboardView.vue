@@ -2,49 +2,59 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
-        <h2 class="dashboard-title">KANYR Dashboard</h2>
+        <h2 class="dashboard-title">
+          <i class="bi bi-speedometer2 me-2"></i>KANYR Dashboard
+        </h2>
         
         <!-- Admin (Főtitkár) nézet - statisztikákkal -->
-        <div v-if="isAdmin" class="row mb-4">
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Diákok</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.totalStudents || 0 }}</p>
-                <span class="badge bg-primary">Összes</span>
-              </div>
-            </div>
+        <div v-if="isAdmin" class="row mb-4 g-3">
+          <div class="col-6 col-lg-3">
+            <StatCard
+              title="Diákok"
+              :value="statistics.totalStudents || 0"
+              subtitle="Összes regisztrált"
+              icon="bi bi-people-fill"
+              variant="primary"
+              :loading="loading"
+            />
           </div>
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-person-check-fill text-success" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Aktív diákok</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.activeStudents || 0 }}</p>
-                <span class="badge bg-success">Lakók</span>
-              </div>
-            </div>
+          <div class="col-6 col-lg-3">
+            <StatCard
+              title="Aktív diákok"
+              :value="statistics.activeStudents || 0"
+              subtitle="Bentlakók"
+              icon="bi bi-person-check-fill"
+              variant="success"
+              :loading="loading"
+              :showProgress="true"
+              :progressValue="statistics.activeStudents || 0"
+              :progressMax="statistics.totalStudents || 1"
+              progressLabel="Aktivitás"
+            />
           </div>
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-door-closed-fill text-info" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Szobák</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.totalRooms || 0 }}</p>
-                <span class="badge bg-info">Összes</span>
-              </div>
-            </div>
+          <div class="col-6 col-lg-3">
+            <StatCard
+              title="Szobák"
+              :value="statistics.totalRooms || 0"
+              subtitle="Összes szoba"
+              icon="bi bi-door-closed-fill"
+              variant="info"
+              :loading="loading"
+            />
           </div>
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-bar-chart-fill text-warning" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Foglaltság</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.averageOccupancy || 0 }}%</p>
-                <span class="badge bg-warning">Átlag</span>
-              </div>
-            </div>
+          <div class="col-6 col-lg-3">
+            <StatCard
+              title="Foglaltság"
+              :value="statistics.averageOccupancy || 0"
+              suffix="%"
+              subtitle="Átlagos kihasználtság"
+              icon="bi bi-bar-chart-fill"
+              variant="warning"
+              :loading="loading"
+              :showProgress="true"
+              :progressValue="statistics.averageOccupancy || 0"
+              progressLabel="Kihasználtság"
+            />
           </div>
         </div>
         
@@ -151,7 +161,7 @@
 
 <style scoped>
 .dashboard-title {
-  color: #ffffff !important;
+  color: var(--text-inverse, #ffffff);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   margin-bottom: 1.5rem;
   font-weight: 600;
@@ -164,11 +174,13 @@ import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { toast } from 'vue3-toastify'
 import NotificationInbox from '../components/NotificationInbox.vue'
+import StatCard from '../components/StatCard.vue'
 
 export default {
   name: 'DashboardView',
   components: {
-    NotificationInbox
+    NotificationInbox,
+    StatCard
   },
   setup() {
     const statistics = ref({})

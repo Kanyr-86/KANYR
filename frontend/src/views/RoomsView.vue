@@ -1257,12 +1257,12 @@ export default {
 <style scoped>
 /* Címek színe - KANYR téma */
 h2 {
-  color: #ffffff;
+  color: var(--text-inverse, #ffffff);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .text-muted {
-  color: var(--powder-blue, #a7cced) !important;
+  color: var(--text-tertiary, #82a0bc) !important;
 }
 
 /* Szoba kártya stílusok */

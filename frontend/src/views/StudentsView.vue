@@ -1498,12 +1498,12 @@ export default {
 <style scoped>
 /* Címek színe - KANYR téma */
 h2 {
-  color: #ffffff;
+  color: var(--text-inverse, #ffffff);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .text-muted {
-  color: var(--powder-blue, #a7cced) !important;
+  color: var(--text-tertiary, #82a0bc) !important;
 }
 
 /* Szoba kártya stílusok - nem kompatibilis szobák homályosítása */
@@ -1515,15 +1515,15 @@ h2 {
   opacity: 0.5;
   filter: blur(1px) grayscale(0.5);
   pointer-events: none;
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary, #f0f4f8);
 }
 
 .room-card.room-incompatible .card-header {
-  background-color: #e9ecef;
+  background-color: var(--bg-tertiary, #e1e9f0);
 }
 
 .room-card.room-incompatible .card-body {
-  color: #6c757d;
+  color: var(--text-tertiary, #82a0bc);
 }
 
 /* Biztosítjuk, hogy a "Nem kompatibilis" gomb látható legyen */

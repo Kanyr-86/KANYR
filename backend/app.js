@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { testConnection } = require('./config/database');
 const db = require('./models');
+const { generalLimiter } = require('./middleware/rateLimiter');
 require('dotenv').config();
 
 const app = express();
@@ -25,6 +26,10 @@ app.use(cors({
 }));
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
+
+// General Rate Limiter - applies to all API routes
+// Limits: 100 requests per 15 minutes per IP
+app.use('/api', generalLimiter);
 
 // Alapértelmezett route
 app.get('/', (req, res) => {
@@ -79,6 +84,10 @@ const startServer = async () => {
     // SzobaValtoztatas route-ok inicializálása
     app.use('/api/szobavaltoztatas', require('./routes/SzobaValtoztatasRoutes'));
     console.log('✓ SzobaValtoztatas route-ok inicializálva');
+
+    // Ertesites route-ok inicializálása
+    app.use('/api/ertesitesek', require('./routes/ErtesitesRoutes'));
+    console.log('✓ Ertesites route-ok inicializálva');
 
     // 404 handler - csak most regisztráljuk, miután minden route be van állítva
     app.use((req, res) => {

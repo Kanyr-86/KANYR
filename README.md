@@ -33,14 +33,59 @@ KANYR/
 
 ## 🚀 Gyors Indítás
 
-### Backend indítása
+### Opció 1: Docker (Ajánlott)
+
+A legegyszerűbb mód a projekt futtatásának Docker használata.
+
+#### Előfeltételek
+- [Docker](https://www.docker.com/get-started) telepítve
+- [Docker Compose](https://docs.docker.com/compose/install/) telepítve
+
+#### Fejlesztői környezet indítása
+```bash
+# Konténerek indítása
+docker-compose up -d
+
+# Újraépítés szükségtése esetén
+docker-compose up -d --build
+```
+
+A webalkalmazás elérhető: http://localhost
+
+#### Produkciós környezet indítása
+```bash
+# Hozzon létre egy .env fájlt a gyökérkönyvtárban
+JWT_SECRET=your-secure-secret-key
+JWT_EXPIRES_IN=24h
+ALLOWED_ORIGINS=https://yourdomain.com
+
+# Indítás
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+#### Docker parancsok
+| Parancs | Leírás |
+|---------|--------|
+| `docker-compose up -d` | Konténerek indítása háttérben |
+| `docker-compose up -d --build` | Újraépítés és indítás |
+| `docker-compose down` | Konténerek leállítása és törlése |
+| `docker-compose down -v` | Konténerek és volumenek törlése |
+| `docker-compose logs -f` | Naplók követése |
+| `docker-compose ps` | Konténerek állapota |
+
+#### Adatbázis megőrzése
+Az SQLite adatbázis a `kanyr-sqlite-data` nevű Docker volumenben tárolódik, így a konténer újraindítása után is megmaradnak az adatok.
+
+### Opció 2: Helyi fejlesztés
+
+#### Backend indítása
 ```bash
 cd backend
 npm install
 npm start
 ```
 
-### Frontend indítása
+#### Frontend indítása
 ```bash
 cd frontend
 npm install
@@ -50,8 +95,8 @@ npm run dev
 ### Teszt fiókok
 | Szerepkör | Email | Jelszó |
 |-----------|-------|--------|
-| Főtitkár (Admin) | admin@kanyr.hu | admin123 |
-| Titkár | user@kanyr.hu | user1234 |
+| Titkár | admin@kanyr.hu | admin123 |
+| Diák | (teszt user token) | - |
 
 ## 📚 Dokumentáció
 

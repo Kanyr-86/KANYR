@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Test files and coverage
+tests/
+coverage/
+*.test.js
+*.spec.js
+jest.config.js
+
+# Development files
+.env
+.env.local
+.env.development
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Documentation
+*.md
+
+# SQLite database (will be mounted as volume)
+*.sqlite
+*.db
+
+# Log files
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
