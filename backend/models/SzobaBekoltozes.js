@@ -11,18 +11,18 @@ module.exports = (sequelize) => {
     diak_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    //   references: {
-    //     model: 'diaks',
-    //     key: 'diak_id'
-    //   }
+      references: {
+        model: 'diaks',
+        key: 'diak_id'
+      }
     },
     szoba_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    //   references: {
-    //     model: 'szobas',
-    //     key: 'szoba_id'
-    //   }
+      references: {
+        model: 'szobas',
+        key: 'szoba_id'
+      }
     },
     bekoltozes_datum: {
       type: DataTypes.DATEONLY,

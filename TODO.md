@@ -1,3 +1,127 @@
+# KANYR - Project Status & Implementation History
+
+---
+
+## 🐛 Bug Fixes - v1.11.0 (2026-02-22) ✅ COMPLETED
+
+### Critical Fixes:
+- [x] **Null Check in DiakService.js** - Added null check for `student.szulo` in `generateStudentReport` method to prevent runtime crashes
+- [x] **Notification Field Name Mismatch** - Fixed `diak_id` → `cimzett_id` and `elolvasva` → `olvasva` in DiakController.js
+- [x] **Validation vs Model Mismatch** - Made `szulo_id` and `cim_id` optional in DiakRoutes.js validation
+
+### Configuration Fixes:
+- [x] **Package.json Main Entry Point** - Changed from `index.js` to `backend/app.js`
+- [x] **Bootstrap Vue Version** - Standardized to `^0.3.12` across root and frontend package.json
+- [x] **Version Number Update** - Updated from `1.0.0` to `1.11.0`
+- [x] **Package Name Rename** - Changed `first_backend` to `kanyr-backend` with updated dependency reference
+
+### Model Association Fixes:
+- [x] **Foreign Key References** - Uncommented FK references in Diak.js (`szulo_id`, `cim_id`) and SzobaBekoltozes.js (`diak_id`, `szoba_id`)
+- [x] **Felhasznalo-Diak Association** - Added `belongsTo` relationship in Felhasznalo.js
+
+### Localization Fixes:
+- [x] **Hungarian Spelling** - Fixed `gondviselo` → `gondviselő` in Diak.js and DiakRoutes.js
+
+---
+
+## 🔔 Notification System (Ertesites) - v1.9.0 ✅ COMPLETED
+
+### Backend Implementation:
+- [x] Create Notification.js model with `cimzett_id`, `cimzett_tipus`, `tipus`, `cim`, `uzenet`, `adat`, `olvasva` fields
+- [x] Create ErtesitesRepository.js for database operations
+- [x] Create ErtesitesService.js for business logic
+- [x] Create ErtesitesController.js for API endpoints
+- [x] Create ErtesitesRoutes.js for routing
+
+### Frontend Implementation:
+- [x] Create NotificationBell.vue component for real-time notification display
+- [x] Create NotificationInbox.vue component for notification list
+- [x] Create StudentNotificationsView.vue for student notification page
+- [x] Create notifications.js store for state management
+
+### API Endpoints:
+- GET /api/ertesitesek - Get all notifications for user
+- GET /api/ertesitesek/unread - Get unread notifications count
+- PUT /api/ertesitesek/:id/read - Mark notification as read
+- PUT /api/ertesitesek/read-all - Mark all notifications as read
+
+---
+
+## 🏠 Room Change Request System (SzobaValtoztatas) - v1.8.0 ✅ COMPLETED
+
+### Backend Implementation:
+- [x] Create SzobaValtoztatas.js model
+- [x] Create SzobaValtoztatasRepository.js
+- [x] Create SzobaValtoztatasService.js
+- [x] Create SzobaValtoztatasController.js
+- [x] Create SzobaValtoztatasRoutes.js
+
+### Frontend Implementation:
+- [x] Create RoomChangeRequestsView.vue for admin room change management
+
+### API Endpoints:
+- GET /api/szoba-valtoztatas - List all room change requests
+- POST /api/szoba-valtoztatas - Submit room change request
+- PUT /api/szoba-valtoztatas/:id/approve - Approve request (admin)
+- PUT /api/szoba-valtoztatas/:id/reject - Reject request (admin)
+
+---
+
+## 🎨 UI Components & Theme System - v1.7.0 ✅ COMPLETED
+
+### Theme System:
+- [x] Create theme.js store for dark/light mode
+- [x] Create variables.css for CSS custom properties
+- [x] Create ThemeSwitcher.vue component
+
+### Loading & Feedback Components:
+- [x] Create LoadingSpinner.vue component
+- [x] Create LoadingScreen.vue component
+- [x] Create SkeletonLoader.vue component
+- [x] Create ConfirmDialog.vue component
+
+### Data Visualization:
+- [x] Create StatCard.vue for dashboard statistics
+- [x] Create OccupancyChart.vue for room occupancy visualization
+
+### Error Handling:
+- [x] Create ErrorBoundary.vue component
+- [x] Create FormValidationError.vue component
+
+---
+
+## 📊 Student Dashboard - v1.6.0 ✅ COMPLETED
+
+### Frontend Views:
+- [x] Create StudentDashboard.vue for student overview
+- [x] Create StudentRoomsView.vue for room information
+- [x] Create StudentNotificationsView.vue for notifications
+
+### API Integration:
+- [x] Add /api/diaks/students/room endpoint
+- [x] Add /api/diaks/students/room-history endpoint
+- [x] Add /api/diaks/students/room-change endpoint
+- [x] Add /api/diaks/students/notifications endpoint
+
+---
+
+## 🐳 Docker Configuration - v1.5.0 ✅ COMPLETED
+
+### Backend Docker:
+- [x] Create backend/Dockerfile
+- [x] Create backend/.dockerignore
+
+### Frontend Docker:
+- [x] Create frontend/Dockerfile
+- [x] Create frontend/.dockerignore
+- [x] Create frontend/nginx.conf
+
+### Docker Compose:
+- [x] Create docker-compose.yml for development
+- [x] Create docker-compose.prod.yml for production
+
+---
+
 # KANYR - Separate Endpoints Implementation
 
 ## Objective: Create individual CRUD endpoints for Szulo and Lakcim models

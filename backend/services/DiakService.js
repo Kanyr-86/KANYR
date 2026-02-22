@@ -487,12 +487,12 @@ class DiakService {
           telefon: student.telefonszam,
           születési_dátum: student.szuletesi_datum
         },
-        kapcsolattarto: {
+        kapcsolattarto: student.szulo ? {
           név: student.szulo.nev,
           email: student.szulo.email,
           telefon: student.szulo.telefonszam,
           kapcsolat_típusa: student.kapcsolat_tipusa
-        },
+        } : null,
         aktuális_elhelyezés: currentBekoltozes ? {
           szoba: currentBekoltozes.szoba.szoba_szama,
           beköltözés_dátuma: currentBekoltozes.bekoltozes_datum,

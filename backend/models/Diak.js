@@ -88,28 +88,28 @@ module.exports = (sequelize) => {
     szulo_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    //   references: {
-    //     model: 'Szulos',
-    //     key: 'szulo_id'
-    //   }
+      references: {
+        model: 'Szulos',
+        key: 'szulo_id'
+      }
     },
     kapcsolat_tipusa: {
-      type: DataTypes.ENUM('anya', 'apa', 'gondviselo'),
+      type: DataTypes.ENUM('anya', 'apa', 'gondviselő'),
       allowNull: false,
       validate: {
         isIn: {
-          args: [['anya', 'apa', 'gondviselo']],
-          msg: 'A kapcsolat típusa csak anya, apa vagy gondviselo lehet'
+          args: [['anya', 'apa', 'gondviselő']],
+          msg: 'A kapcsolat típusa csak anya, apa vagy gondviselő lehet'
         }
       }
     },
     cim_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    //   references: {
-    //     model: 'Lakcims',
-    //     key: 'cim_id'
-    //   }
+      references: {
+        model: 'Lakcims',
+        key: 'cim_id'
+      }
     },
     nem: {
       type: DataTypes.ENUM('férfi', 'nő'),

@@ -1,8 +1,8 @@
 {
   "name": "kanyr",
-  "version": "1.0.0",
+  "version": "1.11.0",
   "description": "Ez a Ganz Ábrahám Szakközép és Technikum diákjainak a csoport projektje",
-  "main": "index.js",
+  "main": "backend/app.js",
   "scripts": {
     "test": "cd backend && npm test",
     "test:backend": "cd backend && npm test",
@@ -32,7 +32,7 @@
     "bootstrap-vue-3": "^0.5.1",
     "cors": "^2.8.6",
     "express-rate-limit": "^8.2.1",
-    "first_backend": "file:backend",
+    "kanyr-backend": "file:backend",
     "lodash-es": "^4.17.23",
     "pinia": "^3.0.4",
     "vue-router": "^4.6.4"

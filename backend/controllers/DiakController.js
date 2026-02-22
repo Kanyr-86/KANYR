@@ -747,7 +747,7 @@ class DiakController {
       // Használjuk a megfelelő modelleket a db objektumból
       const Notification = this.db.Notification;
       const notifications = await Notification.findAll({
-        where: { diak_id: parseInt(id) },
+        where: { cimzett_id: parseInt(id) },
         order: [['created_at', 'DESC']]
       });
 
@@ -790,14 +790,14 @@ class DiakController {
       }
 
       // Ellenőrizzük, hogy az értesítés a megfelelő diákhoz tartozik-e
-      if (notification.diak_id !== parseInt(id)) {
+      if (notification.cimzett_id !== parseInt(id)) {
         return res.status(403).json({
           success: false,
           error: 'Nincs jogosultsága az értesítés elolvasásához'
         });
       }
 
-      await notification.update({ elolvasva: true });
+      await notification.update({ olvasva: true });
 
       res.json({
         success: true,
@@ -838,8 +838,8 @@ class DiakController {
       // Használjuk a megfelelő modelleket a db objektumból
       const Notification = this.db.Notification;
       await Notification.update(
-        { elolvasva: true },
-        { where: { diak_id: parseInt(id), elolvasva: false } }
+        { olvasva: true },
+        { where: { cimzett_id: parseInt(id), olvasva: false } }
       );
 
       res.json({

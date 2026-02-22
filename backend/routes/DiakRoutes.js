@@ -17,9 +17,9 @@ const validateCreateDiak = [
   body('szemelyi_igazolvany_szam').notEmpty().withMessage('A személyi igazolvány szám kötelező'),
   body('taj_szam').notEmpty().withMessage('A TAJ szám kötelező'),
   body('diakigazolvany_szam').notEmpty().withMessage('A diákigazolvány szám kötelező'),
-  body('szulo_id').isInt({ min: 1 }).withMessage('A szülő ID pozitív egész számnak kell legyen'),
-  body('kapcsolat_tipusa').isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
-  body('cim_id').isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen'),
+  body('szulo_id').optional().isInt({ min: 1 }).withMessage('A szülő ID pozitív egész számnak kell legyen'),
+  body('kapcsolat_tipusa').isIn(['anya', 'apa', 'gondviselő']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselő lehet'),
+  body('cim_id').optional().isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen'),
   body('nem').isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet')
 ];
 
@@ -32,7 +32,7 @@ const validateUpdateDiak = [
   body('taj_szam').optional().notEmpty().withMessage('A TAJ szám nem lehet üres'),
   body('diakigazolvany_szam').optional().notEmpty().withMessage('A diákigazolvány szám nem lehet üres'),
   body('szulo_id').optional().isInt({ min: 1 }).withMessage('A szülő ID pozitív egész számnak kell legyen'),
-  body('kapcsolat_tipusa').optional().isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
+  body('kapcsolat_tipusa').optional().isIn(['anya', 'apa', 'gondviselő']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselő lehet'),
   body('cim_id').optional().isInt({ min: 1 }).withMessage('A cím ID pozitív egész számnak kell legyen'),
   body('nem').optional().isIn(['férfi', 'nő']).withMessage('A nem csak férfi vagy nő lehet')
 ];
@@ -49,7 +49,7 @@ const validateMoveOut = [
 const validateSearch = [
   query('nev').optional().isString().withMessage('A név szöveg formátumban kell legyen'),
   query('email').optional().isEmail().withMessage('Érvényes email címet adjon meg'),
-  query('kapcsolat_tipusa').optional().isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
+  query('kapcsolat_tipusa').optional().isIn(['anya', 'apa', 'gondviselő']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselő lehet'),
   query('aktiv').optional().isBoolean().withMessage('Az aktiv paraméter boolean típusú kell legyen')
 ];
 

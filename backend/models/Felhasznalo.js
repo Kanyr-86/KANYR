@@ -78,8 +78,10 @@ module.exports = (sequelize) => {
   // Később itt definiálhatók kapcsolatok más modellekhez (pl. logolás, stb.)
   
   Felhasznalo.associate = (models) => {
-    // Egyelőre nincsenek kapcsolatok
-    // A jövőben itt definiálhatók kapcsolatok
+    Felhasznalo.belongsTo(models.Diak, {
+      foreignKey: 'diak_id',
+      as: 'diak'
+    });
   };
 
   return Felhasznalo;
