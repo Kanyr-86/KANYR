@@ -21,6 +21,17 @@ jest.mock('../../middleware/rateLimiter', () => ({
   generalLimiter: (req, res, next) => next()
 }));
 
+// Suppress console.error in tests (expected when testing invalid tokens)
+let consoleErrorSpy;
+
+beforeAll(() => {
+  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  consoleErrorSpy.mockRestore();
+});
+
 describe('API Integrációs Tesztek', () => {
   let app;
   let sequelize;
