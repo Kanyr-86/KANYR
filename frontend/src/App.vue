@@ -7,27 +7,44 @@
         <router-view />
       </ErrorBoundary>
     </div>
+
+    <!-- Toast notification container -->
+    <ToastContainer />
+    
+    <!-- Global confirmation dialog -->
+    <ConfirmDialog />
   </div>
 </template>
 
 <script>
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
+import ToastContainer from './components/ToastContainer.vue'
+import ConfirmDialog from './components/ConfirmDialog.vue'
+import { useTheme } from './composables/useTheme'
 
 export default defineComponent({
   name: 'App',
   components: {
     Navbar,
-    ErrorBoundary
+    ErrorBoundary,
+    ToastContainer,
+    ConfirmDialog
   },
   setup() {
     const route = useRoute()
+    const { initializeTheme } = useTheme()
     
     // Ellenőrizzük, hogy a login oldalon vagyunk-e
     const isLoginPage = computed(() => {
       return route.path === '/login'
+    })
+
+    // Initialize theme on app mount
+    onMounted(() => {
+      initializeTheme()
     })
 
     return {
