@@ -1,9 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
 const { testConnection } = require('./config/database');
 const db = require('./models');
-const errorHandler = require('./middleware/errorHandler');
 require('dotenv').config();
 
 const app = express();
@@ -25,20 +23,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-
-// Security headers with helmet
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:', 'https:']
-    }
-  },
-  crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production'
-}));
-
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 
@@ -104,8 +88,14 @@ const startServer = async () => {
       });
     });
 
-    // Centralized error handler - csak most regisztráljuk, miután minden route be van állítva
-    app.use(errorHandler);
+    // Error handler - csak most regisztráljuk, miután minden route be van állítva
+    app.use((err, req, res, next) => {
+      console.error('Hiba:', err);
+      res.status(err.status || 500).json({
+        error: err.message || 'Szerver hiba',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      });
+    });
 
     // Szerver indítása
     app.listen(PORT, () => {
