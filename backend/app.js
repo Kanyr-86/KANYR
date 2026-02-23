@@ -1,7 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const { testConnection } = require('./config/database');
 const db = require('./models');
+const errorHandler = require('./middleware/errorHandler');
+const requestLogger = require('./middleware/requestLogger');
+const { NotFoundError } = require('./utils/AppError');
 require('dotenv').config();
 
 const app = express();
@@ -23,8 +27,25 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+// Security Headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:']
+    }
+  },
+  crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production'
+}));
+
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
+
+// Request logging middleware
+app.use(requestLogger);
 
 // Alapértelmezett route
 app.get('/', (req, res) => {
@@ -81,21 +102,12 @@ const startServer = async () => {
     console.log('✓ SzobaValtoztatas route-ok inicializálva');
 
     // 404 handler - csak most regisztráljuk, miután minden route be van állítva
-    app.use((req, res) => {
-      res.status(404).json({
-        error: 'Endpoint nem található',
-        path: req.path
-      });
+    app.use((req, res, next) => {
+      next(new NotFoundError('Endpoint'));
     });
 
-    // Error handler - csak most regisztráljuk, miután minden route be van állítva
-    app.use((err, req, res, next) => {
-      console.error('Hiba:', err);
-      res.status(err.status || 500).json({
-        error: err.message || 'Szerver hiba',
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-      });
-    });
+    // Global error handler - csak most regisztráljuk, miután minden route be van állítva
+    app.use(errorHandler);
 
     // Szerver indítása
     app.listen(PORT, () => {
