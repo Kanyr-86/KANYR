@@ -50,8 +50,8 @@ npm run dev
 ### Teszt fiókok
 | Szerepkör | Email | Jelszó |
 |-----------|-------|--------|
-| Főtitkár (Admin) | admin@kanyr.hu | admin123 |
-| Titkár | user@kanyr.hu | user1234 |
+| Titkár (Admin) | admin@kanyr.hu | admin123 |
+| Diak | diaknév@kanyr.hu | user1234 |
 
 ## 📚 Dokumentáció
 

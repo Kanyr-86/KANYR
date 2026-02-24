@@ -1,8 +1,11 @@
 <template>
   <div id="app">
-    <Navbar v-if="!isLoginPage" />
+    <Sidebar 
+      v-if="!isLoginPage" 
+      @sidebar-collapse="handleSidebarCollapse"
+    />
     
-    <div class="main-content">
+    <div class="main-content" :class="{ 'sidebar-collapsed': !isLoginPage && isSidebarCollapsed }">
       <ErrorBoundary>
         <router-view />
       </ErrorBoundary>
@@ -17,9 +20,9 @@
 </template>
 
 <script>
-import { defineComponent, computed, onMounted } from 'vue'
+import { defineComponent, computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import Navbar from './components/Navbar.vue'
+import Sidebar from './components/Sidebar.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
 import ToastContainer from './components/ToastContainer.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
@@ -28,7 +31,7 @@ import { useTheme } from './composables/useTheme'
 export default defineComponent({
   name: 'App',
   components: {
-    Navbar,
+    Sidebar,
     ErrorBoundary,
     ToastContainer,
     ConfirmDialog
@@ -42,13 +45,23 @@ export default defineComponent({
       return route.path === '/login'
     })
 
+    // Sidebar collapse state for main content margin
+    const isSidebarCollapsed = ref(false)
+
+    // Handle sidebar collapse events
+    const handleSidebarCollapse = (collapsed) => {
+      isSidebarCollapsed.value = collapsed
+    }
+
     // Initialize theme on app mount
     onMounted(() => {
       initializeTheme()
     })
 
     return {
-      isLoginPage
+      isLoginPage,
+      isSidebarCollapsed,
+      handleSidebarCollapse
     }
   }
 })
