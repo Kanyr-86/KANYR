@@ -21,18 +21,12 @@
               <div class="card-body">
                 <div class="row g-3">
                   <div class="col-12 col-md-6">
-                    <label class="form-label fw-semibold">Keresés</label>
-                    <div class="input-group">
-                      <span class="input-group-text">
-                        <i class="bi bi-search"></i>
-                      </span>
-                      <input 
-                        type="text" 
-                        class="form-control" 
-                        placeholder="Név, email vagy szoba alapján..."
-                        v-model="searchQuery"
-                      >
-                    </div>
+                    <BaseInput
+                      v-model="searchQuery"
+                      label="Keresés"
+                      placeholder="Név, email vagy szoba alapján..."
+                      type="text"
+                    />
                   </div>
                   <div class="col-12 col-md-4">
                     <label class="form-label fw-semibold">Státusz</label>
@@ -165,556 +159,596 @@
     </div>
     
     <!-- Diák felvétel modal -->
-    <div class="modal fade" tabindex="-1" ref="enrollModalRef">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Diák felvétele</h5>
-            <button type="button" class="btn-close" @click="closeEnrollModal"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="enrollStudent">
-              <div class="row">
-                <div class="col-md-6">
-                  <h6>Diák adatai</h6>
-                  <div class="mb-3">
-                    <label class="form-label">Név</label>
-                    <input type="text" class="form-control" v-model="enrollData.diakData.nev" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" v-model="enrollData.diakData.email" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Telefonszám</label>
-                    <input type="tel" class="form-control" v-model="enrollData.diakData.telefonszam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Születési dátum</label>
-                    <input type="date" class="form-control" v-model="enrollData.diakData.szuletesi_datum" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Személyi igazolvány szám</label>
-                    <input type="text" class="form-control" v-model="enrollData.diakData.szemelyi_igazolvany_szam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">TAJ szám</label>
-                    <input type="text" class="form-control" v-model="enrollData.diakData.taj_szam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Diákigazolvány szám</label>
-                    <input type="text" class="form-control" v-model="enrollData.diakData.diakigazolvany_szam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Kapcsolat típusa</label>
-                    <select class="form-select" v-model="enrollData.diakData.kapcsolat_tipusa" required>
-                      <option value="anya">Anya</option>
-                      <option value="apa">Apa</option>
-                      <option value="gondviselo">Gondviselő</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Nem</label>
-                    <select class="form-select" v-model="enrollData.diakData.nem" required>
-                      <option value="">Válasszon nemet</option>
-                      <option value="férfi">Férfi</option>
-                      <option value="nő">Nő</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <h6>Szülő adatai</h6>
-                  
-                  <!-- Szülő mód választó -->
-                  <div class="mb-3">
-                    <label class="form-label">Szülő kiválasztása</label>
-                    <select class="form-select" v-model="parentSelectionMode">
-                      <option value="new">Új szülő felvétele</option>
-                      <option value="existing">Meglévő szülő kiválasztása</option>
-                    </select>
-                  </div>
-                  
-                  <!-- Meglévő szülő kiválasztása -->
-                  <div v-if="parentSelectionMode === 'existing'" class="mb-3">
-                    <label class="form-label">Szülő</label>
-                    <select class="form-select" v-model="selectedParentId" @change="onParentSelected" required>
-                      <option value="">Válasszon szülőt</option>
-                      <option v-for="parent in parents" :key="parent.szulo_id" :value="parent.szulo_id">
-                        {{ parent.nev }} ({{ parent.email }})
-                      </option>
-                    </select>
-                  </div>
-                  
-                  <!-- Új szülő adatai - csak new módban látható -->
-                  <div v-if="parentSelectionMode === 'new'">
-                    <div class="mb-3">
-                      <label class="form-label">Név</label>
-                      <input type="text" class="form-control" v-model="enrollData.szuloData.nev" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Email</label>
-                      <input type="email" class="form-control" v-model="enrollData.szuloData.email" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Telefonszám</label>
-                      <input type="tel" class="form-control" v-model="enrollData.szuloData.telefonszam" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Személyi igazolvány szám</label>
-                      <input type="text" class="form-control" v-model="enrollData.szuloData.szemelyi_igazolvany_szam" required>
-                    </div>
-                  </div>
-                  
-                  <h6>Lakcím adatai</h6>
-                  
-                  <!-- Lakcím mód választó -->
-                  <div class="mb-3">
-                    <label class="form-label">Lakcím kiválasztása</label>
-                    <select class="form-select" v-model="addressSelectionMode">
-                      <option value="new">Új lakcím felvétele</option>
-                      <option value="existing">Meglévő lakcím kiválasztása</option>
-                    </select>
-                  </div>
-                  
-                  <!-- Meglévő lakcím kiválasztása -->
-                  <div v-if="addressSelectionMode === 'existing'" class="mb-3">
-                    <label class="form-label">Lakcím</label>
-                    <select class="form-select" v-model="selectedAddressId" @change="onAddressSelected" required>
-                      <option value="">Válasszon lakcímet</option>
-                      <option v-for="address in addresses" :key="address.lakcim_id" :value="address.lakcim_id">
-                        {{ address.iranyitoszam }} {{ address.varos }}, {{ address.utca_hazszam }}
-                      </option>
-                    </select>
-                  </div>
-                  
-                  <!-- Lakcím adatok - csak new módban látható -->
-                  <div v-if="addressSelectionMode === 'new'">
-                    <div class="mb-3">
-                      <label class="form-label">Ország</label>
-                      <input type="text" class="form-control" v-model="enrollData.lakcimData.orszag" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Irányítószám</label>
-                      <input type="text" class="form-control" v-model="enrollData.lakcimData.iranyitoszam" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Város</label>
-                      <input type="text" class="form-control" v-model="enrollData.lakcimData.varos" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Utca, házszám</label>
-                      <input type="text" class="form-control" v-model="enrollData.lakcimData.utca_hazszam" required>
-                    </div>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label class="form-label">Szoba</label>
-                    <select class="form-select" v-model="enrollData.szoba_id" required>
-                      <option value="">Válasszon szobát</option>
-                      <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_id">
-                        {{ room.szoba_szama }} ({{ room.osszes_hely }} fő)
-                      </option>
-                    </select>
-                  </div>
-                </div>
+    <BaseModal v-model:show="showEnrollModal" title="Diák felvétele" size="lg" @close="resetEnrollForm">
+      <template #body>
+        <form @submit.prevent="enrollStudent">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Diák adatai</h6>
+              <BaseInput
+                v-model="enrollData.diakData.nev"
+                label="Név"
+                required
+              />
+              <BaseInput
+                v-model="enrollData.diakData.email"
+                label="Email"
+                type="email"
+                required
+              />
+              <BaseInput
+                v-model="enrollData.diakData.telefonszam"
+                label="Telefonszám"
+                type="tel"
+                required
+              />
+              <BaseInput
+                v-model="enrollData.diakData.szuletesi_datum"
+                label="Születési dátum"
+                type="date"
+                required
+              />
+              <BaseInput
+                v-model="enrollData.diakData.szemelyi_igazolvany_szam"
+                label="Személyi igazolvány szám"
+                required
+              />
+              <BaseInput
+                v-model="enrollData.diakData.taj_szam"
+                label="TAJ szám"
+                required
+              />
+              <BaseInput
+                v-model="enrollData.diakData.diakigazolvany_szam"
+                label="Diákigazolvány szám"
+                required
+              />
+              <div class="mb-3">
+                <label class="form-label">Kapcsolat típusa</label>
+                <select class="form-select" v-model="enrollData.diakData.kapcsolat_tipusa" required>
+                  <option value="anya">Anya</option>
+                  <option value="apa">Apa</option>
+                  <option value="gondviselo">Gondviselő</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nem</label>
+                <select class="form-select" v-model="enrollData.diakData.nem" required>
+                  <option value="">Válasszon nemet</option>
+                  <option value="férfi">Férfi</option>
+                  <option value="nő">Nő</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6>Szülő adatai</h6>
+              
+              <!-- Szülő mód választó -->
+              <div class="mb-3">
+                <label class="form-label">Szülő kiválasztása</label>
+                <select class="form-select" v-model="parentSelectionMode">
+                  <option value="new">Új szülő felvétele</option>
+                  <option value="existing">Meglévő szülő kiválasztása</option>
+                </select>
               </div>
               
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="closeEnrollModal">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="enrollLoading">
-                  {{ enrollLoading ? 'Mentés...' : 'Mentés' }}
-                </button>
+              <!-- Meglévő szülő kiválasztása -->
+              <div v-if="parentSelectionMode === 'existing'" class="mb-3">
+                <label class="form-label">Szülő</label>
+                <select class="form-select" v-model="selectedParentId" @change="onParentSelected" required>
+                  <option value="">Válasszon szülőt</option>
+                  <option v-for="parent in parents" :key="parent.szulo_id" :value="parent.szulo_id">
+                    {{ parent.nev }} ({{ parent.email }})
+                  </option>
+                </select>
               </div>
-            </form>
+              
+              <!-- Új szülő adatai - csak new módban látható -->
+              <div v-if="parentSelectionMode === 'new'">
+                <BaseInput
+                  v-model="enrollData.szuloData.nev"
+                  label="Név"
+                  required
+                />
+                <BaseInput
+                  v-model="enrollData.szuloData.email"
+                  label="Email"
+                  type="email"
+                  required
+                />
+                <BaseInput
+                  v-model="enrollData.szuloData.telefonszam"
+                  label="Telefonszám"
+                  type="tel"
+                  required
+                />
+                <BaseInput
+                  v-model="enrollData.szuloData.szemelyi_igazolvany_szam"
+                  label="Személyi igazolvány szám"
+                  required
+                />
+              </div>
+              
+              <h6>Lakcím adatai</h6>
+              
+              <!-- Lakcím mód választó -->
+              <div class="mb-3">
+                <label class="form-label">Lakcím kiválasztása</label>
+                <select class="form-select" v-model="addressSelectionMode">
+                  <option value="new">Új lakcím felvétele</option>
+                  <option value="existing">Meglévő lakcím kiválasztása</option>
+                </select>
+              </div>
+              
+              <!-- Meglévő lakcím kiválasztása -->
+              <div v-if="addressSelectionMode === 'existing'" class="mb-3">
+                <label class="form-label">Lakcím</label>
+                <select class="form-select" v-model="selectedAddressId" @change="onAddressSelected" required>
+                  <option value="">Válasszon lakcímet</option>
+                  <option v-for="address in addresses" :key="address.lakcim_id" :value="address.lakcim_id">
+                    {{ address.iranyitoszam }} {{ address.varos }}, {{ address.utca_hazszam }}
+                  </option>
+                </select>
+              </div>
+              
+              <!-- Lakcím adatok - csak new módban látható -->
+              <div v-if="addressSelectionMode === 'new'">
+                <BaseInput
+                  v-model="enrollData.lakcimData.orszag"
+                  label="Ország"
+                  required
+                />
+                <BaseInput
+                  v-model="enrollData.lakcimData.iranyitoszam"
+                  label="Irányítószám"
+                  required
+                />
+                <BaseInput
+                  v-model="enrollData.lakcimData.varos"
+                  label="Város"
+                  required
+                />
+                <BaseInput
+                  v-model="enrollData.lakcimData.utca_hazszam"
+                  label="Utca, házszám"
+                  required
+                />
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Szoba</label>
+                <select class="form-select" v-model="enrollData.szoba_id" required>
+                  <option value="">Válasszon szobát</option>
+                  <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_id">
+                    {{ room.szoba_szama }} ({{ room.osszes_hely }} fő)
+                  </option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </form>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showEnrollModal = false">Mégse</button>
+        <button type="submit" class="btn btn-primary" :disabled="enrollLoading" @click="enrollStudent">
+          {{ enrollLoading ? 'Mentés...' : 'Mentés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Diák szerkesztés modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showEditModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Diák szerkesztése</h5>
-            <button type="button" class="btn-close" @click="showEditModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="updateStudent">
-              <div class="row">
-                <div class="col-md-6">
-                  <h6>Diák adatai</h6>
-                  <div class="mb-3">
-                    <label class="form-label">Név</label>
-                    <input type="text" class="form-control" v-model="editStudentData.nev" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" v-model="editStudentData.email" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Telefonszám</label>
-                    <input type="tel" class="form-control" v-model="editStudentData.telefonszam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Születési dátum</label>
-                    <input type="date" class="form-control" v-model="editStudentData.szuletesi_datum" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Személyi igazolvány szám</label>
-                    <input type="text" class="form-control" v-model="editStudentData.szemelyi_igazolvany_szam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">TAJ szám</label>
-                    <input type="text" class="form-control" v-model="editStudentData.taj_szam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Diákigazolvány szám</label>
-                    <input type="text" class="form-control" v-model="editStudentData.diakigazolvany_szam" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Kapcsolat típusa</label>
-                    <select class="form-select" v-model="editStudentData.kapcsolat_tipusa" required>
-                      <option value="anya">Anya</option>
-                      <option value="apa">Apa</option>
-                      <option value="gondviselo">Gondviselő</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Nem</label>
-                    <select class="form-select" v-model="editStudentData.nem" required>
-                      <option value="">Válasszon nemet</option>
-                      <option value="férfi">Férfi</option>
-                      <option value="nő">Nő</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <h6>Szülő adatai</h6>
-                  
-                  <!-- Szülő mód választó -->
-                  <div class="mb-3">
-                    <label class="form-label">Szülő kiválasztása</label>
-                    <select class="form-select" v-model="editParentSelectionMode">
-                      <option value="existing">Meglévő szülő kiválasztása</option>
-                      <option value="new">Új szülő felvétele</option>
-                    </select>
-                  </div>
-                  
-                  <!-- Meglévő szülő kiválasztása -->
-                  <div v-if="editParentSelectionMode === 'existing'" class="mb-3">
-                    <label class="form-label">Szülő</label>
-                    <select class="form-select" v-model="selectedEditParentId" @change="onEditParentSelected" required>
-                      <option value="">Válasszon szülőt</option>
-                      <option v-for="parent in parents" :key="parent.szulo_id" :value="parent.szulo_id">
-                        {{ parent.nev }} ({{ parent.email }})
-                      </option>
-                    </select>
-                  </div>
-                  
-                  <!-- Szülő adatok szerkesztése - csak new módban látható -->
-                  <div v-if="editParentSelectionMode === 'new'">
-                    <div class="mb-3">
-                      <label class="form-label">Név</label>
-                      <input type="text" class="form-control" v-model="editStudentData.szuloData.nev" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Email</label>
-                      <input type="email" class="form-control" v-model="editStudentData.szuloData.email" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Telefonszám</label>
-                      <input type="tel" class="form-control" v-model="editStudentData.szuloData.telefonszam" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Személyi igazolvány szám</label>
-                      <input type="text" class="form-control" v-model="editStudentData.szuloData.szemelyi_igazolvany_szam" required>
-                    </div>
-                  </div>
-                  
-                  <h6>Lakcím adatai</h6>
-                  
-                  <!-- Lakcím mód választó -->
-                  <div class="mb-3">
-                    <label class="form-label">Lakcím kiválasztása</label>
-                    <select class="form-select" v-model="editAddressSelectionMode">
-                      <option value="existing">Meglévő lakcím kiválasztása</option>
-                      <option value="new">Új lakcím felvétele</option>
-                    </select>
-                  </div>
-                  
-                  <!-- Meglévő lakcím kiválasztása -->
-                  <div v-if="editAddressSelectionMode === 'existing'" class="mb-3">
-                    <label class="form-label">Lakcím</label>
-                    <select class="form-select" v-model="selectedEditAddressId" @change="onEditAddressSelected" required>
-                      <option value="">Válasszon lakcímet</option>
-                      <option v-for="address in addresses" :key="address.lakcim_id" :value="address.lakcim_id">
-                        {{ address.iranyitoszam }} {{ address.varos }}, {{ address.utca_hazszam }}
-                      </option>
-                    </select>
-                  </div>
-                  
-                  <!-- Lakcím adatok szerkesztése - csak new módban látható -->
-                  <div v-if="editAddressSelectionMode === 'new'">
-                    <div class="mb-3">
-                      <label class="form-label">Ország</label>
-                      <input type="text" class="form-control" v-model="editStudentData.lakcimData.orszag" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Irányítószám</label>
-                      <input type="text" class="form-control" v-model="editStudentData.lakcimData.iranyitoszam" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Város</label>
-                      <input type="text" class="form-control" v-model="editStudentData.lakcimData.varos" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Utca, házszám</label>
-                      <input type="text" class="form-control" v-model="editStudentData.lakcimData.utca_hazszam" required>
-                    </div>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label class="form-label">Szoba</label>
-                    <select class="form-select" v-model="editStudentData.szoba_id">
-                      <option value="">Nincs szoba</option>
-                      <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_id">
-                        {{ room.szoba_szama }} ({{ room.osszes_hely }} fő)
-                      </option>
-                    </select>
-                  </div>
-                </div>
+    <BaseModal v-model:show="showEditModal" title="Diák szerkesztése" size="lg" @close="resetEditForm">
+      <template #body>
+        <form @submit.prevent="updateStudent">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Diák adatai</h6>
+              <BaseInput
+                v-model="editStudentData.nev"
+                label="Név"
+                required
+              />
+              <BaseInput
+                v-model="editStudentData.email"
+                label="Email"
+                type="email"
+                required
+              />
+              <BaseInput
+                v-model="editStudentData.telefonszam"
+                label="Telefonszám"
+                type="tel"
+                required
+              />
+              <BaseInput
+                v-model="editStudentData.szuletesi_datum"
+                label="Születési dátum"
+                type="date"
+                required
+              />
+              <BaseInput
+                v-model="editStudentData.szemelyi_igazolvany_szam"
+                label="Személyi igazolvány szám"
+                required
+              />
+              <BaseInput
+                v-model="editStudentData.taj_szam"
+                label="TAJ szám"
+                required
+              />
+              <BaseInput
+                v-model="editStudentData.diakigazolvany_szam"
+                label="Diákigazolvány szám"
+                required
+              />
+              <div class="mb-3">
+                <label class="form-label">Kapcsolat típusa</label>
+                <select class="form-select" v-model="editStudentData.kapcsolat_tipusa" required>
+                  <option value="anya">Anya</option>
+                  <option value="apa">Apa</option>
+                  <option value="gondviselo">Gondviselő</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nem</label>
+                <select class="form-select" v-model="editStudentData.nem" required>
+                  <option value="">Válasszon nemet</option>
+                  <option value="férfi">Férfi</option>
+                  <option value="nő">Nő</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6>Szülő adatai</h6>
+              
+              <!-- Szülő mód választó -->
+              <div class="mb-3">
+                <label class="form-label">Szülő kiválasztása</label>
+                <select class="form-select" v-model="editParentSelectionMode">
+                  <option value="existing">Meglévő szülő kiválasztása</option>
+                  <option value="new">Új szülő felvétele</option>
+                </select>
               </div>
               
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showEditModal = false">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="updateLoading">
-                  {{ updateLoading ? 'Mentés...' : 'Mentés' }}
-                </button>
+              <!-- Meglévő szülő kiválasztása -->
+              <div v-if="editParentSelectionMode === 'existing'" class="mb-3">
+                <label class="form-label">Szülő</label>
+                <select class="form-select" v-model="selectedEditParentId" @change="onEditParentSelected" required>
+                  <option value="">Válasszon szülőt</option>
+                  <option v-for="parent in parents" :key="parent.szulo_id" :value="parent.szulo_id">
+                    {{ parent.nev }} ({{ parent.email }})
+                  </option>
+                </select>
               </div>
-            </form>
+              
+              <!-- Szülő adatok szerkesztése - csak new módban látható -->
+              <div v-if="editParentSelectionMode === 'new'">
+                <BaseInput
+                  v-model="editStudentData.szuloData.nev"
+                  label="Név"
+                  required
+                />
+                <BaseInput
+                  v-model="editStudentData.szuloData.email"
+                  label="Email"
+                  type="email"
+                  required
+                />
+                <BaseInput
+                  v-model="editStudentData.szuloData.telefonszam"
+                  label="Telefonszám"
+                  type="tel"
+                  required
+                />
+                <BaseInput
+                  v-model="editStudentData.szuloData.szemelyi_igazolvany_szam"
+                  label="Személyi igazolvány szám"
+                  required
+                />
+              </div>
+              
+              <h6>Lakcím adatai</h6>
+              
+              <!-- Lakcím mód választó -->
+              <div class="mb-3">
+                <label class="form-label">Lakcím kiválasztása</label>
+                <select class="form-select" v-model="editAddressSelectionMode">
+                  <option value="existing">Meglévő lakcím kiválasztása</option>
+                  <option value="new">Új lakcím felvétele</option>
+                </select>
+              </div>
+              
+              <!-- Meglévő lakcím kiválasztása -->
+              <div v-if="editAddressSelectionMode === 'existing'" class="mb-3">
+                <label class="form-label">Lakcím</label>
+                <select class="form-select" v-model="selectedEditAddressId" @change="onEditAddressSelected" required>
+                  <option value="">Válasszon lakcímet</option>
+                  <option v-for="address in addresses" :key="address.lakcim_id" :value="address.lakcim_id">
+                    {{ address.iranyitoszam }} {{ address.varos }}, {{ address.utca_hazszam }}
+                  </option>
+                </select>
+              </div>
+              
+              <!-- Lakcím adatok szerkesztése - csak new módban látható -->
+              <div v-if="editAddressSelectionMode === 'new'">
+                <BaseInput
+                  v-model="editStudentData.lakcimData.orszag"
+                  label="Ország"
+                  required
+                />
+                <BaseInput
+                  v-model="editStudentData.lakcimData.iranyitoszam"
+                  label="Irányítószám"
+                  required
+                />
+                <BaseInput
+                  v-model="editStudentData.lakcimData.varos"
+                  label="Város"
+                  required
+                />
+                <BaseInput
+                  v-model="editStudentData.lakcimData.utca_hazszam"
+                  label="Utca, házszám"
+                  required
+                />
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Szoba</label>
+                <select class="form-select" v-model="editStudentData.szoba_id">
+                  <option value="">Nincs szoba</option>
+                  <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_id">
+                    {{ room.szoba_szama }} ({{ room.osszes_hely }} fő)
+                  </option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </form>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showEditModal = false">Mégse</button>
+        <button type="submit" class="btn btn-primary" :disabled="updateLoading" @click="updateStudent">
+          {{ updateLoading ? 'Mentés...' : 'Mentés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Diák megtekintés modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showViewModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Diák adatai - {{ viewStudentData?.nev }}</h5>
-            <button type="button" class="btn-close" @click="showViewModal = false"></button>
+    <BaseModal v-model:show="showViewModal" title="Diák adatai - {{ viewStudentData?.nev }}" size="lg" @close="resetViewForm">
+      <template #body>
+        <!-- Tab navigáció -->
+        <ul class="nav nav-tabs mb-3">
+          <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeViewTab === 'student' }" href="#" @click.prevent="activeViewTab = 'student'">
+              Diák adatok
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeViewTab === 'parent' }" href="#" @click.prevent="activeViewTab = 'parent'">
+              Szülő adatai
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeViewTab === 'address' }" href="#" @click.prevent="activeViewTab = 'address'">
+              Lakcím
+            </a>
+          </li>
+        </ul>
+
+        <!-- Diák adatok fül -->
+        <div v-if="activeViewTab === 'student'">
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-borderless">
+                <tbody>
+                  <tr><td><strong>Név:</strong></td><td>{{ viewStudentData?.nev }}</td></tr>
+                  <tr><td><strong>Email:</strong></td><td>{{ viewStudentData?.email }}</td></tr>
+                  <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData?.telefonszam }}</td></tr>
+                  <tr><td><strong>Születési dátum:</strong></td><td>{{ viewStudentData?.szuletesi_datum }}</td></tr>
+                  <tr><td><strong>Nem:</strong></td><td>{{ viewStudentData?.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-borderless">
+                <tbody>
+                  <tr><td><strong>Személyi igazolvány:</strong></td><td>{{ viewStudentData?.szemelyi_igazolvany_szam }}</td></tr>
+                  <tr><td><strong>TAJ szám:</strong></td><td>{{ viewStudentData?.taj_szam }}</td></tr>
+                  <tr><td><strong>Diákigazolvány:</strong></td><td>{{ viewStudentData?.diakigazolvany_szam }}</td></tr>
+                  <tr>
+                    <td><strong>Státusz:</strong></td>
+                    <td>
+                      <span class="badge" :class="viewStudentData?.aktiv ? 'bg-success' : 'bg-danger'">
+                        {{ viewStudentData?.aktiv ? 'Aktív' : 'Inaktív' }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr><td><strong>Szoba:</strong></td><td>{{ viewStudentData?.szoba?.szoba_szama || 'Nincs szoba' }}</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="modal-body">
-            <!-- Tab navigáció -->
-            <ul class="nav nav-tabs mb-3">
-              <li class="nav-item">
-                <a class="nav-link" :class="{ active: activeViewTab === 'student' }" href="#" @click.prevent="activeViewTab = 'student'">
-                  Diák adatok
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" :class="{ active: activeViewTab === 'parent' }" href="#" @click.prevent="activeViewTab = 'parent'">
-                  Szülő adatai
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" :class="{ active: activeViewTab === 'address' }" href="#" @click.prevent="activeViewTab = 'address'">
-                  Lakcím
-                </a>
-              </li>
-            </ul>
+        </div>
 
-            <!-- Diák adatok fül -->
-            <div v-if="activeViewTab === 'student'">
-              <div class="row">
-                <div class="col-md-6">
-                  <table class="table table-borderless">
-                    <tbody>
-                      <tr><td><strong>Név:</strong></td><td>{{ viewStudentData?.nev }}</td></tr>
-                      <tr><td><strong>Email:</strong></td><td>{{ viewStudentData?.email }}</td></tr>
-                      <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData?.telefonszam }}</td></tr>
-                      <tr><td><strong>Születési dátum:</strong></td><td>{{ viewStudentData?.szuletesi_datum }}</td></tr>
-                      <tr><td><strong>Nem:</strong></td><td>{{ viewStudentData?.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="col-md-6">
-                  <table class="table table-borderless">
-                    <tbody>
-                      <tr><td><strong>Személyi igazolvány:</strong></td><td>{{ viewStudentData?.szemelyi_igazolvany_szam }}</td></tr>
-                      <tr><td><strong>TAJ szám:</strong></td><td>{{ viewStudentData?.taj_szam }}</td></tr>
-                      <tr><td><strong>Diákigazolvány:</strong></td><td>{{ viewStudentData?.diakigazolvany_szam }}</td></tr>
-                      <tr>
-                        <td><strong>Státusz:</strong></td>
-                        <td>
-                          <span class="badge" :class="viewStudentData?.aktiv ? 'bg-success' : 'bg-danger'">
-                            {{ viewStudentData?.aktiv ? 'Aktív' : 'Inaktív' }}
-                          </span>
-                        </td>
-                      </tr>
-                      <tr><td><strong>Szoba:</strong></td><td>{{ viewStudentData?.szoba?.szoba_szama || 'Nincs szoba' }}</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- Szülő adatai fül -->
-            <div v-if="activeViewTab === 'parent'">
-              <div v-if="viewStudentData?.szulo">
-                <div class="row">
-                  <div class="col-md-6">
-                    <table class="table table-borderless">
-                      <tbody>
-                        <tr><td><strong>Név:</strong></td><td>{{ viewStudentData.szulo.nev }}</td></tr>
-                        <tr><td><strong>Email:</strong></td><td>{{ viewStudentData.szulo.email }}</td></tr>
-                        <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData.szulo.telefonszam }}</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="col-md-6">
-                    <table class="table table-borderless">
-                      <tbody>
-                        <tr><td><strong>Személyi igazolvány:</strong></td><td>{{ viewStudentData.szulo.szemelyi_igazolvany_szam }}</td></tr>
-                        <tr><td><strong>Kapcsolat típusa:</strong></td><td>{{ viewStudentData.kapcsolat_tipusa }}</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="alert alert-info">Nincs megadva szülő adat.</div>
-            </div>
-
-            <!-- Lakcím fül -->
-            <div v-if="activeViewTab === 'address'">
-              <div v-if="viewStudentData?.lakcim">
+        <!-- Szülő adatai fül -->
+        <div v-if="activeViewTab === 'parent'">
+          <div v-if="viewStudentData?.szulo">
+            <div class="row">
+              <div class="col-md-6">
                 <table class="table table-borderless">
                   <tbody>
-                    <tr><td><strong>Ország:</strong></td><td>{{ viewStudentData.lakcim.orszag }}</td></tr>
-                    <tr><td><strong>Irányítószám:</strong></td><td>{{ viewStudentData.lakcim.iranyitoszam }}</td></tr>
-                    <tr><td><strong>Város:</strong></td><td>{{ viewStudentData.lakcim.varos }}</td></tr>
-                    <tr><td><strong>Utca, házszám:</strong></td><td>{{ viewStudentData.lakcim.utca_hazszam }}</td></tr>
+                    <tr><td><strong>Név:</strong></td><td>{{ viewStudentData.szulo.nev }}</td></tr>
+                    <tr><td><strong>Email:</strong></td><td>{{ viewStudentData.szulo.email }}</td></tr>
+                    <tr><td><strong>Telefonszám:</strong></td><td>{{ viewStudentData.szulo.telefonszam }}</td></tr>
                   </tbody>
                 </table>
               </div>
-              <div v-else class="alert alert-info">Nincs megadva lakcím.</div>
+              <div class="col-md-6">
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr><td><strong>Személyi igazolvány:</strong></td><td>{{ viewStudentData.szulo.szemelyi_igazolvany_szam }}</td></tr>
+                    <tr><td><strong>Kapcsolat típusa:</strong></td><td>{{ viewStudentData.kapcsolat_tipusa }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showViewModal = false">Bezárás</button>
-          </div>
+          <div v-else class="alert alert-info">Nincs megadva szülő adat.</div>
         </div>
-      </div>
-    </div>
+
+        <!-- Lakcím fül -->
+        <div v-if="activeViewTab === 'address'">
+          <div v-if="viewStudentData?.lakcim">
+            <table class="table table-borderless">
+              <tbody>
+                <tr><td><strong>Ország:</strong></td><td>{{ viewStudentData.lakcim.orszag }}</td></tr>
+                <tr><td><strong>Irányítószám:</strong></td><td>{{ viewStudentData.lakcim.iranyitoszam }}</td></tr>
+                <tr><td><strong>Város:</strong></td><td>{{ viewStudentData.lakcim.varos }}</td></tr>
+                <tr><td><strong>Utca, házszám:</strong></td><td>{{ viewStudentData.lakcim.utca_hazszam }}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-else class="alert alert-info">Nincs megadva lakcím.</div>
+        </div>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showViewModal = false">Bezárás</button>
+      </template>
+    </BaseModal>
 
     <!-- Törlés megerősítő modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showDeleteModal" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Diák törlése</h5>
-            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+    <BaseModal v-model:show="showDeleteModal" title="Diák törlése" size="md" @close="resetDeleteForm">
+      <template #body>
+        <div class="text-center">
+          <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+          <p class="mt-3 mb-4">Biztosan törölni szeretné a következő diákot?</p>
+          <div class="alert alert-info">
+            <strong>{{ deleteStudentData?.nev }}</strong>
           </div>
-          <div class="modal-body">
-            <p>Biztosan törölni szeretné a következő diákot?</p>
-            <p><strong>{{ deleteStudentData?.nev }}</strong></p>
-            <p class="text-warning">
-              <small>
-                Figyelem: A diák törlése csak akkor lehetséges, ha nincs aktív szobája.
-              </small>
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
-            <button type="button" class="btn btn-danger" @click="confirmDeleteStudent" :disabled="deleteLoading">
-              {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
-            </button>
-          </div>
+          <p class="text-warning">
+            <small>
+              <i class="bi bi-info-circle me-1"></i>
+              Figyelem: A diák törlése csak akkor lehetséges, ha nincs aktív szobája.
+            </small>
+          </p>
         </div>
-      </div>
-    </div>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
+        <button type="button" class="btn btn-danger" @click="confirmDeleteStudent" :disabled="deleteLoading">
+          {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
+        </button>
+      </template>
+    </BaseModal>
 
     <!-- Áthelyezés szoba választó modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showTransferModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Diák költöztetése - {{ transferStudentData?.nev }}</h5>
-            <button type="button" class="btn-close" @click="closeTransferModal"></button>
+    <BaseModal v-model:show="showTransferModal" title="Diák költöztetése - {{ transferStudentData?.nev }}" size="xl" @close="resetTransferForm">
+      <template #body>
+        <!-- Jelenlegi szoba info -->
+        <div class="alert alert-info mb-4">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-door-closed me-2"></i>
+            <strong>Jelenlegi szoba:</strong> {{ transferStudentData?.szoba?.szoba_szama || 'Nincs szoba' }}
           </div>
-          <div class="modal-body">
-            <!-- Jelenlegi szoba info -->
-            <div class="alert alert-info mb-3">
-              <strong>Jelenlegi szoba:</strong> {{ transferStudentData?.szoba?.szoba_szama || 'Nincs szoba' }}
-            </div>
+        </div>
 
-            <!-- Szobák listája -->
-            <h6 class="mb-3">Válasszon cél szobát:</h6>
-            <div class="alert alert-info mb-3" v-if="transferStudentData?.nem">
-              <small>
-                <strong>Diák neme:</strong> {{ transferStudentData.nem === 'férfi' ? 'Férfi' : 'Nő' }} |
-                <span class="text-muted">A másik nem szobái homályosak és nem választhatók.</span>
-              </small>
+        <!-- Diák neme figyelmeztetés -->
+        <div class="alert alert-info mb-4" v-if="transferStudentData?.nem">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-gender-ambiguous me-2"></i>
+            <div>
+              <strong>Diák neme:</strong> {{ transferStudentData.nem === 'férfi' ? 'Férfi' : 'Nő' }} |
+              <span class="text-muted ms-2">A másik nem szobái homályosak és nem választhatók.</span>
             </div>
-            <div v-if="availableRoomsForTransfer.length === 0" class="alert alert-warning">
+          </div>
+        </div>
+
+        <!-- Nincs elérhető szoba üzenet -->
+        <div v-if="availableRoomsForTransfer.length === 0" class="alert alert-warning mb-4">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <div>
               <strong>Nincs elérhető szoba a költöztetéshez.</strong><br>
               <small>Csak a kiköltözés lehetséges.</small>
             </div>
-            <div class="row" v-else>
-              <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
-                <div 
-                  class="card mb-3 room-card" 
-                  :class="{ 
-                    'border-primary': selectedTransferRoomId === room.szoba_id,
-                    'room-incompatible': !isRoomGenderCompatible(room, transferStudentData?.nem)
-                  }"
-                >
-                  <div class="card-header d-flex justify-content-between align-items-center">
+          </div>
+        </div>
+
+        <!-- Szobák listája -->
+        <div v-else>
+          <h6 class="mb-3">Válasszon cél szobát:</h6>
+          <div class="row g-3">
+            <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
+              <div 
+                class="card h-100 room-card" 
+                :class="{ 
+                  'border-primary': selectedTransferRoomId === room.szoba_id,
+                  'room-incompatible': !isRoomGenderCompatible(room, transferStudentData?.nem)
+                }"
+              >
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-door-closed me-2"></i>
                     <h6 class="mb-0">{{ room.szoba_szama }}</h6>
-                    <div class="d-flex gap-1">
-                      <span class="badge" :class="getTransferRoomBadgeClass(room)">
-                        {{ getTransferRoomBadgeText(room) }}
-                      </span>
+                  </div>
+                  <div class="d-flex gap-1">
+                    <span class="badge" :class="getTransferRoomBadgeClass(room)">
+                      {{ getTransferRoomBadgeText(room) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="mb-2">
+                    <small class="text-muted">
+                      <i class="bi bi-gender-ambiguous me-1"></i>
+                      <strong>{{ getRoomGenderText(room) }}</strong>
+                    </small>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-6">
+                      <small class="text-muted">
+                        <i class="bi bi-people me-1"></i>
+                        <strong>Férőhely:</strong> {{ room.osszes_hely }} fő
+                      </small>
+                    </div>
+                    <div class="col-6">
+                      <small class="text-muted">
+                        <i class="bi bi-person-fill me-1"></i>
+                        <strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}
+                      </small>
                     </div>
                   </div>
-                  <div class="card-body">
-                    <p class="card-text mb-1">
-                      <small>
-                        <strong>{{ getRoomGenderText(room) }}</strong>
-                      </small>
-                    </p>
-                    <p class="card-text mb-1">
-                      <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
-                    </p>
-                    <p class="card-text mb-1">
-                      <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
-                    </p>
-                    <p class="card-text mb-2">
-                      <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
-                    </p>
-                    <div class="progress mb-3" style="height: 8px;">
-                      <div class="progress-bar" 
-                           :class="getTransferRoomProgressClass(room)"
-                           :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
-                           :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
-                           aria-valuemin="0" 
-                           aria-valuemax="100">
-                      </div>
+                  <div class="mb-3">
+                    <small class="text-muted">
+                      <i class="bi bi-box-arrow-right me-1"></i>
+                      <strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}
+                    </small>
+                  </div>
+                  <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar" 
+                         :class="getTransferRoomProgressClass(room)"
+                         :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
+                         :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
                     </div>
+                  </div>
+                  <div class="d-grid gap-2">
                     <button 
                       v-if="isRoomGenderCompatible(room, transferStudentData?.nem)"
-                      class="btn btn-sm w-100" 
+                      class="btn" 
                       :class="selectedTransferRoomId === room.szoba_id ? 'btn-primary' : 'btn-outline-primary'"
                       @click="selectTransferRoom(room.szoba_id)"
                       :disabled="transferLoading">
+                      <i class="bi" :class="selectedTransferRoomId === room.szoba_id ? 'bi-check-circle-fill me-1' : 'bi-plus-circle me-1'"></i>
                       {{ selectedTransferRoomId === room.szoba_id ? 'Kiválasztva' : 'Kiválaszt' }}
                     </button>
                     <button 
                       v-else
-                      class="btn btn-sm w-100 btn-outline-secondary" 
+                      class="btn btn-outline-secondary" 
                       disabled>
+                      <i class="bi bi-x-circle me-1"></i>
                       Nem kompatibilis
                     </button>
                   </div>
@@ -722,26 +756,28 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeTransferModal">Mégse</button>
-            <button 
-              type="button" 
-              class="btn btn-danger" 
-              @click="confirmMoveOut"
-              :disabled="transferLoading">
-              {{ transferLoading ? 'Kiköltözés...' : 'Kiköltözés' }}
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-success" 
-              @click="confirmTransfer"
-              :disabled="!selectedTransferRoomId || transferLoading">
-              {{ transferLoading ? 'Költöztetés...' : 'Költöztetés' }}
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
+      </template>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeTransferModal">
+          <i class="bi bi-x-circle me-1"></i>Mégse
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-danger" 
+          @click="confirmMoveOut"
+          :disabled="transferLoading">
+          <i class="bi bi-door-open me-1"></i>{{ transferLoading ? 'Kiköltözés...' : 'Kiköltözés' }}
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-success" 
+          @click="confirmTransfer"
+          :disabled="!selectedTransferRoomId || transferLoading">
+          <i class="bi bi-arrow-right-circle me-1"></i>{{ transferLoading ? 'Költöztetés...' : 'Költöztetés' }}
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -751,7 +787,8 @@ import { useAuthStore } from '../store/auth'
 import { useApiStore } from '../store/api'
 import api from '../services/api'
 import { toast } from 'vue3-toastify'
-import { Modal } from 'bootstrap'
+import BaseModal from '../components/BaseModal.vue'
+import BaseInput from '../components/forms/BaseInput.vue'
 
 export default {
   name: 'StudentsView',
@@ -783,12 +820,10 @@ export default {
     const selectedEditAddressId = ref('')
     
     // Modal references
-    const enrollModalRef = ref(null)
     const editModalRef = ref(null)
     const viewModalRef = ref(null)
     const deleteModalRef = ref(null)
     
-    let enrollModal = null
     let editModal = null
     let viewModal = null
     let deleteModal = null
@@ -1022,15 +1057,11 @@ export default {
     const openEnrollModal = () => {
       fetchParents() // Load parents when opening modal
       fetchAddresses() // Load addresses when opening modal
-      if (enrollModal) {
-        enrollModal.show()
-      }
+      showEnrollModal.value = true
     }
 
     const closeEnrollModal = () => {
-      if (enrollModal) {
-        enrollModal.hide()
-      }
+      showEnrollModal.value = false
     }
 
     const enrollStudent = async () => {
@@ -1083,6 +1114,51 @@ export default {
       selectedParentId.value = ''
       addressSelectionMode.value = 'new'
       selectedAddressId.value = ''
+    }
+
+    const resetEditForm = () => {
+      editStudentData.value = {
+        nev: '',
+        email: '',
+        telefonszam: '',
+        szuletesi_datum: '',
+        szemelyi_igazolvany_szam: '',
+        taj_szam: '',
+        diakigazolvany_szam: '',
+        kapcsolat_tipusa: 'anya',
+        szuloData: {
+          nev: '',
+          email: '',
+          telefonszam: '',
+          szemelyi_igazolvany_szam: ''
+        },
+        lakcimData: {
+          orszag: '',
+          iranyitoszam: '',
+          varos: '',
+          utca_hazszam: ''
+        },
+        szoba_id: ''
+      }
+      editParentSelectionMode.value = 'existing'
+      selectedEditParentId.value = ''
+      editAddressSelectionMode.value = 'existing'
+      selectedEditAddressId.value = ''
+    }
+
+    const resetViewForm = () => {
+      viewStudentData.value = null
+      activeViewTab.value = 'student'
+    }
+
+    const resetDeleteForm = () => {
+      deleteStudentData.value = null
+    }
+
+    const resetTransferForm = () => {
+      transferStudentData.value = null
+      selectedTransferRoomId.value = null
+      availableRoomsForTransfer.value = []
     }
 
     // Clear all filters
@@ -1419,11 +1495,6 @@ export default {
     onMounted(() => {
       fetchStudents()
       fetchRooms()
-      
-      // Initialize Bootstrap modals
-      if (enrollModalRef.value) {
-        enrollModal = new Modal(enrollModalRef.value)
-      }
     })
 
     return {

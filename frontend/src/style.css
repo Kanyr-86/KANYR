@@ -1,15 +1,5 @@
-/* CSS Custom Properties for theming */
+/* Typography and base styles */
 :root {
-  /* Light theme (default) */
-  --bg-primary: #2c4a5a;
-  --bg-secondary: #3a5a7a;
-  --bg-card: #ffffff;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --text-muted: #6c757d;
-  --border-color: #dee2e6;
-  --shadow-color: rgba(0, 0, 0, 0.15);
-  
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -22,18 +12,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Dark theme */
-[data-theme="dark"] {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-card: #1e1e26;
-  --text-primary: #e0e0e0;
-  --text-secondary: #b0b0b0;
-  --text-muted: #8b8f8f;
-  --border-color: #495057;
-  --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
 a {

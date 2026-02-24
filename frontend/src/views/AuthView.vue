@@ -247,8 +247,8 @@ export default {
       password,
       loading,
       handleLogin,
-      useTestToken
-      ,useTestUser
+      useTestToken,
+      useTestUser
     }
   }
 }

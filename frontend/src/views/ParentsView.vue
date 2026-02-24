@@ -19,19 +19,13 @@
               <div class="card-body">
                 <div class="row g-3">
                   <div class="col-12 col-md-6">
-                    <label class="form-label fw-semibold">Keresés</label>
-                    <div class="input-group">
-                      <span class="input-group-text">
-                        <i class="bi bi-search"></i>
-                      </span>
-                      <input 
-                        type="text" 
-                        class="form-control" 
-                        placeholder="Név vagy email alapján..."
-                        v-model="searchQuery"
-                        @input="debouncedSearch"
-                      >
-                    </div>
+                    <BaseInput
+                      v-model="searchQuery"
+                      label="Keresés"
+                      placeholder="Név vagy email alapján..."
+                      type="text"
+                      @input="debouncedSearch"
+                    />
                   </div>
                   <div class="col-12 col-md-4">
                     <label class="form-label fw-semibold">Város</label>
@@ -187,38 +181,67 @@
                   <h6>Szülő adatai</h6>
                   <div class="mb-3">
                     <label class="form-label">Név</label>
-                    <input type="text" class="form-control" v-model="parentData.nev" required>
+                    <BaseInput
+                      v-model="parentData.nev"
+                      label="Név"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" v-model="parentData.email" required>
+                    <BaseInput
+                      v-model="parentData.email"
+                      label="Email"
+                      type="email"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Telefonszám</label>
-                    <input type="tel" class="form-control" v-model="parentData.telefonszam" required>
+                    <BaseInput
+                      v-model="parentData.telefonszam"
+                      label="Telefonszám"
+                      type="tel"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Személyi igazolvány szám</label>
-                    <input type="text" class="form-control" v-model="parentData.szemelyi_igazolvany_szam" required>
+                    <BaseInput
+                      v-model="parentData.szemelyi_igazolvany_szam"
+                      label="Személyi igazolvány szám"
+                      required
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <h6>Lakcím adatai</h6>
                   <div class="mb-3">
-                    <label class="form-label">Ország</label>
-                    <input type="text" class="form-control" v-model="parentData.lakcimData.orszag" required>
+                    <BaseInput
+                      v-model="parentData.lakcimData.orszag"
+                      label="Ország"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Irányítószám</label>
-                    <input type="text" class="form-control" v-model="parentData.lakcimData.iranyitoszam" required>
+                    <BaseInput
+                      v-model="parentData.lakcimData.iranyitoszam"
+                      label="Irányítószám"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Város</label>
-                    <input type="text" class="form-control" v-model="parentData.lakcimData.varos" required>
+                    <BaseInput
+                      v-model="parentData.lakcimData.varos"
+                      label="Város"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Utca, házszám</label>
-                    <input type="text" class="form-control" v-model="parentData.lakcimData.utca_hazszam" required>
+                    <BaseInput
+                      v-model="parentData.lakcimData.utca_hazszam"
+                      label="Utca, házszám"
+                      required
+                    />
                   </div>
                 </div>
               </div>
@@ -249,39 +272,65 @@
                 <div class="col-md-6">
                   <h6>Szülő adatai</h6>
                   <div class="mb-3">
-                    <label class="form-label">Név</label>
-                    <input type="text" class="form-control" v-model="editParentData.nev" required>
+                    <BaseInput
+                      v-model="editParentData.nev"
+                      label="Név"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" v-model="editParentData.email" required>
+                    <BaseInput
+                      v-model="editParentData.email"
+                      label="Email"
+                      type="email"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Telefonszám</label>
-                    <input type="tel" class="form-control" v-model="editParentData.telefonszam" required>
+                    <BaseInput
+                      v-model="editParentData.telefonszam"
+                      label="Telefonszám"
+                      type="tel"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Személyi igazolvány szám</label>
-                    <input type="text" class="form-control" v-model="editParentData.szemelyi_igazolvany_szam" required>
+                    <BaseInput
+                      v-model="editParentData.szemelyi_igazolvany_szam"
+                      label="Személyi igazolvány szám"
+                      required
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <h6>Lakcím adatai</h6>
                   <div class="mb-3">
-                    <label class="form-label">Ország</label>
-                    <input type="text" class="form-control" v-model="editParentData.lakcimData.orszag" required>
+                    <BaseInput
+                      v-model="editParentData.lakcimData.orszag"
+                      label="Ország"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Irányítószám</label>
-                    <input type="text" class="form-control" v-model="editParentData.lakcimData.iranyitoszam" required>
+                    <BaseInput
+                      v-model="editParentData.lakcimData.iranyitoszam"
+                      label="Irányítószám"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Város</label>
-                    <input type="text" class="form-control" v-model="editParentData.lakcimData.varos" required>
+                    <BaseInput
+                      v-model="editParentData.lakcimData.varos"
+                      label="Város"
+                      required
+                    />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Utca, házszám</label>
-                    <input type="text" class="form-control" v-model="editParentData.lakcimData.utca_hazszam" required>
+                    <BaseInput
+                      v-model="editParentData.lakcimData.utca_hazszam"
+                      label="Utca, házszám"
+                      required
+                    />
                   </div>
                 </div>
               </div>
@@ -461,7 +510,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
-import { debounce } from 'lodash-es'
+import { useDebounce } from '../composables/useDebounce'
 import { toast } from 'vue3-toastify'
 
 export default {
@@ -686,8 +735,8 @@ export default {
       }
     }
 
-    // Debounced search function
-    const debouncedSearch = debounce(async () => {
+    // Debounced search function using composable
+    const { debouncedFn: debouncedSearch } = useDebounce(async () => {
       if (searchQuery.value.trim()) {
         try {
           const response = await api.get('/szulos', {

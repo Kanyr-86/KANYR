@@ -24,19 +24,13 @@
               <div class="card-body">
                 <div class="row g-3">
                   <div class="col-12 col-md-4">
-                    <label class="form-label fw-semibold">Keresés</label>
-                    <div class="input-group">
-                      <span class="input-group-text">
-                        <i class="bi bi-search"></i>
-                      </span>
-                      <input 
-                        type="text" 
-                        class="form-control" 
-                        placeholder="Szobaszám alapján..."
-                        v-model="searchQuery"
-                        @input="debouncedSearch"
-                      >
-                    </div>
+                    <BaseInput
+                      v-model="searchQuery"
+                      label="Keresés"
+                      placeholder="Szobaszám alapján..."
+                      type="text"
+                      @input="debouncedSearch"
+                    />
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold">Férőhely</label>
@@ -198,12 +192,21 @@
           <div class="modal-body">
             <form @submit.prevent="createRoom">
               <div class="mb-3">
-                <label class="form-label">Szobaszám</label>
-                <input type="text" class="form-control" v-model="roomData.szoba_szama" required>
+                <BaseInput
+                  v-model="roomData.szoba_szama"
+                  label="Szobaszám"
+                  required
+                />
               </div>
               <div class="mb-3">
-                <label class="form-label">Férőhely</label>
-                <input type="number" class="form-control" v-model="roomData.osszes_hely" min="1" max="10" required>
+                <BaseInput
+                  v-model="roomData.osszes_hely"
+                  label="Férőhely"
+                  type="number"
+                  min="1"
+                  max="10"
+                  required
+                />
               </div>
               
               <div class="modal-footer">
@@ -229,12 +232,21 @@
           <div class="modal-body">
             <form @submit.prevent="updateRoom">
               <div class="mb-3">
-                <label class="form-label">Szobaszám</label>
-                <input type="text" class="form-control" v-model="editRoomData.szoba_szama" required>
+                <BaseInput
+                  v-model="editRoomData.szoba_szama"
+                  label="Szobaszám"
+                  required
+                />
               </div>
               <div class="mb-3">
-                <label class="form-label">Férőhely</label>
-                <input type="number" class="form-control" v-model="editRoomData.osszes_hely" min="1" max="10" required>
+                <BaseInput
+                  v-model="editRoomData.osszes_hely"
+                  label="Férőhely"
+                  type="number"
+                  min="1"
+                  max="10"
+                  required
+                />
               </div>
               
               <div class="modal-footer">
@@ -403,8 +415,12 @@
           <div class="modal-body">
             <!-- Beköltözés dátuma -->
             <div class="mb-3">
-              <label class="form-label">Beköltözés / átköltöztetés dátuma</label>
-              <input type="date" class="form-control" v-model="bulkTransferData.bekoltozes_datum" required>
+              <BaseInput
+                v-model="bulkTransferData.bekoltozes_datum"
+                label="Beköltözés / átköltöztetés dátuma"
+                type="date"
+                required
+              />
             </div>
 
             <!-- Összesítő -->

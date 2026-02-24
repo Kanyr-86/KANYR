@@ -7,8 +7,13 @@
         <span class="d-sm-none">KANYR</span>
       </a>
       
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
       <div 
-        class="collapse navbar-collapse show" 
+        class="collapse navbar-collapse" 
+        id="navbarNav"
         v-if="user"
       >
         <div class="navbar-nav ms-auto align-items-lg-center">
