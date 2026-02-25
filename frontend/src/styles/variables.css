@@ -312,7 +312,7 @@
 /* Primary Action Button */
 .btn-action-primary {
   background: linear-gradient(135deg, var(--btn-primary-gradient-start), var(--btn-primary-gradient-end));
-  color: #ffffff;
+  color: var(--text-inverse);
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
@@ -326,7 +326,7 @@
 /* Secondary Action Button */
 .btn-action-secondary {
   background: linear-gradient(135deg, var(--btn-secondary-gradient-start), var(--btn-secondary-gradient-end));
-  color: #ffffff;
+  color: var(--text-inverse);
   box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
   border: 1px solid rgba(100, 116, 139, 0.2);
 }
@@ -371,7 +371,7 @@
   
   .btn-action-outline:hover {
     background: #6366f1;
-    color: #ffffff;
+    color: var(--text-inverse);
     border-color: #6366f1;
   }
 }
@@ -381,36 +381,36 @@
   .btn-action {
     border: 2px solid #000000;
     background: #ffffff;
-    color: #000000;
+    color: var(--text-primary);
   }
   
   .btn-action:hover {
     background: #000000;
-    color: #ffffff;
+    color: var(--text-inverse);
     transform: var(--btn-action-hover-transform);
   }
   
   .btn-action-primary {
     background: #000000;
-    color: #ffffff;
+    color: var(--text-inverse);
     border-color: #000000;
   }
   
   .btn-action-secondary {
     background: #666666;
-    color: #000000;
+    color: var(--text-primary);
     border-color: #000000;
   }
   
   .btn-action-outline {
     background: #ffffff;
-    color: #000000;
+    color: var(--text-primary);
     border-color: #000000;
   }
   
   .btn-action-outline:hover {
     background: #000000;
-    color: #ffffff;
+    color: var(--text-inverse);
   }
 }
 

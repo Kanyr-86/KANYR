@@ -1,5 +1,5 @@
 <template>
-  <div class="table-responsive">
+  <div ref="containerRef" class="table-responsive" :style="{ maxHeight: shouldVirtualize ? props.maxHeight : 'none' }">
     <table class="table base-table" :class="tableClasses">
       <!-- Header -->
       <thead>
@@ -76,7 +76,35 @@
           </tr>
         </template>
 
-        <!-- Data rows -->
+        <!-- Virtualized rows -->
+        <template v-else-if="shouldVirtualize">
+          <tr
+            v-for="(item, index) in visibleItems"
+            :key="getRowKey(item, startIndex + index)"
+            :class="{ 'clickable': clickable }"
+            :style="{ height: props.rowHeight + 'px' }"
+            @click="handleRowClick(item)"
+          >
+            <td v-for="column in columns" :key="column.key">
+              <slot :name="`cell-${column.key}`" :item="item" :value="getCellValue(item, column)">
+                {{ getCellValue(item, column) }}
+              </slot>
+            </td>
+            <!-- Actions column -->
+            <td v-if="$slots.actions" class="actions-column" @click.stop>
+              <slot name="actions" :item="item" :index="startIndex + index"></slot>
+            </td>
+          </tr>
+          <!-- Spacer rows for virtualization -->
+          <tr v-if="spacerBefore > 0" :style="{ height: spacerBefore * props.rowHeight + 'px' }">
+            <td :colspan="totalColumns"></td>
+          </tr>
+          <tr v-if="spacerAfter > 0" :style="{ height: spacerAfter * props.rowHeight + 'px' }">
+            <td :colspan="totalColumns"></td>
+          </tr>
+        </template>
+
+        <!-- Regular rows -->
         <template v-else>
           <tr
             v-for="(item, index) in items"
@@ -101,7 +129,7 @@
 </template>
 
 <script>
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref, onMounted, onUnmounted, watch } from 'vue'
 
 /**
  * BaseTable - A reusable data table component with Bootstrap 5 styling
@@ -114,6 +142,8 @@ import { defineComponent, computed } from 'vue'
  * - Row click handling
  * - Action buttons column
  * - Responsive horizontal scroll
+ * - Virtualization for large datasets (100+ items)
+ * - Performance optimizations with memoization
  * 
  * Usage:
  * - columns: Array of { key, label, sortable?, formatter? }
@@ -203,12 +233,96 @@ export default defineComponent({
     striped: {
       type: Boolean,
       default: false
+    },
+
+    /**
+     * Enable virtualization for performance (auto-enabled for 100+ items)
+     * @type {boolean}
+     */
+    virtualized: {
+      type: Boolean,
+      default: null
+    },
+
+    /**
+     * Maximum height for virtualized table
+     * @type {string}
+     */
+    maxHeight: {
+      type: String,
+      default: '500px'
+    },
+
+    /**
+     * Estimated row height for virtualization
+     * @type {number}
+     */
+    rowHeight: {
+      type: Number,
+      default: 50
     }
   },
 
   emits: ['sort', 'row-click'],
 
   setup(props, { emit, slots }) {
+    const containerRef = ref(null)
+    const scrollTop = ref(0)
+    const startIndex = ref(0)
+    const endIndex = ref(0)
+    const visibleItems = ref([])
+
+    // Auto-enable virtualization for large datasets
+    const shouldVirtualize = computed(() => {
+      if (props.virtualized !== null) {
+        return props.virtualized
+      }
+      return props.items.length >= 100
+    })
+
+    /**
+     * Calculate visible items for virtualization
+     */
+    const calculateVisibleItems = () => {
+      if (!shouldVirtualize.value || props.loading || !props.items.length) {
+        return
+      }
+
+      const container = containerRef.value
+      if (!container) return
+
+      const containerHeight = container.clientHeight
+      const totalItems = props.items.length
+      const visibleCount = Math.ceil(containerHeight / props.rowHeight) + 2 // +2 for buffer
+      const maxStartIndex = Math.max(0, totalItems - visibleCount)
+      
+      startIndex.value = Math.min(Math.floor(scrollTop.value / props.rowHeight), maxStartIndex)
+      endIndex.value = Math.min(startIndex.value + visibleCount, totalItems)
+      
+      visibleItems.value = props.items.slice(startIndex.value, endIndex.value)
+    }
+
+    /**
+     * Handle scroll event
+     */
+    const handleScroll = () => {
+      if (containerRef.value) {
+        scrollTop.value = containerRef.value.scrollTop
+        calculateVisibleItems()
+      }
+    }
+
+    /**
+     * Debounced scroll handler
+     */
+    let scrollTimeout = null
+    const debouncedScrollHandler = () => {
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+      }
+      scrollTimeout = setTimeout(handleScroll, 16) // ~60fps
+    }
+
     /**
      * Computed table classes
      */
@@ -241,9 +355,20 @@ export default defineComponent({
     })
 
     /**
+     * Spacer rows for virtualization
+     */
+    const spacerBefore = computed(() => {
+      return shouldVirtualize.value ? startIndex.value : 0
+    })
+
+    const spacerAfter = computed(() => {
+      return shouldVirtualize.value ? (props.items.length - endIndex.value) : 0
+    })
+
+    /**
      * Get header classes for a column
      */
-    function getHeaderClasses(column) {
+    const getHeaderClasses = (column) => {
       const classes = []
       if (column.sortable) {
         classes.push('sortable')
@@ -257,7 +382,7 @@ export default defineComponent({
     /**
      * Get cell value, applying formatter if present
      */
-    function getCellValue(item, column) {
+    const getCellValue = (item, column) => {
       const value = item[column.key]
       if (column.formatter && typeof column.formatter === 'function') {
         return column.formatter(value, item)
@@ -268,14 +393,14 @@ export default defineComponent({
     /**
      * Get unique row key
      */
-    function getRowKey(item, index) {
+    const getRowKey = (item, index) => {
       return item.id || item._id || index
     }
 
     /**
      * Handle sort click on column header
      */
-    function handleSortClick(column) {
+    const handleSortClick = (column) => {
       if (!column.sortable) return
 
       let newOrder = 'asc'
@@ -289,15 +414,54 @@ export default defineComponent({
     /**
      * Handle row click
      */
-    function handleRowClick(item) {
+    const handleRowClick = (item) => {
       emit('row-click', item)
     }
 
+    // Watch for items changes and recalculate visible items
+    watch(() => props.items.length, () => {
+      if (shouldVirtualize.value) {
+        calculateVisibleItems()
+      }
+    })
+
+    // Watch for container size changes
+    let resizeObserver = null
+    onMounted(() => {
+      if (shouldVirtualize.value && containerRef.value) {
+        containerRef.value.addEventListener('scroll', debouncedScrollHandler, { passive: true })
+        calculateVisibleItems()
+
+        // Observe container size changes
+        resizeObserver = new ResizeObserver(() => {
+          calculateVisibleItems()
+        })
+        resizeObserver.observe(containerRef.value)
+      }
+    })
+
+    onUnmounted(() => {
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+      }
+      if (containerRef.value) {
+        containerRef.value.removeEventListener('scroll', debouncedScrollHandler)
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+      }
+    })
+
     return {
+      containerRef,
       tableClasses,
       totalColumns,
       skeletonRows,
       clickable,
+      spacerBefore,
+      spacerAfter,
+      visibleItems,
+      shouldVirtualize,
       getHeaderClasses,
       getCellValue,
       getRowKey,
@@ -315,8 +479,8 @@ export default defineComponent({
 
 .base-table th {
   font-weight: 600;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--bg-tertiary);
+  border-bottom: 2px solid var(--border-secondary);
   white-space: nowrap;
 }
 
@@ -327,11 +491,11 @@ export default defineComponent({
 }
 
 .base-table th.sortable:hover {
-  background-color: #e9ecef;
+  background-color: var(--bg-tertiary);
 }
 
 .base-table th.sorted {
-  background-color: #e8f4fd;
+  background-color: var(--bg-tertiary);
 }
 
 .sort-icon {
@@ -361,7 +525,7 @@ export default defineComponent({
 }
 
 .base-table tbody tr.clickable:hover {
-  background-color: rgba(0, 123, 255, 0.05);
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
 .actions-column {
@@ -401,5 +565,101 @@ export default defineComponent({
 /* Empty state */
 .base-table td.text-center {
   border-bottom: none;
+}
+
+/* Dark theme overrides for BaseTable */
+[data-theme="dark"] .base-table {
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] .base-table th {
+  background-color: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .base-table th.sortable:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .base-table th.sorted {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .base-table tbody tr {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .base-table tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .base-table tbody tr.clickable:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .sort-icon {
+  opacity: 0.7;
+}
+
+[data-theme="dark"] .sort-placeholder {
+  opacity: 0.4;
+}
+
+[data-theme="dark"] .skeleton-cell {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 75%
+  );
+}
+
+/* High contrast theme overrides for BaseTable */
+[data-theme="high-contrast"] .base-table {
+  background-color: var(--bg-page);
+}
+
+[data-theme="high-contrast"] .base-table th {
+  background-color: var(--bg-card);
+  border-bottom: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .base-table th.sortable:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="high-contrast"] .base-table th.sorted {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="high-contrast"] .base-table tbody tr {
+  background-color: var(--bg-card);
+  border: 1px solid #000000;
+}
+
+[data-theme="high-contrast"] .base-table tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="high-contrast"] .base-table tbody tr.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="high-contrast"] .sort-icon {
+  opacity: 1;
+}
+
+[data-theme="high-contrast"] .sort-placeholder {
+  opacity: 0.6;
+}
+
+[data-theme="high-contrast"] .skeleton-cell {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.1) 25%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.1) 75%
+  );
 }
 </style>

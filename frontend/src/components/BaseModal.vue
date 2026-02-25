@@ -249,9 +249,9 @@ export default defineComponent({
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: var(--bg-page);
   border-radius: 0.375rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-card);
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
 }
@@ -261,13 +261,14 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .modal-title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 500;
+  color: var(--text-heading);
 }
 
 .modal-body {
@@ -281,7 +282,7 @@ export default defineComponent({
   align-items: center;
   justify-content: flex-end;
   padding: 1rem;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--border-primary);
   gap: 0.5rem;
 }
 
@@ -316,5 +317,49 @@ export default defineComponent({
     margin: 0;
     max-width: 100%;
   }
+}
+
+/* Dark theme overrides for BaseModal */
+[data-theme="dark"] .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .modal-content {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .modal-title {
+  color: var(--text-heading);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top-color: var(--border-primary);
+}
+
+/* High contrast theme overrides for BaseModal */
+[data-theme="high-contrast"] .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="high-contrast"] .modal-content {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .modal-header {
+  border-bottom: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .modal-title {
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .modal-footer {
+  border-top: 2px solid #000000;
 }
 </style>

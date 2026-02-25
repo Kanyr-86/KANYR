@@ -170,12 +170,12 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--border-secondary);
 }
 
 .page-header h1 {
   margin: 0;
-  color: #333;
+  color: var(--text-heading);
   font-size: 2rem;
 }
 
@@ -187,12 +187,12 @@ export default {
 
 .welcome-text {
   font-weight: 500;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .logout-btn {
   padding: 0.5rem 1rem;
-  background-color: #dc3545;
+  background-color: var(--color-danger);
   color: white;
   border: none;
   border-radius: 4px;
@@ -201,7 +201,7 @@ export default {
 }
 
 .logout-btn:hover {
-  background-color: #c82333;
+  background-color: var(--color-danger-dark);
 }
 
 .notifications-content {
@@ -211,22 +211,23 @@ export default {
 }
 
 .card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
+  border: 1px solid var(--border-primary);
 }
 
 .card-header {
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .card-header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .card-content {
@@ -235,13 +236,13 @@ export default {
 
 .loading {
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .no-notifications {
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
   font-style: italic;
   padding: 1rem;
 }
@@ -253,7 +254,7 @@ export default {
 }
 
 .notification-item {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   padding: 1rem;
   transition: all 0.2s;
@@ -264,12 +265,12 @@ export default {
 }
 
 .notification-item:hover {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .notification-item.unread {
-  background-color: #f8f9fa;
-  border-left: 4px solid #007bff;
+  background-color: var(--bg-tertiary);
+  border-left: 4px solid var(--color-primary);
 }
 
 .notification-content {
@@ -280,18 +281,18 @@ export default {
 
 .notification-message {
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .notification-date {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .unread-indicator {
   width: 8px;
   height: 8px;
-  background-color: #007bff;
+  background-color: var(--color-primary);
   border-radius: 50%;
   margin-left: 1rem;
 }
@@ -308,15 +309,16 @@ export default {
 }
 
 .stat-item {
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
   padding: 1rem;
   border-radius: 4px;
   text-align: center;
+  border: 1px solid var(--border-primary);
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
   margin-bottom: 0.25rem;
 }
@@ -324,7 +326,7 @@ export default {
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .actions {
@@ -334,7 +336,7 @@ export default {
 
 .mark-all-btn {
   padding: 0.75rem 1.5rem;
-  background-color: #007bff;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -345,7 +347,7 @@ export default {
 }
 
 .mark-all-btn:hover {
-  background-color: #0056b3;
+  background-color: var(--color-primary-dark);
 }
 
 /* Responsive design */
@@ -359,5 +361,87 @@ export default {
     gap: 1rem;
     align-items: flex-start;
   }
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] .student-notifications {
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .card-header {
+  background-color: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .notification-item {
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .notification-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .notification-item.unread {
+  background-color: var(--bg-tertiary);
+  border-left-color: var(--color-primary);
+}
+
+[data-theme="dark"] .notification-message {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .notification-date {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .stat-item {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+/* High contrast theme overrides */
+[data-theme="high-contrast"] .student-notifications {
+  background-color: var(--bg-page);
+}
+
+[data-theme="high-contrast"] .card {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .card-header {
+  background-color: var(--bg-card);
+  border-bottom: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .notification-item {
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .notification-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="high-contrast"] .notification-item.unread {
+  background-color: var(--bg-card);
+  border-left: 4px solid #000000;
+}
+
+[data-theme="high-contrast"] .notification-message {
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .notification-date {
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .stat-item {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
 }
 </style>

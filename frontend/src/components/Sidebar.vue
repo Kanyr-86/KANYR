@@ -133,6 +133,17 @@
       </ul>
     </nav>
 
+<!-- Theme Toggle Section -->
+    <div class="sidebar-theme p-3 border-top">
+      <button 
+        class="btn btn-outline-light w-100 d-flex align-items-center"
+        @click="toggleTheme"
+      >
+        <i class="bi" :class="isDark ? 'bi-moon-stars' : 'bi-brightness-high'" me-3></i>
+        <span v-show="!isCollapsed">{{ isDark ? 'Világos mód' : 'Sötét mód' }}</span>
+      </button>
+    </div>
+
     <!-- Logout Section -->
     <div class="sidebar-footer p-3 border-top">
       <button 
@@ -165,25 +176,58 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useRouter } from 'vue-router'
+import { useThemeStore } from '../store/theme'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const themeStore = useThemeStore()
 
 // State
 const isCollapsed = ref(false)
 const isMobileOpen = ref(false)
 const windowWidth = ref(window.innerWidth)
 
-// Computed
+// Memoized computed properties for better performance
 const user = computed(() => authStore.user)
+const isDark = computed(() => themeStore.isDark)
+
+// Debounced resize handler to prevent excessive calculations
+let resizeTimeout = null
+const debouncedHandleResize = () => {
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
+  resizeTimeout = setTimeout(() => {
+    windowWidth.value = window.innerWidth
+    
+    // Optimize resize logic
+    const width = windowWidth.value
+    
+    if (width >= 992) {
+      // Desktop: ensure sidebar is visible when window is resized to desktop size
+      isMobileOpen.value = false
+    } else if (width >= 768 && width < 992) {
+      // Tablet: default to collapsed
+      isCollapsed.value = true
+      isMobileOpen.value = false
+    } else {
+      // Mobile: close sidebar on resize
+      isCollapsed.value = true
+    }
+  }, 100) // 100ms debounce
+}
 
 const sidebarStyles = computed(() => {
-  if (windowWidth.value >= 992) {
+  const width = windowWidth.value
+  const collapsed = isCollapsed.value
+  const mobileOpen = isMobileOpen.value
+  
+  if (width >= 992) {
     // Desktop: use collapse state
     return {
-      width: isCollapsed.value ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'
+      width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'
     }
-  } else if (windowWidth.value >= 768) {
+  } else if (width >= 768) {
     // Tablet: collapsed by default
     return {
       width: 'var(--sidebar-collapsed-width)'
@@ -191,10 +235,25 @@ const sidebarStyles = computed(() => {
   } else {
     // Mobile: absolute positioned
     return {
-      width: isMobileOpen.value ? 'var(--sidebar-width)' : '0'
+      width: mobileOpen ? 'var(--sidebar-width)' : '0'
     }
   }
 })
+
+// Memoized navigation items to prevent re-creation
+const adminNavigation = [
+  { path: '/dashboard', icon: 'bi-speedometer2', label: 'Admin Dashboard' },
+  { path: '/students', icon: 'bi-people', label: 'Diákok' },
+  { path: '/parents', icon: 'bi-person-lines-fill', label: 'Szülők' },
+  { path: '/rooms', icon: 'bi-door-open', label: 'Szobák' },
+  { path: '/reports', icon: 'bi-file-earmark-bar-graph', label: 'Riportok' }
+]
+
+const studentNavigation = [
+  { path: '/student-dashboard', icon: 'bi-speedometer2', label: 'Diák Dashboard' },
+  { path: '/student-rooms', icon: 'bi-door-open', label: 'Szobám' },
+  { path: '/student-notifications', icon: 'bi-bell', label: 'Értesítések' }
+]
 
 // Emit collapse state to parent for main content margin
 const emit = defineEmits(['sidebar-collapse'])
@@ -204,7 +263,7 @@ watch(isCollapsed, (newCollapsed) => {
   emit('sidebar-collapse', newCollapsed)
 })
 
-// Methods
+// Memoized methods for better performance
 const getUserInitial = (username) => {
   return username ? username.charAt(0).toUpperCase() : 'U'
 }
@@ -223,38 +282,26 @@ const closeMobileSidebar = () => {
   isMobileOpen.value = false
 }
 
-const logout = () => {
-  authStore.logout()
-  router.push('/login')
+const logout = async () => {
+  try {
+    await authStore.logout()
+    router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
-// Window resize handler
-const handleResize = () => {
-  windowWidth.value = window.innerWidth
-  
-  // On desktop, ensure sidebar is visible when window is resized to desktop size
-  if (windowWidth.value >= 992) {
-    isMobileOpen.value = false
-  }
-  
-  // On tablet, default to collapsed
-  if (windowWidth.value >= 768 && windowWidth.value < 992) {
-    isCollapsed.value = true
-    isMobileOpen.value = false
-  }
-  
-  // On mobile, close sidebar on resize
-  if (windowWidth.value < 768) {
-    isCollapsed.value = true
-  }
+const toggleTheme = () => {
+  themeStore.toggleTheme()
 }
 
 // Lifecycle
 onMounted(() => {
-  window.addEventListener('resize', handleResize)
+  window.addEventListener('resize', debouncedHandleResize)
   
   // Set initial state based on screen size
-  if (windowWidth.value >= 768 && windowWidth.value < 992) {
+  const width = windowWidth.value
+  if (width >= 768 && width < 992) {
     isCollapsed.value = true
   }
   
@@ -263,7 +310,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('resize', debouncedHandleResize)
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
 })
 </script>
 

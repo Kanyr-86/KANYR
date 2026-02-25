@@ -76,17 +76,17 @@
 /* STAT CARD COLORS */
 .card.bg-primary { 
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 .card.bg-success { 
   background: linear-gradient(135deg, var(--color-success), var(--color-success-dark)) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 .card.bg-info { 
   background: linear-gradient(135deg, var(--color-info), var(--color-info-dark)) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 .card.bg-warning { 
@@ -96,23 +96,23 @@
 
 .card.bg-danger { 
   background: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark)) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 /* BADGE COLORS */
 .badge.bg-primary { 
   background: var(--color-primary) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 .badge.bg-success { 
   background: var(--color-success) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 .badge.bg-info { 
   background: var(--color-info) !important; 
-  color: white !important; 
+  color: var(--text-inverse) !important; 
 }
 
 .badge.bg-warning { 
@@ -122,7 +122,7 @@
 
 .badge.bg-danger { 
   background: var(--color-danger) !important; 
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 /* PAGE BACKGROUND */
@@ -332,7 +332,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Avatar styling */
 .avatar {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
-  color: white !important;
+  color: var(--text-inverse) !important;
   border: none !important;
 }
 
@@ -499,10 +499,10 @@ h1, h2, h3, h4, h5, h6 {
 /* Status badge styles */
 .status-active {
   background-color: var(--color-success) !important;
-  color: white !important;
+  color: var(--text-inverse) !important;
 }
 
 .status-inactive {
   background-color: var(--color-danger) !important;
-  color: white !important;
+  color: var(--text-inverse) !important;
 }

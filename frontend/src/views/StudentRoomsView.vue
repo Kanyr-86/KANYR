@@ -307,12 +307,12 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--border-secondary);
 }
 
 .page-header h1 {
   margin: 0;
-  color: #333;
+  color: var(--text-heading);
   font-size: 2rem;
 }
 
@@ -324,13 +324,13 @@ export default {
 
 .welcome-text {
   font-weight: 500;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .logout-btn {
   padding: 0.5rem 1rem;
-  background-color: #dc3545;
-  color: white;
+  background-color: var(--color-danger);
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -338,7 +338,7 @@ export default {
 }
 
 .logout-btn:hover {
-  background-color: #c82333;
+  background-color: var(--color-danger-dark);
 }
 
 .room-content {
@@ -357,22 +357,23 @@ export default {
 }
 
 .card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
+  border: 1px solid var(--border-primary);
 }
 
 .card-header {
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .card-header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .card-content {
@@ -381,13 +382,13 @@ export default {
 
 .loading {
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .no-room, .no-roommates, .no-history {
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
   font-style: italic;
   padding: 1rem;
 }
@@ -412,20 +413,20 @@ export default {
 
 .label {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .value {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .roommates-section h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .roommates-list {
@@ -436,22 +437,23 @@ export default {
 
 .roommate-item {
   padding: 0.75rem;
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  border: 1px solid var(--border-primary);
 }
 
 .roommate-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .roommate-contact {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .room-change-form {
@@ -468,37 +470,39 @@ export default {
 
 .form-group label {
   font-weight: 500;
-  color: #333;
+  color: var(--text-heading);
   font-size: 0.875rem;
 }
 
 .form-select, .form-textarea {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
 }
 
 .form-select:focus, .form-textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
 }
 
 .unavailable-badge {
   margin-left: auto;
   font-size: 0.75rem;
-  color: #666;
-  background-color: #f0f0f0;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
   padding: 0.125rem 0.25rem;
   border-radius: 4px;
 }
 
 .submit-btn {
   padding: 0.75rem 1.5rem;
-  background-color: #28a745;
-  color: white;
+  background-color: var(--color-success);
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -508,19 +512,19 @@ export default {
 }
 
 .submit-btn:hover:not(:disabled) {
-  background-color: #218838;
+  background-color: var(--color-success-dark);
 }
 
 .submit-btn:disabled {
-  background-color: #6c757d;
+  background-color: var(--color-secondary);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .limit-warning {
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  color: #856404;
+  background-color: var(--color-warning);
+  border: 1px solid var(--color-warning-dark);
+  color: var(--text-dark);
   padding: 0.75rem;
   border-radius: 4px;
   margin-bottom: 1rem;
@@ -537,26 +541,26 @@ export default {
 }
 
 .history-item {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   padding: 1rem;
   transition: all 0.2s;
 }
 
 .history-item:hover {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .history-item.pending {
-  border-left: 4px solid #ffc107;
+  border-left: 4px solid var(--color-warning);
 }
 
 .history-item.approved {
-  border-left: 4px solid #28a745;
+  border-left: 4px solid var(--color-success);
 }
 
 .history-item.denied {
-  border-left: 4px solid #dc3545;
+  border-left: 4px solid var(--color-danger);
 }
 
 .history-header {
@@ -568,7 +572,7 @@ export default {
 
 .history-header .date {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .status {
@@ -580,18 +584,18 @@ export default {
 }
 
 .status.pending {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: var(--color-warning);
+  color: var(--text-dark);
 }
 
 .status.approved {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--color-success);
+  color: white;
 }
 
 .status.denied {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--color-danger);
+  color: white;
 }
 
 .history-details {
@@ -621,5 +625,94 @@ export default {
     gap: 1rem;
     align-items: flex-start;
   }
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] .student-rooms {
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .card-header {
+  background-color: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .roommate-item {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .form-select, [data-theme="dark"] .form-textarea {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-select:focus, [data-theme="dark"] .form-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+}
+
+[data-theme="dark"] .unavailable-badge {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .history-item {
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .history-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* High contrast theme overrides */
+[data-theme="high-contrast"] .student-rooms {
+  background-color: var(--bg-page);
+}
+
+[data-theme="high-contrast"] .card {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .card-header {
+  background-color: var(--bg-card);
+  border-bottom: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .roommate-item {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .form-select, [data-theme="high-contrast"] .form-textarea {
+  background-color: var(--bg-page);
+  border: 2px solid #000000;
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .form-select:focus, [data-theme="high-contrast"] .form-textarea:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px #000000;
+}
+
+[data-theme="high-contrast"] .unavailable-badge {
+  background-color: var(--bg-page);
+  border: 2px solid #000000;
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .history-item {
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .history-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 </style>

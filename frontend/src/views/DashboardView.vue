@@ -155,8 +155,8 @@
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: #ffffff !important;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   margin-bottom: 1.5rem;
 }
 
@@ -164,7 +164,7 @@
 .card-header h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-heading);
   margin-bottom: 0;
 }
 
@@ -174,7 +174,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #475569;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
@@ -183,7 +183,7 @@
 .card-body p.card-text {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-heading);
   margin-bottom: 1rem;
 }
 

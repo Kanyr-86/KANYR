@@ -10,7 +10,7 @@
           <span class="badge bg-primary me-2">{{ unreadCount }} olvasatlan</span>
           <button 
             v-if="unreadCount > 0" 
-            @click="markAllAsRead" 
+            @click="debouncedMarkAllAsRead" 
             class="btn btn-sm btn-outline-primary"
             :disabled="markingAllAsRead"
           >
@@ -34,11 +34,11 @@
         <div v-else>
           <div class="list-group list-group-flush">
             <div 
-              v-for="notification in notifications" 
+              v-for="notification in visibleNotifications" 
               :key="notification.notification_id"
               class="list-group-item list-group-item-action"
               :class="{ 'unread': !notification.elolvasva }"
-              @click="markAsRead(notification)"
+              @click="debouncedMarkAsRead(notification)"
             >
               <div class="d-flex w-100 justify-content-between">
                 <h6 class="mb-1">
@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { toast } from 'vue3-toastify'
 import api from '../services/api'
 
@@ -77,13 +77,67 @@ export default {
     const notifications = ref([])
     const loading = ref(false)
     const markingAllAsRead = ref(false)
+    const lastFetchTime = ref(0)
 
+    // Memoized computed properties for better performance
     const unreadCount = computed(() => {
       return notifications.value.filter(n => !n.elolvasva).length
     })
 
+    // Limit visible notifications to prevent rendering too many items
+    const visibleNotifications = computed(() => {
+      return notifications.value.slice(0, 50) // Show only first 50 notifications
+    })
+
+    // Memoized notification type mappings
+    const notificationTypeMap = {
+      'room_change_approved': 'Szobaváltás jóváhagyva',
+      'room_change_denied': 'Szobaváltás elutasítva',
+      'room_change_pending': 'Szobaváltás függőben'
+    }
+
+    const notificationIconMap = {
+      'room_change_approved': 'badge bg-success',
+      'room_change_denied': 'badge bg-danger',
+      'room_change_pending': 'badge bg-warning'
+    }
+
+    // Debounced functions to prevent excessive API calls
+    let fetchTimeout = null
+    let markReadTimeout = null
+    let markAllTimeout = null
+
+    const debouncedFetchNotifications = () => {
+      if (fetchTimeout) {
+        clearTimeout(fetchTimeout)
+      }
+      fetchTimeout = setTimeout(fetchNotifications, 300) // 300ms debounce
+    }
+
+    const debouncedMarkAsRead = (notification) => {
+      if (notification.elolvasva) return
+
+      if (markReadTimeout) {
+        clearTimeout(markReadTimeout)
+      }
+      markReadTimeout = setTimeout(() => markAsRead(notification), 100) // 100ms debounce
+    }
+
+    const debouncedMarkAllAsRead = () => {
+      if (markAllTimeout) {
+        clearTimeout(markAllTimeout)
+      }
+      markAllTimeout = setTimeout(markAllAsRead, 200) // 200ms debounce
+    }
+
     const fetchNotifications = async () => {
+      // Prevent fetching too frequently (throttling)
+      const now = Date.now()
+      if (now - lastFetchTime.value < 5000) return // Don't fetch more than once every 5 seconds
+
       loading.value = true
+      lastFetchTime.value = now
+      
       try {
         const response = await api.get('/szobavaltoztatas/admin/notifications')
         if (response.data.success) {
@@ -120,10 +174,13 @@ export default {
       try {
         const unreadNotifications = notifications.value.filter(n => !n.elolvasva)
         
-        for (const notification of unreadNotifications) {
-          await api.put(`/szobavaltoztatas/admin/notifications/${notification.notification_id}/read`)
-          notification.elolvasva = true
-        }
+        // Use Promise.all for better performance when marking multiple notifications
+        await Promise.all(
+          unreadNotifications.map(notification => 
+            api.put(`/szobavaltoztatas/admin/notifications/${notification.notification_id}/read`)
+              .then(() => { notification.elolvasva = true })
+          )
+        )
         
         toast.success('Összes értesítés olvasottnak jelölve')
       } catch (error) {
@@ -134,37 +191,66 @@ export default {
       }
     }
 
+    // Memoized functions for better performance
     const getNotificationTypeText = (type) => {
-      const typeMap = {
-        'room_change_approved': 'Szobaváltás jóváhagyva',
-        'room_change_denied': 'Szobaváltás elutasítva',
-        'room_change_pending': 'Szobaváltás függőben'
-      }
-      return typeMap[type] || 'Értesítés'
+      return notificationTypeMap[type] || 'Értesítés'
     }
 
     const getNotificationIconClass = (type) => {
-      const iconMap = {
-        'room_change_approved': 'badge bg-success',
-        'room_change_denied': 'badge bg-danger',
-        'room_change_pending': 'badge bg-warning'
-      }
-      return iconMap[type] || 'badge bg-secondary'
+      return notificationIconMap[type] || 'badge bg-secondary'
     }
 
+    // Cached date formatter to avoid recreating options object
+    const dateFormatter = new Intl.DateTimeFormat('hu-HU', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+
     const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleString('hu-HU', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      try {
+        return dateFormatter.format(new Date(dateString))
+      } catch {
+        return dateString
+      }
     }
+
+    // Auto-refresh notifications every 30 seconds
+    let refreshInterval = null
+    const startAutoRefresh = () => {
+      refreshInterval = setInterval(() => {
+        if (!loading.value) {
+          debouncedFetchNotifications()
+        }
+      }, 30000) // 30 seconds
+    }
+
+    const stopAutoRefresh = () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval)
+        refreshInterval = null
+      }
+    }
+
+    // Watch for changes and trigger re-renders only when necessary
+    watch(() => notifications.value.length, (newLength, oldLength) => {
+      if (newLength !== oldLength) {
+        // Only trigger updates when the count actually changes
+      }
+    })
 
     onMounted(() => {
       fetchNotifications()
+      startAutoRefresh()
+    })
+
+    onUnmounted(() => {
+      stopAutoRefresh()
+      if (fetchTimeout) clearTimeout(fetchTimeout)
+      if (markReadTimeout) clearTimeout(markReadTimeout)
+      if (markAllTimeout) clearTimeout(markAllTimeout)
     })
 
     return {
@@ -172,8 +258,11 @@ export default {
       loading,
       markingAllAsRead,
       unreadCount,
+      visibleNotifications,
       markAsRead,
       markAllAsRead,
+      debouncedMarkAsRead,
+      debouncedMarkAllAsRead,
       getNotificationTypeText,
       getNotificationIconClass,
       formatDate
@@ -191,7 +280,7 @@ export default {
 .card-header h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-heading);
   margin-bottom: 0;
 }
 
@@ -201,16 +290,16 @@ export default {
 }
 
 .list-group-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
 }
 
 .list-group-item.unread {
-  background-color: #fff3cd;
-  border-left: 4px solid #ffc107;
+  background-color: var(--bg-tertiary);
+  border-left: 4px solid var(--color-warning);
 }
 
 .list-group-item.unread:hover {
-  background-color: #fff9d0;
+  background-color: var(--bg-tertiary);
 }
 
 .badge {
@@ -219,8 +308,8 @@ export default {
 }
 
 .card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .card-body {
@@ -228,12 +317,12 @@ export default {
 }
 
 .list-group-item-action {
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-primary);
   border-top: none;
 }
 
 .list-group-item-action:first-child {
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--border-primary);
 }
 
 /* Dark theme adjustments for typography */
@@ -244,5 +333,151 @@ export default {
 /* High contrast theme adjustments */
 [data-theme="high-contrast"] .card-header h5 {
   color: #000000;
+}
+
+/* Dark theme overrides for NotificationInbox */
+[data-theme="dark"] .notification-inbox {
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .list-group-item {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .list-group-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .list-group-item.unread {
+  background-color: var(--bg-tertiary);
+  border-left-color: var(--color-warning);
+}
+
+[data-theme="dark"] .list-group-item.unread:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .badge {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .badge.bg-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+[data-theme="dark"] .badge.bg-success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+[data-theme="dark"] .badge.bg-danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+[data-theme="dark"] .badge.bg-warning {
+  background-color: var(--color-warning);
+  color: var(--text-dark);
+}
+
+[data-theme="dark"] .text-muted {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .btn-outline-primary {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .spinner-border {
+  border-color: var(--color-primary) transparent var(--color-primary) transparent !important;
+}
+
+/* High contrast theme overrides for NotificationInbox */
+[data-theme="high-contrast"] .notification-inbox {
+  background-color: var(--bg-page);
+}
+
+[data-theme="high-contrast"] .card {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .list-group-item {
+  background-color: var(--bg-card);
+  border: 1px solid #000000;
+}
+
+[data-theme="high-contrast"] .list-group-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="high-contrast"] .list-group-item.unread {
+  background-color: var(--bg-card);
+  border-left: 4px solid #000000;
+}
+
+[data-theme="high-contrast"] .list-group-item.unread:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="high-contrast"] .badge {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .badge.bg-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+[data-theme="high-contrast"] .badge.bg-success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+[data-theme="high-contrast"] .badge.bg-danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+[data-theme="high-contrast"] .badge.bg-warning {
+  background-color: var(--color-warning);
+  color: var(--text-dark);
+}
+
+[data-theme="high-contrast"] .text-muted {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="high-contrast"] .btn-outline-primary {
+  border: 2px solid #000000;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+}
+
+[data-theme="high-contrast"] .btn-outline-primary:hover {
+  background-color: var(--bg-tertiary);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .spinner-border {
+  border-color: #000000 transparent #000000 transparent !important;
 }
 </style>

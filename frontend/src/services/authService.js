@@ -50,41 +50,6 @@ export const authService = {
     }
   },
 
-  async getTestAdminToken() {
-    try {
-      const response = await api.post('/auth/test-admin-token')
-      if (response.data.success) {
-        // Store token and user data
-        localStorage.setItem('token', response.data.data.token)
-        localStorage.setItem('user', JSON.stringify({
-          userId: response.data.data.userId,
-          admin: response.data.data.admin
-        }))
-      }
-      return response.data
-    } catch (error) {
-      const errorData = handleApiError(error)
-      throw errorData
-    }
-  },
-
-  async getTestUserToken() {
-    try {
-      const response = await api.post('/auth/test-user-token')
-      if (response.data.success) {
-        // Store token and user data (non-admin)
-        localStorage.setItem('token', response.data.data.token)
-        localStorage.setItem('user', JSON.stringify({
-          userId: response.data.data.userId,
-          admin: false  // Explicitly set as non-admin (student)
-        }))
-      }
-      return response.data
-    } catch (error) {
-      const errorData = handleApiError(error)
-      throw errorData
-    }
-  },
 
   // Check if user is authenticated
   isAuthenticated() {

@@ -35,27 +35,6 @@
               </button>
             </div>
           </form>
-          
-          <hr class="my-2">
-          
-          <div class="text-center">
-            <p class="mb-1 small">Vagy használjon teszt admin tokent:</p>
-            <button 
-              class="btn btn-outline-secondary btn-xs" 
-              @click="useTestToken"
-              :disabled="loading"
-            >
-              {{ loading ? 'Token generálása...' : 'Teszt admin token' }}
-            </button>
-            <div class="mb-1"></div>
-            <button 
-              class="btn btn-outline-secondary btn-xs" 
-              @click="useTestUser"
-              :disabled="loading"
-            >
-              {{ loading ? 'Token generálása...' : 'Teszt user' }}
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -74,7 +53,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2c4a5a;
+  background-color: var(--bg-sidebar);
 }
 
 .login-container {
@@ -87,19 +66,21 @@
   border: none;
   border-radius: 8px;
   margin: 0;
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .card-header {
   border-radius: 8px 8px 0 0 !important;
   padding: 0.75rem 1rem;
+  background-color: var(--bg-card);
 }
 
 
 .card-header h5 {
   font-size: 1.1rem;
   line-height: 1.2;
+  color: var(--text-heading);
 }
 
 .card-body {
@@ -109,21 +90,34 @@
 .form-label {
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
+  color: var(--text-body);
 }
 
 .form-control-sm {
   padding: 0.375rem 0.75rem;
   font-size: 0.9rem;
   line-height: 1.3;
+  background-color: var(--bg-page);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.form-control-sm:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
 }
 
 .btn-sm {
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border: none;
+  color: white;
 }
 
 hr {
   margin: 0.75rem 0;
+  border-color: var(--border-secondary);
 }
 
 @media (max-width: 575px) {
@@ -159,12 +153,57 @@ hr {
     margin: 0.5rem 0;
   }
 }
+
+/* Dark theme overrides */
+[data-theme="dark"] .login-page {
+  background-color: var(--bg-sidebar);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--bg-card);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .card-header {
+  background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .form-control-sm {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control-sm:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.4);
+}
+
+/* High contrast theme overrides */
+[data-theme="high-contrast"] .login-page {
+  background-color: var(--bg-sidebar);
+}
+
+[data-theme="high-contrast"] .card {
+  background-color: var(--bg-card);
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .form-control-sm {
+  background-color: var(--bg-page);
+  border: 2px solid #000000;
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .form-control-sm:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px #000000;
+}
 </style>
 
 <script>
 import { ref } from 'vue'
 import { useAuthStore } from '../store/auth'
-import { authService } from '../services/authService'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 
@@ -196,53 +235,11 @@ export default {
       }
     }
 
-    // Quick-login as admin using the seeded admin credentials
-    const useTestToken = async () => {
-      loading.value = true
-      try {
-        const response = await authStore.login('admin@kanyr.hu', 'Admin@123456')
-        if (response.success) {
-          toast.success('Teszt admin bejelentkezés sikeres!')
-          router.push(authStore.getDashboardRoute())
-        } else {
-          toast.error(response.error || 'Hiba a teszt bejelentkezés közben')
-        }
-      } catch (error) {
-        console.error('Test admin login error:', error)
-        toast.error(error.error || 'Hiba a teszt bejelentkezés közben')
-      } finally {
-        loading.value = false
-      }
-    }
-
-    // Quick-login as student via the dev-only token endpoint
-    const useTestUser = async () => {
-      loading.value = true
-      try {
-        const response = await authService.getTestUserToken()
-        if (response.success) {
-          authStore.setToken(response.data.token)
-          authStore.setUser({ userId: response.data.userId, admin: false })
-          toast.success('Teszt user token sikeresen generálva!')
-          router.push(authStore.getDashboardRoute())
-        } else {
-          toast.error(response.error || 'Hiba a teszt token generálása közben')
-        }
-      } catch (error) {
-        console.error('Test user token error:', error)
-        toast.error(error.error || 'Hiba a teszt token generálása közben')
-      } finally {
-        loading.value = false
-      }
-    }
-
     return {
       email,
       password,
       loading,
-      handleLogin,
-      useTestToken,
-      useTestUser
+      handleLogin
     }
   }
 }

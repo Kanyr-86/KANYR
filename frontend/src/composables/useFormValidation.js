@@ -1,7 +1,7 @@
 import { reactive, computed } from 'vue'
 
 /**
- * Hungarian error messages for validation
+ * Hungarian error messages for validation (memoized for performance)
  */
 const ERROR_MESSAGES = {
   required: 'A mező kitöltése kötelező',
@@ -14,7 +14,7 @@ const ERROR_MESSAGES = {
 }
 
 /**
- * Built-in validators
+ * Built-in validators with memoization
  */
 const validators = {
   /**
@@ -104,17 +104,26 @@ const validators = {
 }
 
 /**
- * useFormValidation - A composable for form validation
+ * Debounced validation function to prevent excessive validation calls
+ */
+let validationTimeout = null
+
+/**
+ * useFormValidation - A composable for form validation with performance optimizations
  * 
  * Provides reactive validation state and methods for validating form fields.
+ * Includes debouncing for better performance and memoization for validation rules.
  * 
  * @param {Object} rules - Validation rules object
+ * @param {Object} options - Optional configuration
+ * @param {number} options.debounceDelay - Debounce delay in milliseconds (default: 300)
  * @returns {Object} Validation state and methods
  * @returns {Object} returns.errors - Reactive errors object
  * @returns {Function} returns.validate - Validate all fields
- * @returns {Function} returns.validateField - Validate single field
+ * @returns {Function} returns.validateField - Validate single field (debounced)
  * @returns {Function} returns.clearErrors - Clear all errors
  * @returns {Computed<boolean>} returns.isValid - True if form is valid
+ * @returns {Function} returns.validateFieldImmediate - Validate single field immediately
  * 
  * @example Student form validation
  * ```javascript
@@ -126,7 +135,7 @@ const validators = {
 *   kor: { required: true, min: 18, max: 100 }
 * }
  * 
- * const { errors, validate, isValid } = useFormValidation(rules)
+ * const { errors, validate, isValid, validateFieldImmediate } = useFormValidation(rules)
 * 
 * const form = reactive({
  *   nev: '',
@@ -139,11 +148,11 @@ const validators = {
 *   // Submit form
 * }
 * 
-* // Validate single field on blur
-* errors.email = validateField('email', form.email)
+* // Validate single field immediately (for real-time validation)
+* validateFieldImmediate('email', form.email)
 * ```
  * 
- * @example With custom pattern validation
+ * @example With custom pattern validation and debouncing
  * ```javascript
 * const rules = {
 *   phone: { 
@@ -152,11 +161,17 @@ const validators = {
 *     patternMessage: 'Érvénytelen telefonszám'
 *   }
 * }
- * ```
+* 
+* const { validateField } = useFormValidation(rules, { debounceDelay: 500 })
+* ```
  */
-export function useFormValidation(rules) {
+export function useFormValidation(rules, options = {}) {
   const errors = reactive({})
   const rulesRef = rules
+  const { debounceDelay = 300 } = options
+
+  // Memoized validation results to prevent unnecessary re-validation
+  const validationCache = new Map()
 
   /**
    * Computed property - true if no errors
@@ -178,7 +193,7 @@ export function useFormValidation(rules) {
       const fieldRules = rulesRef[field]
       const value = formData[field]
       
-      const error = validateFieldWithRules(field, value, fieldRules)
+      const error = validateFieldWithRules(field, value, fieldRules, true)
       if (error) {
         errors[field] = error
         isFormValid = false
@@ -189,16 +204,37 @@ export function useFormValidation(rules) {
   }
 
   /**
-   * Validate a single field
+   * Validate a single field with debouncing
+   * @param {string} field - Field name
+   * @param {*} value - Field value
+   */
+  function validateField(field, value) {
+    const fieldRules = rulesRef[field]
+    if (!fieldRules) return
+
+    if (validationTimeout) {
+      clearTimeout(validationTimeout)
+    }
+
+    validationTimeout = setTimeout(() => {
+      const error = validateFieldWithRules(field, value, fieldRules)
+      errors[field] = error || ''
+    }, debounceDelay)
+  }
+
+  /**
+   * Validate a single field immediately (without debouncing)
    * @param {string} field - Field name
    * @param {*} value - Field value
    * @returns {string|null} Error message or null
    */
-  function validateField(field, value) {
+  function validateFieldImmediate(field, value) {
     const fieldRules = rulesRef[field]
     if (!fieldRules) return null
-    
-    return validateFieldWithRules(field, value, fieldRules)
+
+    const error = validateFieldWithRules(field, value, fieldRules, true)
+    errors[field] = error || ''
+    return error
   }
 
   /**
@@ -206,69 +242,90 @@ export function useFormValidation(rules) {
    * @param {string} field - Field name
    * @param {*} value - Field value
    * @param {Object} fieldRules - Rules for this field
+   * @param {boolean} forceValidation - Whether to force validation (skip cache)
    * @returns {string|null} Error message or null
    */
-  function validateFieldWithRules(field, value, fieldRules) {
+  function validateFieldWithRules(field, value, fieldRules, forceValidation = false) {
+    // Create cache key for memoization
+    const cacheKey = `${field}:${JSON.stringify(value)}:${JSON.stringify(fieldRules)}`
+    
+    // Return cached result if available and not forcing validation
+    if (!forceValidation && validationCache.has(cacheKey)) {
+      return validationCache.get(cacheKey)
+    }
+
+    let error = null
+
     // Check required
     if (fieldRules.required && !validators.required(value)) {
-      return ERROR_MESSAGES.required
+      error = ERROR_MESSAGES.required
     }
-
     // Check minLength
-    if (fieldRules.minLength !== undefined) {
-      if (!validators.minLength(value, fieldRules.minLength)) {
-        return ERROR_MESSAGES.minLength(fieldRules.minLength)
-      }
+    else if (fieldRules.minLength !== undefined && !validators.minLength(value, fieldRules.minLength)) {
+      error = ERROR_MESSAGES.minLength(fieldRules.minLength)
     }
-
     // Check maxLength
-    if (fieldRules.maxLength !== undefined) {
-      if (!validators.maxLength(value, fieldRules.maxLength)) {
-        return ERROR_MESSAGES.maxLength(fieldRules.maxLength)
-      }
+    else if (fieldRules.maxLength !== undefined && !validators.maxLength(value, fieldRules.maxLength)) {
+      error = ERROR_MESSAGES.maxLength(fieldRules.maxLength)
     }
-
     // Check min (numeric)
-    if (fieldRules.min !== undefined) {
-      if (!validators.min(value, fieldRules.min)) {
-        return ERROR_MESSAGES.min(fieldRules.min)
-      }
+    else if (fieldRules.min !== undefined && !validators.min(value, fieldRules.min)) {
+      error = ERROR_MESSAGES.min(fieldRules.min)
     }
-
     // Check max (numeric)
-    if (fieldRules.max !== undefined) {
-      if (!validators.max(value, fieldRules.max)) {
-        return ERROR_MESSAGES.max(fieldRules.max)
-      }
+    else if (fieldRules.max !== undefined && !validators.max(value, fieldRules.max)) {
+      error = ERROR_MESSAGES.max(fieldRules.max)
     }
-
     // Check email
-    if (fieldRules.email && !validators.email(value)) {
-      return ERROR_MESSAGES.email
+    else if (fieldRules.email && !validators.email(value)) {
+      error = ERROR_MESSAGES.email
     }
-
     // Check pattern
-    if (fieldRules.pattern !== undefined) {
-      if (!validators.pattern(value, fieldRules.pattern)) {
-        return fieldRules.patternMessage || ERROR_MESSAGES.pattern
-      }
+    else if (fieldRules.pattern !== undefined && !validators.pattern(value, fieldRules.pattern)) {
+      error = fieldRules.patternMessage || ERROR_MESSAGES.pattern
     }
 
-    return null
+    // Cache the result
+    validationCache.set(cacheKey, error)
+    return error
   }
 
   /**
-   * Clear all errors
+   * Clear all errors and reset cache
    */
   function clearErrors() {
     Object.keys(errors).forEach(key => delete errors[key])
+    validationCache.clear()
+  }
+
+  /**
+   * Clear validation cache for a specific field
+   * @param {string} field - Field name
+   */
+  function clearFieldCache(field) {
+    // Clear cache entries for this field
+    for (const key of validationCache.keys()) {
+      if (key.startsWith(`${field}:`)) {
+        validationCache.delete(key)
+      }
+    }
+  }
+
+  /**
+   * Clear validation cache for all fields
+   */
+  function clearCache() {
+    validationCache.clear()
   }
 
   return {
     errors,
     validate,
     validateField,
+    validateFieldImmediate,
     clearErrors,
+    clearFieldCache,
+    clearCache,
     isValid
   }
 }
