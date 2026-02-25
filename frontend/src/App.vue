@@ -5,7 +5,7 @@
       @sidebar-collapse="handleSidebarCollapse"
     />
     
-    <div class="main-content" :class="{ 'sidebar-collapsed': !isLoginPage && isSidebarCollapsed }">
+    <div class="main-content" :class="{ 'sidebar-expanded': !isSidebarCollapsed }">
       <ErrorBoundary>
         <router-view />
       </ErrorBoundary>
@@ -50,6 +50,8 @@ export default defineComponent({
 
     // Handle sidebar collapse events
     const handleSidebarCollapse = (collapsed) => {
+      // collapsed = true means sidebar is collapsed (small)
+      // collapsed = false means sidebar is expanded (large)
       isSidebarCollapsed.value = collapsed
     }
 
@@ -68,38 +70,41 @@ export default defineComponent({
 </script>
 
 <style>
-/* Sötétebb kék háttérszín - szemkímélő, pihentető */
 html, body {
-  background-color: #2c4a5a !important;
+  background-color: var(--bg-page) !important;
+  margin: 0;
+  padding: 0;
 }
 
 #app {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  max-width: 100vw;
-  overflow-x: hidden;
-  background-color: #2c4a5a !important;
+  width: 100%;
 }
 
 .main-content {
   flex: 1;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #2c4a5a !important;
+  min-height: 100vh;
+  padding: 24px;
+  margin-left: 64px;
+  transition: margin-left 0.3s ease;
+  background-color: var(--bg-page);
 }
 
-@media (min-width: 768px) {
+.main-content.sidebar-expanded {
+  margin-left: 250px;
+}
+
+@media (max-width: 991.98px) {
   .main-content {
-    padding: 24px;
+    margin-left: 0 !important;
+    padding: 16px;
   }
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  overflow-x: hidden;
-  background-color: #2c4a5a !important;
+@media (max-width: 767.98px) {
+  .main-content {
+    padding: 12px;
+  }
 }
 </style>

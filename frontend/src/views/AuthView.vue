@@ -2,7 +2,7 @@
   <div class="login-page">
     <div class="login-container">
       <div class="card shadow-sm">
-        <div class="card-header bg-material-blue text-white">
+        <div class="card-header">
           <h5 class="text-center mb-0">KANYR Bejelentkezés</h5>
         </div>
         <div class="card-body p-3">
@@ -39,21 +39,19 @@
           <hr class="my-2">
           
           <div class="text-center">
-            <p class="text-muted mb-1 small" style="font-size: 0.8rem;">Vagy használjon teszt admin tokent:</p>
+            <p class="mb-1 small">Vagy használjon teszt admin tokent:</p>
             <button 
               class="btn btn-outline-secondary btn-xs" 
               @click="useTestToken"
               :disabled="loading"
-              style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"
             >
               {{ loading ? 'Token generálása...' : 'Teszt admin token' }}
             </button>
-            <div style="height:6px"></div>
+            <div class="mb-1"></div>
             <button 
               class="btn btn-outline-secondary btn-xs" 
               @click="useTestUser"
               :disabled="loading"
-              style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"
             >
               {{ loading ? 'Token generálása...' : 'Teszt user' }}
             </button>
@@ -98,10 +96,6 @@
   padding: 0.75rem 1rem;
 }
 
-/* Material Design kék háttér a bejelentkező oldalhoz */
-.bg-material-blue {
-  background-color: #1e88e5 !important;
-}
 
 .card-header h5 {
   font-size: 1.1rem;

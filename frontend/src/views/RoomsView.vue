@@ -63,7 +63,7 @@
           <div class="col-md-4">
             <div class="row">
               <div class="col-6">
-                <div class="card bg-info text-white">
+                <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes szoba</h6>
                     <h3 class="mb-0">{{ rooms.length }}</h3>
@@ -71,7 +71,7 @@
                 </div>
               </div>
               <div class="col-6">
-                <div class="card bg-warning text-white">
+                <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Elérhető szobák</h6>
                     <h3 class="mb-0">{{ availableRoomsCount }}</h3>
@@ -140,14 +140,14 @@
                     <div class="list-group-item d-flex justify-content-between align-items-center" 
                          v-for="student in room.diakok" :key="student.diak_id">
                       <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
                           {{ student.nev.charAt(0).toUpperCase() }}
                         </div>
                         <div>
                           <div class="fw-semibold">{{ student.nev }}</div>
                         </div>
                       </div>
-                      <span class="badge" :class="student.aktiv ? 'bg-success' : 'bg-danger'">
+                      <span class="badge" :class="student.aktiv ? 'status-active' : 'status-inactive'">
                         {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </div>
@@ -621,6 +621,7 @@ import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { debounce } from 'lodash-es'
 import { toast } from 'vue3-toastify'
+import BaseInput from '../components/forms/BaseInput.vue'
 
 export default {
   name: 'RoomsView',
@@ -1273,11 +1274,23 @@ export default {
 <style scoped>
 /* Szoba kártya stílusok */
 .room-card {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card-gradient);
+  cursor: pointer;
 }
 
 .room-card:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-300);
+}
+
+.room-card .card-body {
+  transition: all 0.3s ease;
+}
+
+.room-card:hover .card-body {
+  background-color: rgba(99, 102, 241, 0.05);
 }
 </style>

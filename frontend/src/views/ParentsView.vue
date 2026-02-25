@@ -48,7 +48,7 @@
           <div class="col-md-4">
             <div class="row">
               <div class="col-6">
-                <div class="card bg-primary text-white">
+                <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes szülő</h6>
                     <h3 class="mb-0">{{ parents.length }}</h3>
@@ -56,7 +56,7 @@
                 </div>
               </div>
               <div class="col-6">
-                <div class="card bg-info text-white">
+                <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes gyerek</h6>
                     <h3 class="mb-0">{{ totalChildrenCount }}</h3>
@@ -78,7 +78,7 @@
                     <small class="text-muted">{{ getRelationTypeLabel(parent.kapcsolat_tipusa) }}</small>
                   </div>
                   <div>
-                    <span class="badge bg-info">
+                    <span class="badge">
                       {{ parent.diaks ? parent.diaks.length : 0 }} gyerek
                     </span>
                   </div>
@@ -88,7 +88,7 @@
                 <div class="row mb-3">
                   <div class="col-6">
                     <div class="d-flex align-items-center">
-                      <i class="bi bi-envelope-fill text-primary me-2"></i>
+                      <i class="bi bi-envelope-fill me-2"></i>
                       <div>
                         <div class="fw-semibold">{{ parent.email }}</div>
                         <small class="text-muted">Email</small>
@@ -97,7 +97,7 @@
                   </div>
                   <div class="col-6">
                     <div class="d-flex align-items-center">
-                      <i class="bi bi-telephone-fill text-success me-2"></i>
+                      <i class="bi bi-telephone-fill me-2"></i>
                       <div>
                         <div class="fw-semibold">{{ parent.telefonszam }}</div>
                         <small class="text-muted">Telefon</small>
@@ -108,7 +108,7 @@
                 
                 <div class="mb-3">
                   <div class="d-flex align-items-start">
-                    <i class="bi bi-geo-alt-fill text-warning me-2 mt-1"></i>
+                    <i class="bi bi-geo-alt-fill me-2 mt-1"></i>
                     <div>
                       <div class="fw-semibold">
                         {{ parent.lakcim ? `${parent.lakcim.varos}, ${parent.lakcim.utca_hazszam}` : 'Nincs megadva' }}
@@ -124,7 +124,7 @@
                     <div class="list-group-item d-flex justify-content-between align-items-center" 
                          v-for="diak in parent.diaks" :key="diak.diak_id">
                       <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
                           {{ diak.nev.charAt(0).toUpperCase() }}
                         </div>
                         <div>
@@ -132,7 +132,7 @@
                           <small class="text-muted">{{ formatDate(diak.szuletesi_datum) }}</small>
                         </div>
                       </div>
-                      <span class="badge bg-primary">
+                      <span class="badge">
                         {{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}
                       </span>
                     </div>
@@ -140,8 +140,8 @@
                 </div>
                 <div v-else>
                   <div class="alert alert-light border text-center mb-0">
-                    <i class="bi bi-emoji-frown text-muted me-2"></i>
-                    <span class="text-muted">Nincs hozzárendelve gyerek</span>
+                    <i class="bi bi-emoji-frown me-2"></i>
+                    <span>Nincs hozzárendelve gyerek</span>
                   </div>
                 </div>
               </div>
@@ -358,7 +358,7 @@
           <div class="modal-body">
             <p>Biztosan törölni szeretné a következő szülőt?</p>
             <p><strong>{{ deleteParentData?.nev }}</strong></p>
-            <p class="text-warning">
+            <p>
               <small>
                 Figyelem: A szülő törlése csak akkor lehetséges, ha nincs hozzárendelve aktív diák.
               </small>
@@ -401,7 +401,7 @@
                   @click="activeViewTab = 'gyerekek'"
                 >
                   Gyerekek 
-                  <span v-if="viewParentData?.diaks?.length > 0" class="badge bg-secondary">
+                  <span v-if="viewParentData?.diaks?.length > 0" class="badge">
                     {{ viewParentData.diaks.length }}
                   </span>
                 </button>
@@ -482,7 +482,7 @@
                         <td>{{ diak.email }}</td>
                         <td>{{ formatDate(diak.szuletesi_datum) }}</td>
                         <td>
-                          <span class="badge bg-primary">{{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}</span>
+                          <span class="badge">{{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}</span>
                         </td>
                       </tr>
                     </tbody>
@@ -512,6 +512,7 @@ import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { useDebounce } from '../composables/useDebounce'
 import { toast } from 'vue3-toastify'
+import BaseInput from '../components/forms/BaseInput.vue'
 
 export default {
   name: 'ParentsView',

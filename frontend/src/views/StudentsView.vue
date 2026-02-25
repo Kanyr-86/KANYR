@@ -48,7 +48,7 @@
           <div class="col-md-4">
             <div class="row">
               <div class="col-6">
-                <div class="card bg-primary text-white">
+                <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes diák</h6>
                     <h3 class="mb-0">{{ students.length }}</h3>
@@ -56,7 +56,7 @@
                 </div>
               </div>
               <div class="col-6">
-                <div class="card bg-success text-white">
+                <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Aktív diákok</h6>
                     <h3 class="mb-0">{{ activeStudentsCount }}</h3>
@@ -80,7 +80,7 @@
               <table class="table table-hover mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th class="text-primary">Név</th>
+                    <th>Név</th>
                     <th class="d-none d-md-table-cell">Email</th>
                     <th class="d-none d-lg-table-cell">Telefonszám</th>
                     <th>Szoba</th>
@@ -92,7 +92,7 @@
                   <tr v-for="student in filteredStudents" :key="student.diak_id" class="align-middle">
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                           {{ student.nev.charAt(0).toUpperCase() }}
                         </div>
                         <div>
@@ -102,17 +102,17 @@
                       </div>
                     </td>
                     <td class="d-none d-md-table-cell">
-                      <span class="badge bg-light text-dark">{{ student.email }}</span>
+                    <span class="badge">{{ student.email }}</span>
                     </td>
                     <td class="d-none d-lg-table-cell">{{ student.telefonszam || '-' }}</td>
                     <td>
-                      <span v-if="student.szoba" class="badge bg-info">
+                      <span v-if="student.szoba" class="badge">
                         <i class="bi bi-door-closed me-1"></i>{{ student.szoba.szoba_szama }}
                       </span>
                       <span v-else class="text-muted">Nincs szoba</span>
                     </td>
                     <td>
-                      <span class="badge" :class="student.aktiv ? 'bg-primary' : 'bg-danger'">
+                      <span class="badge">
                         <i class="bi" :class="student.aktiv ? 'bi-check-circle' : 'bi-x-circle'"></i>
                         {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
@@ -559,7 +559,7 @@
                   <tr>
                     <td><strong>Státusz:</strong></td>
                     <td>
-                      <span class="badge" :class="viewStudentData?.aktiv ? 'bg-success' : 'bg-danger'">
+                      <span class="badge">
                         {{ viewStudentData?.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </td>
@@ -1560,7 +1560,14 @@ export default {
       getTransferRoomBadgeText,
       getTransferRoomProgressClass,
       isRoomGenderCompatible,
-      getRoomGenderText
+      getRoomGenderText,
+      // Missing return statements
+      resetEnrollForm,
+      resetEditForm,
+      resetViewForm,
+      resetDeleteForm,
+      resetTransferForm,
+      activeStudentsCount
     }
   }
 }

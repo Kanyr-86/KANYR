@@ -4,45 +4,45 @@
       <div class="col-12">
         <h2 class="dashboard-title">KANYR Dashboard</h2>
         
-        <!-- Admin (Főtitkár) nézet - statisztikákkal -->
-        <div v-if="isAdmin" class="row mb-4">
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Diákok</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.totalStudents || 0 }}</p>
-                <span class="badge bg-primary">Összes</span>
+        <!-- Admin (titkár) nézet - statisztikákkal -->
+        <div v-if="isAdmin" class="row g-4 mb-4">
+          <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+              <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
+                <i class="bi bi-people-fill mb-3" style="font-size: 2.5rem;"></i>
+                <h5 class="card-title mb-3">Diákok</h5>
+                <p class="card-text display-6 fw-bold mb-3">{{ statistics.totalStudents || 0 }}</p>
+                <span class="badge bg-primary px-3 py-2">Összes</span>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-person-check-fill text-success" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Aktív diákok</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.activeStudents || 0 }}</p>
-                <span class="badge bg-success">Lakók</span>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+              <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
+                <i class="bi bi-person-check-fill mb-3" style="font-size: 2.5rem;"></i>
+                <h5 class="card-title mb-3">Aktív diákok</h5>
+                <p class="card-text display-6 fw-bold mb-3">{{ statistics.activeStudents || 0 }}</p>
+                <span class="badge bg-success px-3 py-2">Lakók</span>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-door-closed-fill text-info" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Szobák</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.totalRooms || 0 }}</p>
-                <span class="badge bg-info">Összes</span>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+              <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
+                <i class="bi bi-door-closed-fill mb-3" style="font-size: 2.5rem;"></i>
+                <h5 class="card-title mb-3">Szobák</h5>
+                <p class="card-text display-6 fw-bold mb-3">{{ statistics.totalRooms || 0 }}</p>
+                <span class="badge bg-info px-3 py-2">Összes</span>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <i class="bi bi-bar-chart-fill text-warning" style="font-size: 2rem;"></i>
-                <h5 class="card-title mt-2">Foglaltság</h5>
-                <p class="card-text display-6 fw-bold">{{ statistics.averageOccupancy || 0 }}%</p>
-                <span class="badge bg-warning">Átlag</span>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+              <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
+                <i class="bi bi-bar-chart-fill mb-3" style="font-size: 2.5rem;"></i>
+                <h5 class="card-title mb-3">Foglaltság</h5>
+                <p class="card-text display-6 fw-bold mb-3">{{ statistics.averageOccupancy || 0 }}%</p>
+                <span class="badge bg-warning text-dark px-3 py-2">Átlag</span>
               </div>
             </div>
           </div>
@@ -59,22 +59,22 @@
               <div class="card-body">
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <router-link to="/students" class="btn btn-primary btn-lg w-100">
+                    <router-link to="/students" class="btn-action btn-action-primary w-100">
                       <i class="bi bi-people me-2"></i>Diákok kezelése
                     </router-link>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <router-link to="/rooms" class="btn btn-secondary btn-lg w-100">
+                    <router-link to="/rooms" class="btn-action btn-action-secondary w-100">
                       <i class="bi bi-door-closed me-2"></i>Szobák kezelése
                     </router-link>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <router-link to="/reports" class="btn btn-info btn-lg w-100">
+                    <router-link to="/reports" class="btn-action btn-action-primary w-100 text-white">
                       <i class="bi bi-file-earmark-text me-2"></i>Riportok
                     </router-link>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <button class="btn btn-outline-primary btn-lg w-100" @click="refreshStatistics">
+                    <button class="btn-action btn-action-outline w-100" @click="refreshStatistics">
                       <i class="bi bi-arrow-clockwise me-2"></i>Frissítés
                     </button>
                   </div>
@@ -91,19 +91,19 @@
                 <div class="row text-center">
                   <div class="col-md-4">
                     <div class="d-flex align-items-center justify-content-center">
-                      <i class="bi bi-circle-fill text-success me-2"></i>
+                      <i class="bi bi-circle-fill me-2"></i>
                       <span>Adatbázis</span>
                     </div>
                   </div>
                   <div class="col-md-4">
                     <div class="d-flex align-items-center justify-content-center">
-                      <i class="bi bi-circle-fill text-primary me-2"></i>
+                      <i class="bi bi-circle-fill me-2"></i>
                       <span>Szerver</span>
                     </div>
                   </div>
                   <div class="col-md-4">
                     <div class="d-flex align-items-center justify-content-center">
-                      <i class="bi bi-circle-fill text-warning me-2"></i>
+                      <i class="bi bi-circle-fill me-2"></i>
                       <span>API</span>
                     </div>
                   </div>
@@ -138,7 +138,7 @@
                 <div class="card-body">
                   <router-link to="/students" class="btn btn-primary me-2 mb-2">Diákok kezelése</router-link>
                   <router-link to="/rooms" class="btn btn-secondary me-2 mb-2">Szobák kezelése</router-link>
-                  <router-link v-if="isAdmin" to="/reports" class="btn btn-info mb-2">Riportok</router-link>
+                  <router-link v-if="isAdmin" to="/reports" class="btn btn-primary mb-2">Riportok</router-link>
                 </div>
               </div>
             </div>
@@ -150,11 +150,168 @@
 </template>
 
 <style scoped>
+/* Typography Hierarchy - Dashboard Title */
 .dashboard-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   color: #ffffff !important;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   margin-bottom: 1.5rem;
+}
+
+/* Typography Hierarchy - Section Headers */
+.card-header h5 {
+  font-size: 1rem;
   font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0;
+}
+
+/* Typography Hierarchy - Card Titles */
+.card-body h5 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #475569;
+  margin-bottom: 1rem;
+}
+
+/* Typography Hierarchy - Statistics Numbers */
+.card-body .display-6,
+.card-body p.card-text {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+/* Dark theme adjustments for typography */
+[data-theme="dark"] .card-header h5 {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .card-body h5 {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .card-body .display-6,
+[data-theme="dark"] .card-body p.card-text {
+  color: #f8fafc;
+}
+
+/* High contrast theme adjustments */
+[data-theme="high-contrast"] .card-header h5 {
+  color: #000000;
+}
+
+[data-theme="high-contrast"] .card-body h5 {
+  color: #000000;
+}
+
+[data-theme="high-contrast"] .card-body .display-6,
+[data-theme="high-contrast"] .card-body p.card-text {
+  color: #000000;
+}
+
+/* Statistics Cards (.stat-card) - Enhanced hover effects */
+.stat-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card-gradient);
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-300);
+}
+
+.stat-card .card-body {
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .card-body {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Fallback for existing hover-card class */
+.hover-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card-gradient);
+  cursor: pointer;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-300);
+}
+
+.hover-card .card-body {
+  transition: all 0.3s ease;
+}
+
+.hover-card:hover .card-body {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Responsive adjustments for better spacing */
+@media (max-width: 576px) {
+  .hover-card .card-body {
+    padding: 1.5rem 1rem !important;
+  }
+  
+  .hover-card i {
+    font-size: 2rem !important;
+  }
+  
+  .hover-card .card-title {
+    font-size: 1rem;
+    margin-bottom: 1rem !important;
+  }
+  
+  .hover-card .card-text {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Ensure consistent badge styling */
+.hover-card .badge {
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+/* Improve text contrast for better readability */
+.hover-card .card-title {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.hover-card .card-text {
+  color: var(--text-dark);
+  margin-bottom: 0 !important;
+}
+
+/* Add subtle animation on card load */
+.hover-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 

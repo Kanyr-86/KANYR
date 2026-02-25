@@ -187,6 +187,14 @@ export default {
   min-height: 400px;
 }
 
+/* Typography Hierarchy - Section Headers (inherited from DashboardView) */
+.card-header h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0;
+}
+
 .list-group-item {
   cursor: pointer;
   transition: background-color 0.2s;
@@ -226,5 +234,15 @@ export default {
 
 .list-group-item-action:first-child {
   border-top: 1px solid #dee2e6;
+}
+
+/* Dark theme adjustments for typography */
+[data-theme="dark"] .card-header h5 {
+  color: #cbd5e1;
+}
+
+/* High contrast theme adjustments */
+[data-theme="high-contrast"] .card-header h5 {
+  color: #000000;
 }
 </style>

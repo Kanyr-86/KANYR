@@ -1,0 +1,508 @@
+:root {
+  /* PRIMARY - Indigo (Use for main actions, primary cards) */
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-primary-light: #818cf8;
+  
+  /* SECONDARY - Gray (Use for secondary actions) */
+  --color-secondary: #64748b;
+  --color-secondary-dark: #475569;
+  
+  /* SUCCESS - Green (Use for active status, success states) */
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  
+  /* DANGER - Red (Use for delete, errors) */
+  --color-danger: #ef4444;
+  --color-danger-dark: #dc2626;
+  
+  /* WARNING - Amber (Use for attention, warnings) */
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d97706;
+  
+  /* INFO - Blue (Use for neutral information) */
+  --color-info: #3b82f6;
+  --color-info-dark: #2563eb;
+  
+  /* BACKGROUNDS */
+  --bg-page: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-sidebar: #1e293b;
+  
+  /* TEXT */
+  --text-heading: #1e293b;
+  --text-body: #475569;
+  --text-muted: #64748b;
+}
+
+/* FORCE BOOTSTRAP TO USE OUR COLORS */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3) !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--color-success), var(--color-success-dark)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3) !important;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--color-warning), var(--color-warning-dark)) !important;
+  color: var(--text-heading) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, var(--color-info), var(--color-info-dark)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* STAT CARD COLORS */
+.card.bg-primary { 
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important; 
+  color: white !important;
+}
+
+.card.bg-success { 
+  background: linear-gradient(135deg, var(--color-success), var(--color-success-dark)) !important; 
+  color: white !important;
+}
+
+.card.bg-info { 
+  background: linear-gradient(135deg, var(--color-info), var(--color-info-dark)) !important; 
+  color: white !important;
+}
+
+.card.bg-warning { 
+  background: linear-gradient(135deg, var(--color-warning), var(--color-warning-dark)) !important; 
+  color: var(--text-heading) !important;
+}
+
+.card.bg-danger { 
+  background: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark)) !important; 
+  color: white !important;
+}
+
+/* BADGE COLORS */
+.badge.bg-primary { 
+  background: var(--color-primary) !important; 
+  color: white !important;
+}
+
+.badge.bg-success { 
+  background: var(--color-success) !important; 
+  color: white !important;
+}
+
+.badge.bg-info { 
+  background: var(--color-info) !important; 
+  color: white !important; 
+}
+
+.badge.bg-warning { 
+  background: var(--color-warning) !important; 
+  color: var(--text-heading) !important; 
+}
+
+.badge.bg-danger { 
+  background: var(--color-danger) !important; 
+  color: white !important;
+}
+
+/* PAGE BACKGROUND */
+body, #app, .main-content {
+  background-color: var(--bg-page) !important;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background-color: var(--bg-sidebar) !important;
+}
+
+/* TEXT COLORS */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-body {
+  color: var(--text-body) !important;
+}
+
+/* Enhanced Typography Hierarchy */
+.dashboard-title {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  color: var(--text-heading) !important;
+  text-shadow: none !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.card-header h5 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-heading) !important;
+  margin-bottom: 0 !important;
+}
+
+.card-body h5 {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: var(--text-body) !important;
+  margin-bottom: 1rem !important;
+}
+
+.card-body .display-6,
+.card-body p.card-text {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  color: var(--text-heading) !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Statistics Cards (.stat-card) - Enhanced hover effects */
+.stat-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  border: 1px solid var(--border-primary) !important;
+  background: var(--bg-card-gradient) !important;
+  cursor: pointer !important;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  border-color: var(--primary-300) !important;
+}
+
+.stat-card .card-body {
+  transition: all 0.3s ease !important;
+}
+
+.stat-card:hover .card-body {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* Fallback for existing hover-card class */
+.hover-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  border: 1px solid var(--border-primary) !important;
+  background: var(--bg-card-gradient) !important;
+  cursor: pointer !important;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  border-color: var(--primary-300) !important;
+}
+
+.hover-card .card-body {
+  transition: all 0.3s ease !important;
+}
+
+.hover-card:hover .card-body {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* Ensure consistent badge styling */
+.hover-card .badge {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Improve text contrast for better readability */
+.hover-card .card-title {
+  color: var(--text-body) !important;
+  font-weight: 600 !important;
+}
+
+.hover-card .card-text {
+  color: var(--text-heading) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Add subtle animation on card load */
+.hover-card {
+  animation: fadeInUp 0.6s ease-out !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0 !important;
+    transform: translateY(20px) !important;
+  }
+  to {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+}
+
+/* Room card styling */
+.room-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  border: 1px solid var(--border-primary) !important;
+  background: var(--bg-card-gradient) !important;
+  cursor: pointer !important;
+}
+
+.room-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  border-color: var(--primary-300) !important;
+}
+
+.room-card .card-body {
+  transition: all 0.3s ease !important;
+}
+
+.room-card:hover .card-body {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 12px !important;
+  border-radius: 20px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.status-indicator.online {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: var(--color-success-dark) !important;
+  animation: pulse 2s infinite !important;
+}
+
+.status-indicator.offline {
+  background-color: rgba(100, 116, 139, 0.1) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  color: var(--color-secondary-dark) !important;
+}
+
+.status-indicator.warning {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  color: var(--color-warning-dark) !important;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4) !important;
+    transform: scale(1) !important;
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0) !important;
+    transform: scale(1.05) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0) !important;
+    transform: scale(1) !important;
+  }
+}
+
+/* Avatar styling */
+.avatar {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Button improvements */
+.btn {
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+}
+
+.btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Form improvements */
+.form-control, .form-select {
+  border-radius: 8px !important;
+  border: 1px solid #ced4da !important;
+  padding: 10px 12px !important;
+  font-size: 1rem !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--color-primary) !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Modal improvements */
+.modal-content {
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Table improvements */
+.table thead th {
+  background-color: #f8f9fa !important;
+  border-bottom: 2px solid #dee2e6 !important;
+  font-weight: 600 !important;
+  color: var(--text-heading) !important;
+}
+
+.table tbody td {
+  border-top: 1px solid #e9ecef !important;
+  vertical-align: middle !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa !important;
+}
+
+/* Alert improvements */
+.alert {
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 16px 20px !important;
+  font-weight: 500 !important;
+}
+
+.alert-primary {
+  background-color: #d1e7dd !important;
+  color: #0f5132 !important;
+}
+
+.alert-warning {
+  background-color: #fff3cd !important;
+  color: #664d03 !important;
+}
+
+.alert-danger {
+  background-color: #f8d7da !important;
+  color: #721c24 !important;
+}
+
+/* Sidebar improvements */
+.sidebar .nav-link {
+  color: #cbd5e1 !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  margin-bottom: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.sidebar .nav-link.router-link-active {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border-left: 4px solid var(--color-primary) !important;
+}
+
+/* Responsive improvements */
+@media (max-width: 767.98px) {
+  .hover-card .card-body {
+    padding: 1.5rem 1rem !important;
+  }
+  
+  .hover-card i {
+    font-size: 2rem !important;
+  }
+  
+  .hover-card .card-title {
+    font-size: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .hover-card .card-text {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Dark theme support */
+[data-theme="dark"] {
+  --color-primary: #818cf8;
+  --color-primary-dark: #6366f1;
+  --color-secondary: #94a3b8;
+  --color-secondary-dark: #64748b;
+  --color-success: #34d399;
+  --color-success-dark: #10b981;
+  --color-danger: #f87171;
+  --color-danger-dark: #ef4444;
+  --color-warning: #fbbf24;
+  --color-warning-dark: #f59e0b;
+  --color-info: #60a5fa;
+  --color-info-dark: #3b82f6;
+  --bg-page: #0f172a;
+  --bg-card: #111827;
+  --bg-sidebar: #0b1220;
+  --text-heading: #f8fafc;
+  --text-body: #cbd5e1;
+  --text-muted: #94a3b8;
+}
+
+/* High contrast theme support */
+[data-theme="high-contrast"] {
+  --color-primary: #0000ff;
+  --color-primary-dark: #0000cc;
+  --color-secondary: #000000;
+  --color-secondary-dark: #000000;
+  --color-success: #00ff00;
+  --color-success-dark: #00cc00;
+  --color-danger: #ff0000;
+  --color-danger-dark: #cc0000;
+  --color-warning: #ffff00;
+  --color-warning-dark: #cccc00;
+  --color-info: #00ffff;
+  --color-info-dark: #00cccc;
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --text-heading: #000000;
+  --text-body: #000000;
+  --text-muted: #000000;
+}
+
+/* Status badge styles */
+.status-active {
+  background-color: var(--color-success) !important;
+  color: white !important;
+}
+
+.status-inactive {
+  background-color: var(--color-danger) !important;
+  color: white !important;
+}

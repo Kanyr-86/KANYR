@@ -11,7 +11,7 @@
             <button class="btn btn-primary btn-lg" @click="handleGenerateReport('occupancy')">
               <i class="bi bi-bar-chart me-2"></i>Szobafoglaltsági jelentés
             </button>
-            <button class="btn btn-info btn-lg" @click="handleGenerateReport('bekoltozesek')">
+            <button class="btn btn-primary btn-lg" @click="handleGenerateReport('bekoltozesek')">
               <i class="bi bi-clock-history me-2"></i>Beköltözési előzmények
             </button>
           </div>
@@ -24,7 +24,7 @@
         <!-- Összegző statisztikák -->
         <div class="row mb-4">
           <div class="col-md-3">
-            <div class="card bg-primary text-white shadow-sm">
+            <div class="card stat-card shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
@@ -38,7 +38,7 @@
           </div>
 
           <div class="col-md-3">
-            <div class="card bg-success text-white shadow-sm">
+            <div class="card stat-card shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
@@ -52,7 +52,7 @@
           </div>
 
           <div class="col-md-3">
-            <div class="card bg-info text-white shadow-sm">
+            <div class="card stat-card shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
@@ -66,7 +66,7 @@
           </div>
 
           <div class="col-md-3">
-            <div class="card bg-warning text-white shadow-sm">
+            <div class="card stat-card shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
@@ -102,7 +102,7 @@
                     <i class="bi bi-person-lines-fill me-2"></i>Diák jelentés
                   </button>
                   <button
-                    class="btn btn-info"
+                    class="btn btn-primary"
                     :class="{ active: reportType === 'bekoltozesek' }"
                     @click="handleGenerateReport('bekoltozesek')"
                   >
@@ -206,19 +206,19 @@
               <table class="table table-hover">
                 <thead class="table-light">
                   <tr>
-                    <th class="text-primary">ID</th>
-                    <th class="text-primary">Szoba száma</th>
-                    <th class="text-primary">Férőhelyek</th>
-                    <th class="text-primary">Foglalt helyek</th>
-                    <th class="text-primary">Szabad helyek</th>
-                    <th class="text-primary">Foglaltsági arány</th>
+                    <th>ID</th>
+                    <th>Szoba száma</th>
+                    <th>Férőhelyek</th>
+                    <th>Foglalt helyek</th>
+                    <th>Szabad helyek</th>
+                    <th>Foglaltsági arány</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="room in rooms" :key="room.szoba_id" class="align-middle">
                     <td>{{ room.szoba_id }}</td>
                     <td>
-                      <span class="badge bg-info">{{ room.szoba_szama }}</span>
+                      <span class="badge bg-info text-dark">{{ room.szoba_szama }}</span>
                     </td>
                     <td>
                       <span class="badge bg-secondary">{{ room.osszes_hely }}</span>
@@ -227,7 +227,7 @@
                       <span class="badge bg-success">{{ room.bekoltozesek?.length || 0 }}</span>
                     </td>
                     <td>
-                      <span class="badge bg-warning">{{ (room.osszes_hely || 0) - (room.bekoltozesek?.length || 0) }}</span>
+                      <span class="badge bg-warning text-dark">{{ (room.osszes_hely || 0) - (room.bekoltozesek?.length || 0) }}</span>
                     </td>
                     <td>
                       <div class="d-flex align-items-center gap-2">
@@ -259,19 +259,19 @@
               <table v-else class="table table-hover">
                 <thead class="table-light">
                   <tr>
-                    <th class="text-primary">Diák neve</th>
-                    <th class="text-primary">Szoba</th>
-                    <th class="text-primary">Beköltözés dátuma</th>
-                    <th class="text-primary">Kiköltözés dátuma</th>
-                    <th class="text-primary">Időtartam (nap)</th>
-                    <th class="text-primary">Státusz</th>
+                    <th>Diák neve</th>
+                    <th>Szoba</th>
+                    <th>Beköltözés dátuma</th>
+                    <th>Kiköltözés dátuma</th>
+                    <th>Időtartam (nap)</th>
+                    <th>Státusz</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="bekoltozes in bekoltozesek" :key="bekoltozes.bekoltozes_id" class="align-middle">
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
                           {{ bekoltozes.diak?.nev?.charAt(0).toUpperCase() || '?' }}
                         </div>
                         <div>
@@ -291,7 +291,7 @@
                       <span v-else class="text-muted">-</span>
                     </td>
                     <td>
-                      <span class="badge bg-warning">{{ bekoltozes.napok_szama }}</span>
+                      <span class="badge bg-warning text-dark">{{ bekoltozes.napok_szama }}</span>
                     </td>
                     <td>
                       <span class="badge" :class="bekoltozes.kikoltozes_datum ? 'bg-secondary' : 'bg-success'">
@@ -322,7 +322,7 @@
                     <td>{{ student.diak_id }}</td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
                           {{ student.nev.charAt(0).toUpperCase() }}
                         </div>
                         <div>
@@ -372,7 +372,7 @@
                   <i class="bi bi-trophy-fill text-warning me-2"></i>
                   <div>
                     <strong>Legmagasabb foglaltságú szoba:</strong>
-                    <span class="badge bg-warning ms-2">{{ stats?.mostOccupiedRoom || 'N/A' }}</span>
+                    <span class="badge bg-warning text-dark ms-2">{{ stats?.mostOccupiedRoom || 'N/A' }}</span>
                   </div>
                 </div>
               </div>
@@ -566,3 +566,129 @@ export default defineComponent({
   }
 })
 </script>
+
+<style scoped>
+/* Typography Hierarchy - Section Headers (inherited from DashboardView) */
+.card-header h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0;
+}
+
+/* Dark theme adjustments for typography */
+[data-theme="dark"] .card-header h5 {
+  color: #cbd5e1;
+}
+
+/* High contrast theme adjustments */
+[data-theme="high-contrast"] .card-header h5 {
+  color: #000000;
+}
+
+/* Status Indicators (.status-indicator) - Pulse animations */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.status-indicator.online {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #059669;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.offline {
+  background-color: rgba(100, 116, 139, 0.1);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: #475569;
+}
+
+.status-indicator.warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #d97706;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    transform: scale(1);
+  }
+}
+
+/* Dark theme adjustments for status indicators */
+[data-theme="dark"] .status-indicator.online {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  animation: pulse-dark 2s infinite;
+}
+
+[data-theme="dark"] .status-indicator.offline {
+  background-color: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .status-indicator.warning {
+  background-color: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.4);
+  color: #f59e0b;
+}
+
+@keyframes pulse-dark {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(52, 211, 153, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+    transform: scale(1);
+  }
+}
+
+/* High contrast theme adjustments for status indicators */
+[data-theme="high-contrast"] .status-indicator {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+[data-theme="high-contrast"] .status-indicator.online {
+  background-color: #00ff00;
+  color: #000000;
+  animation: none;
+}
+
+[data-theme="high-contrast"] .status-indicator.offline {
+  background-color: #cccccc;
+  color: #000000;
+  animation: none;
+}
+
+[data-theme="high-contrast"] .status-indicator.warning {
+  background-color: #ffff00;
+  color: #000000;
+  animation: none;
+}
+</style>

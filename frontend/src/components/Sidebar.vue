@@ -275,15 +275,15 @@ onUnmounted(() => {
   height: 100vh;
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
-  box-shadow: var(--shadow-lg);
-  z-index: var(--z-fixed);
-  transition: width var(--transition-normal);
+  box-shadow: var(--shadow-xl);
+  z-index: 1030;
+  transition: width var(--transition-normal), transform 0.3s ease;
   overflow-x: hidden;
 }
 
 /* Brand Section */
 .sidebar-brand {
-  background-color: var(--primary-500);
+  background-color: var(--color-primary);
   color: white;
   min-height: 60px;
 }
@@ -311,7 +311,7 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: var(--primary-500);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: white;
   display: flex;
   align-items: center;
@@ -326,7 +326,7 @@ onUnmounted(() => {
   padding: 12px 16px;
   border-radius: var(--border-radius-sm);
   margin-bottom: 4px;
-  transition: all var(--transition-normal);
+  transition: all 0.3s ease;
   text-decoration: none;
 }
 
@@ -334,12 +334,14 @@ onUnmounted(() => {
   color: var(--text-primary);
   background-color: var(--sidebar-hover);
   transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-nav .nav-link.router-link-active {
   color: var(--text-primary);
   background-color: var(--sidebar-hover);
   border-left: 4px solid var(--sidebar-active);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-nav .nav-link.collapsed {
@@ -443,13 +445,4 @@ onUnmounted(() => {
 }
 
 /* Ensure main content doesn't overlap sidebar */
-@media (min-width: 992px) {
-  .main-content {
-    margin-left: var(--sidebar-width);
-  }
-  
-  .main-content.sidebar-collapsed {
-    margin-left: var(--sidebar-collapsed-width);
-  }
-}
 </style>

@@ -1,3 +1,6 @@
+/* Import theme styles */
+@import './styles/theme.css';
+
 /* Typography and base styles */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
