@@ -237,7 +237,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050;
+  z-index: var(--z-modal);
   padding: 1rem;
 }
 
@@ -348,11 +348,11 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .modal-content {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .modal-header {
-  border-bottom: 2px solid #000000;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .modal-title {
@@ -360,6 +360,6 @@ export default defineComponent({
 }
 
 [data-theme="high-contrast"] .modal-footer {
-  border-top: 2px solid #000000;
+  border-top: 2px solid var(--border-primary);
 }
 </style>

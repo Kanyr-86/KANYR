@@ -1,5 +1,6 @@
 /* Import theme styles */
-@import './styles/theme.css';
+@import './styles/variables.css';
+@import './styles/base.css';
 
 /* Typography and base styles */
 :root {
@@ -19,20 +20,20 @@
 
 a {
   font-weight: 500;
-  color: #4a90e4;
+  color: var(--primary-600);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #6a9fe9;
+  color: var(--primary-500);
 }
 
 [data-theme="dark"] a {
-  color: #58a6ff;
+  color: var(--primary-400);
 }
 
 [data-theme="dark"] a:hover {
-  color: #7890ff;
+  color: var(--primary-300);
 }
 
 body {
@@ -63,7 +64,7 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--primary-500);
 }
 button:focus,
 button:focus-visible {
@@ -102,13 +103,13 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #f5f2ed;
+    color: var(--secondary-900);
+    background-color: var(--primary-50);
   }
   a:hover {
-    color: #747bff;
+    color: var(--primary-500);
   }
   button {
-    background-color: #f9f9f9;
+    background-color: var(--primary-50);
   }
 }

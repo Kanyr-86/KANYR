@@ -135,19 +135,13 @@
 
 <!-- Theme Toggle Section -->
     <div class="sidebar-theme p-3 border-top">
-      <button 
-        class="btn btn-outline-light w-100 d-flex align-items-center"
-        @click="toggleTheme"
-      >
-        <i class="bi" :class="isDark ? 'bi-moon-stars' : 'bi-brightness-high'" me-3></i>
-        <span v-show="!isCollapsed">{{ isDark ? 'Világos mód' : 'Sötét mód' }}</span>
-      </button>
+      <ThemeToggle :collapsed="isCollapsed" />
     </div>
 
     <!-- Logout Section -->
     <div class="sidebar-footer p-3 border-top">
       <button 
-        class="btn btn-outline-light w-100 d-flex align-items-center"
+        class="btn btn-outline-secondary w-100 d-flex align-items-center"
         @click="logout"
       >
         <i class="bi bi-box-arrow-right me-3"></i>
@@ -177,6 +171,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../store/theme'
+import ThemeToggle from './ThemeToggle.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -318,181 +313,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
-  box-shadow: var(--shadow-xl);
-  z-index: 1030;
-  transition: width var(--transition-normal), transform 0.3s ease;
-  overflow-x: hidden;
-}
-
-/* Brand Section */
-.sidebar-brand {
-  background-color: var(--color-primary);
-  color: white;
-  min-height: 60px;
-}
-
-.brand-icon i {
-  font-size: 1.5rem;
-  color: white;
-}
-
-.brand-text h5 {
-  color: white;
-  margin-bottom: 0;
-}
-
-.brand-text small {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* User Info Section */
-.sidebar-user {
-  background-color: var(--bg-tertiary);
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-/* Navigation */
-.sidebar-nav .nav-link {
-  color: var(--text-secondary);
-  padding: 12px 16px;
-  border-radius: var(--border-radius-sm);
-  margin-bottom: 4px;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.sidebar-nav .nav-link:hover {
-  color: var(--text-primary);
-  background-color: var(--sidebar-hover);
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-nav .nav-link.router-link-active {
-  color: var(--text-primary);
-  background-color: var(--sidebar-hover);
-  border-left: 4px solid var(--sidebar-active);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.sidebar-nav .nav-link.collapsed {
-  justify-content: center;
-  padding: 12px;
-}
-
-.sidebar-nav .nav-link.collapsed span {
-  display: none;
-}
-
-.sidebar-nav .nav-link.collapsed i {
-  margin-right: 0;
-}
-
-/* Footer */
-.sidebar-footer {
-  background-color: var(--bg-tertiary);
-}
-
-.sidebar-footer .btn {
-  border-color: var(--border-primary);
-  color: var(--text-secondary);
-}
-
-.sidebar-footer .btn:hover {
-  background-color: var(--sidebar-hover);
-  border-color: var(--border-secondary);
-}
-
-/* Mobile Toggle */
-.mobile-toggle {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: var(--z-sticky);
-  display: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  box-shadow: var(--shadow-lg);
-}
-
-.sidebar-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: var(--z-modal-backdrop);
-  backdrop-filter: blur(2px);
-}
-
-/* Responsive Styles */
-@media (max-width: 991.98px) {
-  .sidebar {
-    position: fixed;
-    transform: translateX(-100%);
-    transition: transform var(--transition-normal);
-  }
-  
-  .sidebar.sidebar-mobile-open {
-    transform: translateX(0);
-  }
-  
-  .mobile-toggle {
-    display: flex;
-  }
-}
-
-@media (max-width: 767.98px) {
-  .sidebar {
-    width: var(--sidebar-width) !important;
-  }
-  
-  .sidebar.sidebar-mobile-open {
-    box-shadow: var(--shadow-xl);
-  }
-}
-
-@media (min-width: 992px) {
-  .sidebar-collapsed {
-    width: var(--sidebar-collapsed-width);
-  }
-  
-  .sidebar-collapsed .brand-text {
-    display: none;
-  }
-  
-  .sidebar-collapsed .sidebar-user {
-    display: none;
-  }
-  
-  .sidebar-collapsed .sidebar-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
-}
-
-/* Ensure main content doesn't overlap sidebar */
+/* Sidebar component styles moved to frontend/src/styles/components/sidebar.css */
 </style>

@@ -82,7 +82,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10000;
 }
 
 .loading-content {
@@ -98,7 +98,7 @@ export default defineComponent({
 }
 
 .loading-message {
-  color: #fff;
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 500;
   margin: 0;

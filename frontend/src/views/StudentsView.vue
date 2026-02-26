@@ -69,7 +69,7 @@
         
         <!-- Diákok táblázat -->
         <div class="card shadow-sm">
-          <div class="card-header bg-white border-0">
+          <div class="card-header border-0">
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0">Diák lista</h6>
               <span class="badge bg-light text-dark">{{ filteredStudents.length }} diák</span>
@@ -1241,12 +1241,16 @@ export default {
               // Lakók lekérdezése a szoba neme miatt
               api.get(`/szobas/${room.szoba_id}/occupants`)
                 .then(studentsResponse => {
-                  if (studentsResponse.data.success && studentsResponse.data.data.length > 0) {
+                  if (studentsResponse.data.success && studentsResponse.data.data && studentsResponse.data.data.length > 0) {
                     // Az első lakó neme határozza meg a szoba nemét
                     const firstResident = studentsResponse.data.data[0]
-                    const gender = firstResident.diak?.nem || firstResident.nem
-                    if (gender) {
-                      roomGenders.value[room.szoba_id] = gender
+                    if (firstResident) {
+                      const gender = firstResident.diak?.nem || firstResident.nem
+                      if (gender) {
+                        roomGenders.value[room.szoba_id] = gender
+                      }
+                    } else {
+                      roomGenders.value[room.szoba_id] = null // Üres szoba, nincs neme
                     }
                   } else {
                     roomGenders.value[room.szoba_id] = null // Üres szoba, nincs neme
@@ -1583,15 +1587,15 @@ export default {
   opacity: 0.5;
   filter: blur(1px) grayscale(0.5);
   pointer-events: none;
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
 }
 
 .room-card.room-incompatible .card-header {
-  background-color: #e9ecef;
+  background-color: var(--bg-tertiary);
 }
 
 .room-card.room-incompatible .card-body {
-  color: #6c757d;
+  color: var(--text-secondary);
 }
 
 /* Biztosítjuk, hogy a "Nem kompatibilis" gomb látható legyen */

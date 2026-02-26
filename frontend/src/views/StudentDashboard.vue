@@ -465,84 +465,8 @@ export default {
 }
 
 /* Dark theme overrides */
-[data-theme="dark"] .student-dashboard {
-  background-color: var(--bg-page);
-}
-
-[data-theme="dark"] .card {
-  background-color: var(--bg-card);
-  border-color: var(--border-primary);
-}
-
-[data-theme="dark"] .card-header {
-  background-color: var(--bg-tertiary);
-  border-bottom-color: var(--border-primary);
-}
-
-[data-theme="dark"] .roommate-item {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-primary);
-}
-
-[data-theme="dark"] .notification-item {
-  border-color: var(--border-primary);
-}
-
-[data-theme="dark"] .notification-item:hover {
-  box-shadow: var(--shadow-sm);
-}
-
-[data-theme="dark"] .notification-item.unread {
-  background-color: var(--bg-tertiary);
-  border-left-color: var(--color-primary);
-}
-
-[data-theme="dark"] .notification-message {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .notification-date {
-  color: var(--text-secondary);
-}
+/* Dark theme overrides are already handled by CSS variables */
 
 /* High contrast theme overrides */
-[data-theme="high-contrast"] .student-dashboard {
-  background-color: var(--bg-page);
-}
-
-[data-theme="high-contrast"] .card {
-  background-color: var(--bg-card);
-  border: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .card-header {
-  background-color: var(--bg-card);
-  border-bottom: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .roommate-item {
-  background-color: var(--bg-card);
-  border: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .notification-item {
-  border: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .notification-item:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="high-contrast"] .notification-item.unread {
-  background-color: var(--bg-card);
-  border-left: 4px solid #000000;
-}
-
-[data-theme="high-contrast"] .notification-message {
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .notification-date {
-  color: var(--text-primary);
-}
+/* High contrast theme overrides are already handled by CSS variables */
 </style>

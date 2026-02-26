@@ -43,7 +43,7 @@ export default defineComponent({
 <style scoped>
 .page-content {
   padding: 1rem;
-  background-color: var(--bg-primary, #2c4a5a);
+  background-color: var(--bg-primary);
   border-radius: 0.5rem;
   min-height: 200px;
 }

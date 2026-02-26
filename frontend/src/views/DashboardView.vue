@@ -189,30 +189,30 @@
 
 /* Dark theme adjustments for typography */
 [data-theme="dark"] .card-header h5 {
-  color: #cbd5e1;
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .card-body h5 {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .card-body .display-6,
 [data-theme="dark"] .card-body p.card-text {
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 /* High contrast theme adjustments */
 [data-theme="high-contrast"] .card-header h5 {
-  color: #000000;
+  color: var(--text-dark);
 }
 
 [data-theme="high-contrast"] .card-body h5 {
-  color: #000000;
+  color: var(--text-dark);
 }
 
 [data-theme="high-contrast"] .card-body .display-6,
 [data-theme="high-contrast"] .card-body p.card-text {
-  color: #000000;
+  color: var(--text-dark);
 }
 
 /* Statistics Cards (.stat-card) - Enhanced hover effects */

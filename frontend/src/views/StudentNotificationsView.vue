@@ -193,7 +193,7 @@ export default {
 .logout-btn {
   padding: 0.5rem 1rem;
   background-color: var(--color-danger);
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -337,7 +337,7 @@ export default {
 .mark-all-btn {
   padding: 0.75rem 1.5rem;
   background-color: var(--color-primary);
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -364,84 +364,8 @@ export default {
 }
 
 /* Dark theme overrides */
-[data-theme="dark"] .student-notifications {
-  background-color: var(--bg-page);
-}
-
-[data-theme="dark"] .card {
-  background-color: var(--bg-card);
-  border-color: var(--border-primary);
-}
-
-[data-theme="dark"] .card-header {
-  background-color: var(--bg-tertiary);
-  border-bottom-color: var(--border-primary);
-}
-
-[data-theme="dark"] .notification-item {
-  border-color: var(--border-primary);
-}
-
-[data-theme="dark"] .notification-item:hover {
-  box-shadow: var(--shadow-sm);
-}
-
-[data-theme="dark"] .notification-item.unread {
-  background-color: var(--bg-tertiary);
-  border-left-color: var(--color-primary);
-}
-
-[data-theme="dark"] .notification-message {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .notification-date {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .stat-item {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-primary);
-}
+/* Dark theme overrides are already handled by CSS variables */
 
 /* High contrast theme overrides */
-[data-theme="high-contrast"] .student-notifications {
-  background-color: var(--bg-page);
-}
-
-[data-theme="high-contrast"] .card {
-  background-color: var(--bg-card);
-  border: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .card-header {
-  background-color: var(--bg-card);
-  border-bottom: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .notification-item {
-  border: 2px solid #000000;
-}
-
-[data-theme="high-contrast"] .notification-item:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="high-contrast"] .notification-item.unread {
-  background-color: var(--bg-card);
-  border-left: 4px solid #000000;
-}
-
-[data-theme="high-contrast"] .notification-message {
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .notification-date {
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .stat-item {
-  background-color: var(--bg-card);
-  border: 2px solid #000000;
-}
+/* High contrast theme overrides are already handled by CSS variables */
 </style>

@@ -480,7 +480,7 @@ export default defineComponent({
 .base-table th {
   font-weight: 600;
   background-color: var(--bg-tertiary);
-  border-bottom: 2px solid var(--border-secondary);
+  border-bottom: 2px solid var(--border-primary);
   white-space: nowrap;
 }
 
@@ -622,7 +622,7 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .base-table th {
   background-color: var(--bg-card);
-  border-bottom: 2px solid #000000;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .base-table th.sortable:hover {
@@ -635,7 +635,7 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .base-table tbody tr {
   background-color: var(--bg-card);
-  border: 1px solid #000000;
+  border: 1px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .base-table tbody tr:hover {

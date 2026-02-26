@@ -1,0 +1,50 @@
+/* Table Component Styles */
+.table {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.table-light {
+  background-color: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--bg-tertiary);
+}
+
+.table-bordered {
+  border: 1px solid var(--border-primary);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid var(--border-primary);
+}
+
+/* Table Head Styles */
+.table thead th {
+  background-color: var(--bg-tertiary);
+  border-bottom: 2px solid var(--border-primary);
+  font-weight: 600;
+  color: var(--text-heading);
+  vertical-align: middle;
+}
+
+/* Table Body Styles */
+.table tbody td {
+  border-top: 1px solid var(--border-primary);
+  vertical-align: middle;
+}
+
+/* Table Responsive */
+.table-responsive {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+}
+
+/* Note: Theme overrides are now handled in base.css */

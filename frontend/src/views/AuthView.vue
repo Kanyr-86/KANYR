@@ -186,18 +186,18 @@ hr {
 
 [data-theme="high-contrast"] .card {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .form-control-sm {
   background-color: var(--bg-page);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .form-control-sm:focus {
-  border-color: #000000;
-  box-shadow: 0 0 0 2px #000000;
+  border-color: var(--border-primary);
+  box-shadow: 0 0 0 2px var(--border-primary);
 }
 </style>
 

@@ -134,7 +134,7 @@
 
         <!-- Beköltözési előzmények szűrők -->
         <div v-if="reportType === 'bekoltozesek'" class="card shadow-sm mb-4">
-          <div class="card-header bg-white border-0">
+          <div class="card-header border-0">
             <h6 class="mb-0">Szűrők</h6>
           </div>
           <div class="card-body">
@@ -194,7 +194,7 @@
 
         <!-- Jelentés adatok -->
         <div class="card shadow-sm">
-          <div class="card-header bg-white border-0">
+          <div class="card-header border-0">
             <h5 class="mb-0">
               {{ reportType === 'occupancy' ? 'Szobafoglaltsági jelentés' : 
                  reportType === 'bekoltozesek' ? 'Beköltözési előzmények' : 'Diák jelentés' }}
@@ -355,7 +355,7 @@
 
         <!-- Részletes statisztikák -->
         <div class="card shadow-sm mt-4">
-          <div class="card-header bg-white border-0">
+          <div class="card-header border-0">
             <h6 class="mb-0">Részletes statisztikák</h6>
           </div>
           <div class="card-body">
@@ -578,12 +578,12 @@ export default defineComponent({
 
 /* Dark theme adjustments for typography */
 [data-theme="dark"] .card-header h5 {
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 /* High contrast theme adjustments */
 [data-theme="high-contrast"] .card-header h5 {
-  color: #000000;
+  color: var(--text-dark);
 }
 
 /* Status Indicators (.status-indicator) - Pulse animations */
@@ -634,8 +634,8 @@ export default defineComponent({
 
 /* Dark theme adjustments for status indicators */
 [data-theme="dark"] .status-indicator.online {
-  background-color: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
+  background-color: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.4);
   color: var(--color-success);
   animation: pulse-dark 2s infinite;
 }
@@ -669,7 +669,7 @@ export default defineComponent({
 
 /* High contrast theme adjustments for status indicators */
 [data-theme="high-contrast"] .status-indicator {
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   background-color: var(--bg-page);
   color: var(--text-primary);
 }
@@ -757,21 +757,22 @@ export default defineComponent({
 [data-theme="dark"] .badge {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .badge.bg-info {
   background-color: var(--color-info);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-secondary {
   background-color: var(--color-secondary);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-success {
   background-color: var(--color-success);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-warning {
@@ -781,7 +782,7 @@ export default defineComponent({
 
 [data-theme="dark"] .badge.bg-primary {
   background-color: var(--color-primary);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="dark"] .text-muted {
@@ -880,12 +881,12 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .card {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .card-header {
   background-color: var(--bg-card);
-  border-bottom: 2px solid #000000;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .card-body {
@@ -894,40 +895,40 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .btn-primary {
   background-color: var(--color-primary);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: white;
 }
 
 [data-theme="high-contrast"] .btn-primary:hover {
   background-color: var(--color-primary-dark);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .btn-secondary {
   background-color: var(--color-secondary);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: white;
 }
 
 [data-theme="high-contrast"] .btn-secondary:hover {
   background-color: var(--color-secondary-dark);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .btn-outline-secondary {
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
   background-color: var(--bg-card);
 }
 
 [data-theme="high-contrast"] .btn-outline-secondary:hover {
   background-color: var(--bg-tertiary);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .table {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .table-hover tbody tr:hover {
@@ -936,28 +937,28 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .table-light {
   background-color: var(--bg-card);
-  border-bottom: 2px solid #000000;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .badge {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .badge.bg-info {
   background-color: var(--color-info);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .badge.bg-secondary {
   background-color: var(--color-secondary);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .badge.bg-success {
   background-color: var(--color-success);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .badge.bg-warning {
@@ -967,7 +968,7 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .badge.bg-primary {
   background-color: var(--color-primary);
-  color: white;
+  color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .text-muted {
@@ -992,55 +993,55 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .alert {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .alert.alert-danger {
   background-color: var(--color-danger);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: white;
 }
 
 [data-theme="high-contrast"] .alert.alert-info {
   background-color: var(--color-info);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: white;
 }
 
 [data-theme="high-contrast"] .form-control {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .form-control:focus {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="high-contrast"] .form-select {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .form-select:focus {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="high-contrast"] .input-group-text {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .progress {
   background-color: var(--bg-card);
-  border: 2px solid #000000;
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .progress-bar {

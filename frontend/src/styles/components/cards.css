@@ -1,0 +1,98 @@
+/* BaseCard Component Styles */
+.base-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-shadow {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+}
+
+.card-actions {
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.card-header {
+  background-color: transparent;
+}
+
+.card-footer {
+  background-color: transparent;
+}
+
+/* Skeleton Loader Styles */
+.skeleton-loader {
+  padding: 1rem 0;
+}
+
+.skeleton-line {
+  height: 1rem;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.06) 25%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-line:last-child {
+  margin-bottom: 0;
+}
+
+.skeleton-line-lg {
+  width: 100%;
+}
+
+.skeleton-line-md {
+  width: 75%;
+}
+
+.skeleton-line-sm {
+  width: 50%;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Border variants - add left border accent */
+.base-card.border-primary {
+  border-left: 4px solid var(--primary-600) !important;
+}
+
+.base-card.border-success {
+  border-left: 4px solid var(--success-600) !important;
+}
+
+.base-card.border-danger {
+  border-left: 4px solid var(--danger-600) !important;
+}
+
+.base-card.border-warning {
+  border-left: 4px solid var(--warning-600) !important;
+}
+
+/* Note: Theme overrides are now handled in base.css */

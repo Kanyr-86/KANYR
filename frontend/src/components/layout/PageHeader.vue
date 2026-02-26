@@ -102,7 +102,7 @@ export default defineComponent({
 
 .page-title {
   font-weight: 600;
-  color: var(--text-primary, #212529);
+  color: var(--text-primary);
 }
 
 .page-subtitle {

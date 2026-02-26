@@ -1,0 +1,126 @@
+/* Modal Component Styles */
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+}
+
+.modal-header {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 1rem 1.5rem;
+}
+
+.modal-header .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  background-color: var(--bg-card);
+}
+
+.modal-footer {
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-primary);
+  padding: 1rem 1.5rem;
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal.show .modal-dialog {
+  transform: translate(0, 0);
+}
+
+/* Modal Dialog Sizes */
+.modal-sm .modal-content {
+  border-radius: 10px;
+}
+
+.modal-lg .modal-content,
+.modal-xl .modal-content {
+  border-radius: 12px;
+}
+
+/* Modal Close Button */
+.btn-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+  color: var(--text-primary);
+}
+
+/* Modal Form Elements */
+.modal-body .form-control,
+.modal-body .form-select {
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+  outline: none;
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+.modal-body .form-label {
+  font-weight: 500;
+  color: var(--text-heading);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Modal Buttons */
+.modal-footer .btn {
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.modal-footer .btn-secondary {
+  background: linear-gradient(135deg, var(--secondary-600), var(--secondary-700));
+  color: var(--text-inverse);
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+}
+
+.modal-footer .btn-secondary:hover {
+  background: linear-gradient(135deg, var(--secondary-700), var(--secondary-600));
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+}
+
+.modal-footer .btn-primary {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  color: var(--text-inverse);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.modal-footer .btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-600));
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Note: Theme overrides are now handled in base.css */

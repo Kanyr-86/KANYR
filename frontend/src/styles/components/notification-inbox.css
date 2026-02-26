@@ -1,0 +1,55 @@
+/* NotificationInbox Component Styles */
+.notification-inbox {
+  min-height: 400px;
+}
+
+/* Typography Hierarchy - Section Headers (inherited from DashboardView) */
+.card-header h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 0;
+}
+
+.list-group-item {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.list-group-item.unread {
+  background-color: var(--bg-tertiary);
+  border-left: 4px solid var(--warning-600);
+}
+
+.list-group-item.unread:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.card-header {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.card-body {
+  padding: 0;
+}
+
+.list-group-item-action {
+  border: 1px solid var(--border-primary);
+  border-top: none;
+}
+
+.list-group-item-action:first-child {
+  border-top: 1px solid var(--border-primary);
+}
+
+/* Note: Theme overrides are now handled in base.css */

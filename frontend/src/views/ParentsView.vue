@@ -71,7 +71,7 @@
         <div class="row">
           <div class="col-md-6 col-lg-4" v-for="parent in filteredParents" :key="parent.szulo_id">
             <div class="card shadow-sm h-100">
-              <div class="card-header bg-white border-0">
+              <div class="card-header border-0">
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h5 class="mb-0">{{ parent.nev }}</h5>
@@ -145,7 +145,7 @@
                   </div>
                 </div>
               </div>
-              <div class="card-footer bg-white border-0">
+              <div class="card-footer border-0">
                 <div class="d-flex justify-content-between">
                   <button class="btn btn-outline-primary btn-sm" @click="viewParent(parent)">
                     <i class="bi bi-eye me-1"></i>Megtekintés

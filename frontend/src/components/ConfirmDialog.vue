@@ -133,17 +133,22 @@ export default defineComponent({
   align-items: center;
 }
 
-.confirm-icon.text-danger svg {
-  fill: #dc3545;
+.confirm-icon.text-danger {
+  color: var(--danger-600);
 }
 
-.confirm-icon.text-primary svg {
-  fill: #0d6efd;
+.confirm-icon.text-primary {
+  color: var(--primary-600);
+}
+
+/* Ensure SVG inherits color from parent */
+.confirm-icon svg {
+  fill: currentColor;
 }
 
 .confirm-message {
   font-size: 1rem;
-  color: #495057;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
