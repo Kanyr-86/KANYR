@@ -2,6 +2,9 @@ import axios from 'axios'
 
 // ─── Shared interceptor logic ───────────────────────────────────────────────
 
+// Flag to prevent duplicate redirects when multiple requests fail with 401
+let isRedirectingToLogin = false
+
 function applyAuthInterceptors(instance) {
   // Attach JWT from localStorage on every request
   instance.interceptors.request.use(
@@ -21,22 +24,26 @@ function applyAuthInterceptors(instance) {
     (error) => {
       if (error.response) {
         const status = error.response.status
-        const message = error.response.data?.error || error.message || 'Server error'
+        const message = error.response.data?.error || error.message || 'Szerver hiba'
 
         if (status === 401) {
           // Unauthorized – clear stored auth and redirect to login
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          window.location.href = '/login'
+          // Prevent duplicate redirects when multiple simultaneous requests fail
+          if (!isRedirectingToLogin) {
+            isRedirectingToLogin = true
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            window.location.href = '/login'
+          }
         } else if (status === 403) {
-          console.error('Access forbidden:', message)
+          console.error('Hozzáférés megtagadva:', message)
         } else if (status >= 500) {
-          console.error('Server error:', message)
+          console.error('Szerver hiba:', message)
         }
       } else if (error.request) {
-        console.error('Network error - no response received:', error.message)
+        console.error('Hálózati hiba - nem érkezett válasz:', error.message)
       } else {
-        console.error('Request error:', error.message)
+        console.error('Kérés hiba:', error.message)
       }
 
       return Promise.reject(error)
@@ -75,19 +82,19 @@ export const handleApiError = (error) => {
   if (error.response) {
     return {
       success: false,
-      error: error.response.data?.error || error.message || 'Server error',
+      error: error.response.data?.error || error.message || 'Szerver hiba',
       status: error.response.status
     }
   } else if (error.request) {
     return {
       success: false,
-      error: 'Network error - please check your connection',
+      error: 'Hálózati hiba - kérjük, ellenőrizze az internetkapcsolatát',
       status: 0
     }
   } else {
     return {
       success: false,
-      error: error.message || 'An unexpected error occurred',
+      error: error.message || 'Váratlan hiba történt',
       status: 0
     }
   }

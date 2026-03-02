@@ -1,5 +1,8 @@
 <template>
   <div class="container-fluid">
+    <!-- Loading Overlay -->
+    <LoadingOverlay :show="loading" message="Szobák betöltése..." />
+    
     <div class="row">
       <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -8,10 +11,18 @@
             <p class="text-muted mb-0">Szobák kezelése és tömeges beköltöztetés</p>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-primary btn-lg" @click="showCreateModal = true">
+            <button 
+              class="btn btn-primary btn-lg" 
+              @click="showCreateModal = true"
+              :disabled="loading"
+            >
               <i class="bi bi-plus-circle me-2"></i>Szoba felvétele
             </button>
-            <button class="btn btn-info btn-lg" @click="openBulkTransferModal">
+            <button 
+              class="btn btn-info btn-lg" 
+              @click="openBulkTransferModal"
+              :disabled="loading"
+            >
               <i class="bi bi-people me-2"></i>Tömeges beköltöztetés
             </button>
           </div>
@@ -30,11 +41,12 @@
                       placeholder="Szobaszám alapján..."
                       type="text"
                       @input="debouncedSearch"
+                      :disabled="loading"
                     />
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold">Férőhely</label>
-                    <select class="form-select" v-model="selectedCapacity">
+                    <select class="form-select" v-model="selectedCapacity" :disabled="loading">
                       <option value="">Összes férőhely</option>
                       <option value="1">1 fő</option>
                       <option value="2">2 fő</option>
@@ -44,7 +56,7 @@
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold">Státusz</label>
-                    <select class="form-select" v-model="selectedStatus">
+                    <select class="form-select" v-model="selectedStatus" :disabled="loading">
                       <option value="">Összes státusz</option>
                       <option value="empty">Üres</option>
                       <option value="available">Van szabad hely</option>
@@ -52,7 +64,11 @@
                     </select>
                   </div>
                   <div class="col-12 col-md-2 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary w-100" @click="clearFilters">
+                    <button 
+                      class="btn btn-outline-secondary w-100" 
+                      @click="clearFilters"
+                      :disabled="loading"
+                    >
                       <i class="bi bi-x-circle me-2"></i>Szűrők törlése
                     </button>
                   </div>
@@ -66,7 +82,12 @@
                 <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes szoba</h6>
-                    <h3 class="mb-0">{{ rooms.length }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ rooms.length }}</template>
+                    </h3>
                   </div>
                 </div>
               </div>
@@ -74,7 +95,12 @@
                 <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Elérhető szobák</h6>
-                    <h3 class="mb-0">{{ availableRoomsCount }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ availableRoomsCount }}</template>
+                    </h3>
                   </div>
                 </div>
               </div>
@@ -82,8 +108,22 @@
           </div>
         </div>
         
+        <!-- Loading skeleton for cards -->
+        <div v-if="loading" class="row">
+          <div class="col-12">
+            <div class="d-flex justify-content-center py-5">
+              <div class="text-center">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                  <span class="visually-hidden">Betöltés...</span>
+                </div>
+                <p class="mt-3 text-muted">Szobák betöltése...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Szobák kártyák -->
-        <div class="row">
+        <div v-else class="row">
           <div class="col-md-4" v-for="room in filteredRooms" :key="room.szoba_id">
             <div class="card shadow-sm h-100">
               <div class="card-header border-0">
@@ -162,14 +202,26 @@
               </div>
               <div class="card-footer border-0">
                 <div class="d-flex justify-content-between">
-                  <button class="btn btn-outline-primary btn-sm" @click="viewRoomDetails(room)">
+                  <button 
+                    class="btn btn-outline-primary btn-sm" 
+                    @click="viewRoomDetails(room)"
+                    :disabled="loading"
+                  >
                     <i class="bi bi-eye me-1"></i>Részletek
                   </button>
                   <div class="btn-group" role="group">
-                    <button class="btn btn-outline-warning btn-sm" @click="editRoom(room)">
+                    <button 
+                      class="btn btn-outline-warning btn-sm" 
+                      @click="editRoom(room)"
+                      :disabled="loading"
+                    >
                       <i class="bi bi-pencil me-1"></i>Szerkesztés
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" @click="deleteRoom(room)">
+                    <button 
+                      class="btn btn-outline-danger btn-sm" 
+                      @click="deleteRoom(room)"
+                      :disabled="loading"
+                    >
                       <i class="bi bi-trash me-1"></i>Törlés
                     </button>
                   </div>
@@ -622,9 +674,13 @@ import api from '../services/api'
 import { debounce } from 'lodash-es'
 import { toast } from 'vue3-toastify'
 import BaseInput from '../components/forms/BaseInput.vue'
+import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 export default {
   name: 'RoomsView',
+  components: {
+    LoadingOverlay
+  },
   setup() {
     const rooms = ref([])
     const loading = ref(false)

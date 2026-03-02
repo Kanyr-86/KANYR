@@ -143,7 +143,7 @@ export function useSearch(searchFn, delay = 300) {
       const results = await searchFn(query.trim())
       searchResults.value = results || []
     } catch (err) {
-      error.value = err.response?.data?.message || err.message || 'Search failed'
+      error.value = err.response?.data?.message || err.message || 'A keresés sikertelen'
       searchResults.value = []
     } finally {
       isSearching.value = false

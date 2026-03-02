@@ -17,7 +17,7 @@ const useApiData = (apiCall, dependencies = [], options = {}) => {
       const result = await apiCall()
       data.value = result.data
     } catch (err) {
-      error.value = err.response?.data?.error || err.message || 'Failed to fetch data'
+      error.value = err.response?.data?.error || err.message || 'Nem sikerült lekérni az adatokat'
     } finally {
       loading.value = false
     }

@@ -1,5 +1,8 @@
 <template>
   <div class="container-fluid">
+    <!-- Loading Overlay -->
+    <LoadingOverlay :show="loading" message="Jelentések betöltése..." />
+    
     <div class="row">
       <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -8,10 +11,18 @@
             <p class="text-muted mb-0">Részletes elemzések és statisztikák a kollégiumi élet nyomon követéséhez</p>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-primary btn-lg" @click="handleGenerateReport('occupancy')">
+            <button 
+              class="btn btn-primary btn-lg" 
+              @click="handleGenerateReport('occupancy')"
+              :disabled="loading"
+            >
               <i class="bi bi-bar-chart me-2"></i>Szobafoglaltsági jelentés
             </button>
-            <button class="btn btn-primary btn-lg" @click="handleGenerateReport('bekoltozesek')">
+            <button 
+              class="btn btn-primary btn-lg" 
+              @click="handleGenerateReport('bekoltozesek')"
+              :disabled="loading"
+            >
               <i class="bi bi-clock-history me-2"></i>Beköltözési előzmények
             </button>
           </div>
@@ -29,7 +40,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h6 class="card-title mb-1">Összes diák</h6>
-                    <h3 class="mb-0">{{ stats?.totalStudents || 0 }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ stats?.totalStudents || 0 }}</template>
+                    </h3>
                   </div>
                   <i class="bi bi-people-fill fs-1 opacity-75"></i>
                 </div>
@@ -43,7 +59,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h6 class="card-title mb-1">Aktív diákok</h6>
-                    <h3 class="mb-0">{{ stats?.activeStudents || 0 }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ stats?.activeStudents || 0 }}</template>
+                    </h3>
                   </div>
                   <i class="bi bi-person-check-fill fs-1 opacity-75"></i>
                 </div>
@@ -57,7 +78,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h6 class="card-title mb-1">Összes szoba</h6>
-                    <h3 class="mb-0">{{ stats?.totalRooms || 0 }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ stats?.totalRooms || 0 }}</template>
+                    </h3>
                   </div>
                   <i class="bi bi-door-closed-fill fs-1 opacity-75"></i>
                 </div>
@@ -71,7 +97,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h6 class="card-title mb-1">Szabad helyek</h6>
-                    <h3 class="mb-0">{{ stats?.availableSpaces || 0 }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ stats?.availableSpaces || 0 }}</template>
+                    </h3>
                   </div>
                   <i class="bi bi-plus-circle-fill fs-1 opacity-75"></i>
                 </div>
@@ -91,6 +122,7 @@
                     class="btn btn-primary"
                     :class="{ active: reportType === 'occupancy' }"
                     @click="handleGenerateReport('occupancy')"
+                    :disabled="loading"
                   >
                     <i class="bi bi-bar-chart me-2"></i>Szobafoglaltsági jelentés
                   </button>
@@ -98,6 +130,7 @@
                     class="btn btn-primary"
                     :class="{ active: reportType === 'students' }"
                     @click="handleGenerateReport('students')"
+                    :disabled="loading"
                   >
                     <i class="bi bi-person-lines-fill me-2"></i>Diák jelentés
                   </button>
@@ -105,6 +138,7 @@
                     class="btn btn-primary"
                     :class="{ active: reportType === 'bekoltozesek' }"
                     @click="handleGenerateReport('bekoltozesek')"
+                    :disabled="loading"
                   >
                     <i class="bi bi-clock-history me-2"></i>Beköltözési előzmények
                   </button>
@@ -151,12 +185,13 @@
                     v-model="filters.diakNev"
                     placeholder="Keresés név alapján..."
                     @input="fetchBekoltozesek"
+                    :disabled="loading"
                   >
                 </div>
               </div>
               <div class="col-md-3">
                 <label class="form-label fw-semibold">Szoba</label>
-                <select class="form-select" v-model="filters.szobaId" @change="fetchBekoltozesek">
+                <select class="form-select" v-model="filters.szobaId" @change="fetchBekoltozesek" :disabled="loading">
                   <option value="">Összes szoba</option>
                   <option v-for="room in rooms" :key="room.szoba_id" :value="room.szoba_id">
                     {{ room.szoba_szama }}
@@ -170,6 +205,7 @@
                   class="form-control" 
                   v-model="filters.datumFrom"
                   @change="fetchBekoltozesek"
+                  :disabled="loading"
                 >
               </div>
               <div class="col-md-3">
@@ -179,12 +215,13 @@
                   class="form-control" 
                   v-model="filters.datumTo"
                   @change="fetchBekoltozesek"
+                  :disabled="loading"
                 >
               </div>
             </div>
             <div class="row mt-3">
               <div class="col-12">
-                <button class="btn btn-outline-secondary" @click="clearFilters">
+                <button class="btn btn-outline-secondary" @click="clearFilters" :disabled="loading">
                   <i class="bi bi-x-circle me-2"></i>Szűrők törlése
                 </button>
               </div>
@@ -201,9 +238,20 @@
             </h5>
           </div>
           <div class="card-body">
-            <!-- Szobafoglaltsági jelentés -->
+        <!-- Szobafoglaltsági jelentés -->
             <div v-if="reportType === 'occupancy'" class="table-responsive">
-              <table class="table table-hover">
+              <!-- Loading skeleton for table -->
+              <div v-if="loading" class="p-4">
+                <div class="d-flex justify-content-center py-5">
+                  <div class="text-center">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                      <span class="visually-hidden">Betöltés...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Adatok betöltése...</p>
+                  </div>
+                </div>
+              </div>
+              <table v-else class="table table-hover">
                 <thead class="table-light">
                   <tr>
                     <th>ID</th>
@@ -247,9 +295,14 @@
 
             <!-- Beköltözési előzmények -->
             <div v-else-if="reportType === 'bekoltozesek'" class="table-responsive">
-              <div v-if="bekoltozesekLoading" class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Betöltés...</span>
+              <div v-if="loading || bekoltozesekLoading" class="p-4">
+                <div class="d-flex justify-content-center py-5">
+                  <div class="text-center">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                      <span class="visually-hidden">Betöltés...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Adatok betöltése...</p>
+                  </div>
                 </div>
               </div>
               <div v-else-if="bekoltozesek.length === 0" class="alert alert-info">
@@ -306,7 +359,18 @@
 
             <!-- Diák jelentés -->
             <div v-else class="table-responsive">
-              <table class="table table-hover">
+              <!-- Loading skeleton for table -->
+              <div v-if="loading" class="p-4">
+                <div class="d-flex justify-content-center py-5">
+                  <div class="text-center">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                      <span class="visually-hidden">Betöltés...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Adatok betöltése...</p>
+                  </div>
+                </div>
+              </div>
+              <table v-else class="table table-hover">
                 <thead class="table-light">
                   <tr>
                     <th class="text-primary">ID</th>
@@ -404,9 +468,13 @@
 import { defineComponent, ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
+import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 export default defineComponent({
   name: 'ReportsView',
+  components: {
+    LoadingOverlay
+  },
   setup() {
     const authStore = useAuthStore()
     const reportType = ref('occupancy')

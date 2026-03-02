@@ -1,5 +1,8 @@
 <template>
   <div class="container-fluid">
+    <!-- Loading Overlay -->
+    <LoadingOverlay :show="loading" message="Szülők betöltése..." />
+    
     <div class="row">
       <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -7,7 +10,11 @@
             <h2 class="mb-1">Szülők kezelése</h2>
             <p class="text-muted mb-0">Szülők adatainak kezelése és gyerekeik nyomon követése</p>
           </div>
-          <button class="btn btn-primary btn-lg" @click="showCreateModal = true">
+          <button 
+            class="btn btn-primary btn-lg" 
+            @click="showCreateModal = true"
+            :disabled="loading"
+          >
             <i class="bi bi-plus-circle me-2"></i>Szülő felvétele
           </button>
         </div>
@@ -25,11 +32,12 @@
                       placeholder="Név vagy email alapján..."
                       type="text"
                       @input="debouncedSearch"
+                      :disabled="loading"
                     />
                   </div>
                   <div class="col-12 col-md-4">
                     <label class="form-label fw-semibold">Város</label>
-                    <select class="form-select" v-model="selectedCity">
+                    <select class="form-select" v-model="selectedCity" :disabled="loading">
                       <option value="">Összes város</option>
                       <option v-for="city in uniqueCities" :key="city" :value="city">
                         {{ city }}
@@ -37,7 +45,11 @@
                     </select>
                   </div>
                   <div class="col-12 col-md-2 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary w-100" @click="clearFilters">
+                    <button 
+                      class="btn btn-outline-secondary w-100" 
+                      @click="clearFilters"
+                      :disabled="loading"
+                    >
                       <i class="bi bi-x-circle me-2"></i>Szűrők törlése
                     </button>
                   </div>
@@ -51,7 +63,12 @@
                 <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes szülő</h6>
-                    <h3 class="mb-0">{{ parents.length }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ parents.length }}</template>
+                    </h3>
                   </div>
                 </div>
               </div>
@@ -59,7 +76,12 @@
                 <div class="card">
                   <div class="card-body text-center">
                     <h6 class="card-title mb-1">Összes gyerek</h6>
-                    <h3 class="mb-0">{{ totalChildrenCount }}</h3>
+                    <h3 class="mb-0">
+                      <template v-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      </template>
+                      <template v-else>{{ totalChildrenCount }}</template>
+                    </h3>
                   </div>
                 </div>
               </div>
@@ -67,8 +89,22 @@
           </div>
         </div>
         
+        <!-- Loading skeleton for cards -->
+        <div v-if="loading" class="row">
+          <div class="col-12">
+            <div class="d-flex justify-content-center py-5">
+              <div class="text-center">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                  <span class="visually-hidden">Betöltés...</span>
+                </div>
+                <p class="mt-3 text-muted">Szülők betöltése...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Szülők kártyák -->
-        <div class="row">
+        <div v-else class="row">
           <div class="col-md-6 col-lg-4" v-for="parent in filteredParents" :key="parent.szulo_id">
             <div class="card shadow-sm h-100">
               <div class="card-header border-0">
@@ -147,14 +183,26 @@
               </div>
               <div class="card-footer border-0">
                 <div class="d-flex justify-content-between">
-                  <button class="btn btn-outline-primary btn-sm" @click="viewParent(parent)">
+                  <button 
+                    class="btn btn-outline-primary btn-sm" 
+                    @click="viewParent(parent)"
+                    :disabled="loading"
+                  >
                     <i class="bi bi-eye me-1"></i>Megtekintés
                   </button>
                   <div class="btn-group" role="group">
-                    <button class="btn btn-outline-warning btn-sm" @click="editParent(parent)">
+                    <button 
+                      class="btn btn-outline-warning btn-sm" 
+                      @click="editParent(parent)"
+                      :disabled="loading"
+                    >
                       <i class="bi bi-pencil me-1"></i>Szerkesztés
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" @click="deleteParent(parent)">
+                    <button 
+                      class="btn btn-outline-danger btn-sm" 
+                      @click="deleteParent(parent)"
+                      :disabled="loading"
+                    >
                       <i class="bi bi-trash me-1"></i>Törlés
                     </button>
                   </div>
@@ -513,9 +561,13 @@ import api from '../services/api'
 import { useDebounce } from '../composables/useDebounce'
 import { toast } from 'vue3-toastify'
 import BaseInput from '../components/forms/BaseInput.vue'
+import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 export default {
   name: 'ParentsView',
+  components: {
+    LoadingOverlay
+  },
   setup() {
     const parents = ref([])
     const loading = ref(false)
