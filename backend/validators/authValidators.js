@@ -7,9 +7,9 @@ const { body } = require('express-validator');
 
 /**
  * Password complexity regex pattern
- * Requires: at least one lowercase, one uppercase, and one digit
+ * Requires: at least one lowercase, one uppercase, one digit, and one special character
  */
-const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/;
 
 /**
  * Validator array for login
@@ -51,14 +51,14 @@ const registerValidator = [
     .isEmail()
     .withMessage('Érvénytelen email cím'),
 
-  // jelszo - required, min 6 chars, must contain lowercase, uppercase, and number
+  // jelszo - required, min 8 chars, must contain lowercase, uppercase, number, and special character
   body('jelszo')
     .notEmpty()
     .withMessage('Jelszó megadása kötelező')
-    .isLength({ min: 6 })
-    .withMessage('A jelszó legalább 6 karakter hosszú legyen')
+    .isLength({ min: 8 })
+    .withMessage('A jelszó legalább 8 karakter hosszú legyen')
     .matches(PASSWORD_COMPLEXITY_REGEX)
-    .withMessage('A jelszónak tartalmaznia kell kis- és nagybetűt, valamint számot'),
+    .withMessage('A jelszónak tartalmaznia kell kis- és nagybetűt, számot és speciális karaktert'),
 
   // szerepkor - optional, must be one of allowed values
   body('szerepkor')

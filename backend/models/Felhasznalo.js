@@ -45,6 +45,17 @@ module.exports = (sequelize) => {
         len: {
           args: [8, 100],
           msg: 'A jelszónak minimum 8 karakter hosszúnak kell lennie'
+        },
+        isComplex(value) {
+          // Password complexity validation: at least 1 uppercase, 1 lowercase, 1 number, 1 special character
+          const hasUppercase = /[A-Z]/.test(value);
+          const hasLowercase = /[a-z]/.test(value);
+          const hasNumber = /[0-9]/.test(value);
+          const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+          
+          if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+            throw new Error('A jelszónak tartalmaznia kell legalább egy nagybetűt, egy kisbetűt, egy számot és egy speciális karaktert');
+          }
         }
       }
     },
