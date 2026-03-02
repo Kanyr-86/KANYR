@@ -41,11 +41,14 @@ async function authenticate(req, res, next) {
     }
 
     // Attach user to request
+    // Map admin boolean to szerepkor for role-based access control
+    const szerepkor = user.admin ? 'admin' : 'titkár';
     req.user = {
       userId: user.user_id,
       username: user.username,
       email: user.email,
-      admin: user.admin
+      admin: user.admin,
+      szerepkor: szerepkor
     };
 
     next();

@@ -82,7 +82,7 @@
 ### Magas prioritás
 - [ ] Database migrations implementálása
 - [ ] Frontend CSS modulárizálása
-- [ ] API rate limiting
+- [x] API rate limiting
 
 ### Közepes prioritás
 - [ ] Toast library teljes integrálása
@@ -194,8 +194,8 @@
 - ✅ Központi hibakezelés
 - ✅ Validációs infrastruktúra
 - ✅ Szerepkör alapú hozzáférés-vezérlés
+- ✅ API rate limiting (express-rate-limit)
 - ⚠️ Production JWT_SECRET (TODO)
-- ⚠️ API rate limiting (TODO)
 
 ---
 

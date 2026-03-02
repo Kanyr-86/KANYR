@@ -56,10 +56,10 @@ module.exports = (sequelize) => {
     cim_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    //   references: {
-    //     model: 'Lakcims',
-    //     key: 'cim_id'
-    //   }
+      references: {
+        model: 'lakcims',
+        key: 'cim_id'
+      }
     }
   }, {
     tableName: 'szulos',

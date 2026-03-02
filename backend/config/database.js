@@ -11,6 +11,10 @@ const sequelize = new Sequelize({
     // Alapértelmezett beállítások minden modellhez
     freezeTableName: false, // Sequelize automatikusan többesszámúvá alakítja a táblaneveket
     underscored: true, // snake_case használata camelCase helyett
+  },
+  dialectOptions: {
+    // Engedélyezi az idegen kulcs korlátozásokat SQLite-ban
+    foreignKeys: true
   }
 });
 

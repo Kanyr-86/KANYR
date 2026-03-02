@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { testConnection } = require('./config/database');
 const db = require('./models');
 const errorHandler = require('./middleware/errorHandler');
@@ -46,6 +47,67 @@ app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 
 // Request logging middleware
 app.use(requestLogger);
+
+// Rate Limiting Configuration
+// Strict limiter for authentication endpoints - prevents brute force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: {
+    error: 'Túl sok bejelentkezési kísérlet. Kérjük, próbálja újra 15 perc múlva.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skipSuccessfulRequests: false, // Count all requests, even successful ones
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});
+
+// General API limiter for write operations (POST, PUT, DELETE)
+const writeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 write requests per windowMs
+  message: {
+    error: 'Túl sok kérés érkezett. Kérjük, próbálja újra később.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});
+
+// Relaxed limiter for read-only endpoints (GET requests)
+const readLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // Limit each IP to 200 read requests per windowMs
+  message: {
+    error: 'Túl sok kérés érkezett. Kérjük, próbálja újra később.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});
+
+// Apply rate limiting to auth routes (strictest limits)
+app.use('/api/auth/login', authLimiter);
+
+// Apply write limiter to all routes (will be overridden by read limiter for GET requests)
+app.use('/api', writeLimiter);
+
+// Apply read limiter specifically for GET requests (more relaxed)
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET') {
+    return readLimiter(req, res, next);
+  }
+  next();
+});
 
 // Alapértelmezett route
 app.get('/', (req, res) => {

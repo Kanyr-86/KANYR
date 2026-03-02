@@ -63,7 +63,8 @@ class DiakService {
       bekoltozes_datum
     } = enrollmentData;
 
-    const transaction = await this.db.sequelize.transaction();
+    const transaction = this.transaction || await this.db.sequelize.transaction();
+    const shouldCommit = !this.transaction;
     
     try {
       // 1. Lakcím létrehozása vagy megtalálása
@@ -110,12 +111,16 @@ class DiakService {
         kikoltozes_datum: null
       }, { transaction });
 
-      await transaction.commit();
+      if (shouldCommit) {
+        await transaction.commit();
+      }
 
       // Teljes profil visszaadása
       return await this.getStudentWithFullHistory(diak.diak_id);
     } catch (error) {
-      await transaction.rollback();
+      if (shouldCommit) {
+        await transaction.rollback();
+      }
       throw new Error(`Hiba a beiratkozás során: ${error.message}`);
     }
   }
@@ -128,7 +133,8 @@ class DiakService {
    * @returns {Promise<Object>} - frissített diák profil
    */
   async transferStudent(diak_id, uj_szoba_id, atcsatolas_datum = new Date()) {
-    const transaction = await this.db.sequelize.transaction();
+    const transaction = this.transaction || await this.db.sequelize.transaction();
+    const shouldCommit = !this.transaction;
     
     try {
       const diak = await this.Diak.findByPk(diak_id);
@@ -164,11 +170,15 @@ class DiakService {
         kikoltozes_datum: null
       }, { transaction });
 
-      await transaction.commit();
+      if (shouldCommit) {
+        await transaction.commit();
+      }
 
       return await this.getStudentWithFullHistory(diak_id);
     } catch (error) {
-      await transaction.rollback();
+      if (shouldCommit) {
+        await transaction.rollback();
+      }
       throw new Error(`Hiba az átcsatolás során: ${error.message}`);
     }
   }
@@ -180,7 +190,8 @@ class DiakService {
    * @returns {Promise<Object>} - frissített diák profil
    */
   async moveOutStudent(diak_id, kikoltozes_datum = new Date()) {
-    const transaction = await this.db.sequelize.transaction();
+    const transaction = this.transaction || await this.db.sequelize.transaction();
+    const shouldCommit = !this.transaction;
     
     try {
       const activeBekoltozes = await this.SzobaBekoltozes.findOne({
@@ -198,11 +209,15 @@ class DiakService {
         kikoltozes_datum: kikoltozes_datum
       }, { transaction });
 
-      await transaction.commit();
+      if (shouldCommit) {
+        await transaction.commit();
+      }
 
       return await this.getStudentWithFullHistory(diak_id);
     } catch (error) {
-      await transaction.rollback();
+      if (shouldCommit) {
+        await transaction.rollback();
+      }
       throw new Error(`Hiba a kiköltöztetés során: ${error.message}`);
     }
   }
@@ -522,7 +537,8 @@ class DiakService {
    * @returns {Promise<Object>} - frissített diák profil
    */
   async updateDiak(id, updates) {
-    const transaction = await this.db.sequelize.transaction();
+    const transaction = this.transaction || await this.db.sequelize.transaction();
+    const shouldCommit = !this.transaction;
     
     try {
       const diak = await this.Diak.findByPk(id);
@@ -601,11 +617,16 @@ class DiakService {
       }
 
       await diak.update(updates, { transaction });
-      await transaction.commit();
+      
+      if (shouldCommit) {
+        await transaction.commit();
+      }
 
       return await this.getStudentWithFullHistory(id);
     } catch (error) {
-      await transaction.rollback();
+      if (shouldCommit) {
+        await transaction.rollback();
+      }
       if (error.message.includes('nem található')) {
         throw error;
       }

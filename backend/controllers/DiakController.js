@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const DiakService = require('../services/DiakService');
 const DiakRepository = require('../repositories/DiakRepository');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ValidationError } = require('../utils/AppError');
+const { NotFoundError, ValidationError, ConflictError } = require('../utils/AppError');
 
 class DiakController {
   constructor(db) {
@@ -474,33 +474,38 @@ class DiakController {
     // Ellenőrizzük, hogy van-e aktív beköltözése
     const currentBekoltozes = student.bekoltozesek.find(b => !b.kikoltozes_datum);
     if (!currentBekoltozes) {
-      throw new ValidationError('A diáknak nincs aktív szobája');
+      throw new ConflictError('A diáknak nincs aktív szobája');
     }
 
-    // Ellenőrizzük a szobaváltási korlátot
+    // Ellenőrizzük a szobaváltási korlátot és hozzuk létre a kérelmet tranzakcióban
     const currentYear = new Date().getFullYear();
     const academicYear = `${currentYear}-${currentYear + 1}`;
-    const pendingOrApprovedCount = await this.db.SzobaValtoztatas.count({
-      where: {
-        diak_id: parseInt(id),
-        academic_year: academicYear,
-        statusz: ['pending', 'approved']
+
+    const roomChange = await this.db.sequelize.transaction(async (transaction) => {
+      // Ellenőrizzük a szobaváltási korlátot (tranzakcióban a konzisztencia érdekében)
+      const pendingOrApprovedCount = await this.db.SzobaValtoztatas.count({
+        where: {
+          diak_id: parseInt(id),
+          academic_year: academicYear,
+          statusz: ['pending', 'approved']
+        },
+        transaction
+      });
+
+      if (pendingOrApprovedCount >= 3) {
+        throw new ConflictError('Elérte a félévi szobaváltási korlátot (3 alkalom)');
       }
-    });
 
-    if (pendingOrApprovedCount >= 3) {
-      throw new ValidationError('Elérte a félévi szobaváltási korlátot (3 alkalom)');
-    }
-
-    // Létrehozzuk a szobaváltási kérelmet
-    const SzobaValtoztatas = this.db.SzobaValtoztatas;
-    const roomChange = await SzobaValtoztatas.create({
-      diak_id: parseInt(id),
-      jelenlegi_szoba_id: currentBekoltozes.szoba_id,
-      kivant_szoba_id: parseInt(kivant_szoba_id),
-      indok: indok || null,
-      statusz: 'pending',
-      academic_year: academicYear
+      // Létrehozzuk a szobaváltási kérelmet
+      const SzobaValtoztatas = this.db.SzobaValtoztatas;
+      return await SzobaValtoztatas.create({
+        diak_id: parseInt(id),
+        jelenlegi_szoba_id: currentBekoltozes.szoba_id,
+        kivant_szoba_id: parseInt(kivant_szoba_id),
+        indok: indok || null,
+        statusz: 'pending',
+        academic_year: academicYear
+      }, { transaction });
     });
 
     res.status(201).json({

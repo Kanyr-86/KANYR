@@ -88,10 +88,10 @@ module.exports = (sequelize) => {
     szulo_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    //   references: {
-    //     model: 'Szulos',
-    //     key: 'szulo_id'
-    //   }
+      references: {
+        model: 'szulos',
+        key: 'szulo_id'
+      }
     },
     kapcsolat_tipusa: {
       type: DataTypes.ENUM('anya', 'apa', 'gondviselo'),
@@ -106,10 +106,10 @@ module.exports = (sequelize) => {
     cim_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    //   references: {
-    //     model: 'Lakcims',
-    //     key: 'cim_id'
-    //   }
+      references: {
+        model: 'lakcims',
+        key: 'cim_id'
+      }
     },
     nem: {
       type: DataTypes.ENUM('férfi', 'nő'),
