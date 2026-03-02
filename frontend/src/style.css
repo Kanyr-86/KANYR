@@ -101,6 +101,81 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
+/* Dark Mode Toast and Alert Text Colors */
+[data-theme="dark"] .toast-message,
+[data-theme="dark"] .alert .toast-message {
+  color: var(--secondary-900);
+}
+
+/* Dark mode overrides for Bootstrap alerts used in ToastContainer */
+[data-theme="dark"] .alert-success {
+  background-color: var(--success-200);
+  border-color: var(--success-300);
+  color: var(--success-900);
+}
+
+[data-theme="dark"] .alert-success .toast-message,
+[data-theme="dark"] .alert-success .btn-close {
+  color: var(--success-900);
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: var(--danger-200);
+  border-color: var(--danger-300);
+  color: var(--danger-900);
+}
+
+[data-theme="dark"] .alert-danger .toast-message,
+[data-theme="dark"] .alert-danger .btn-close {
+  color: var(--danger-900);
+}
+
+[data-theme="dark"] .alert-warning {
+  background-color: var(--warning-200);
+  border-color: var(--warning-300);
+  color: var(--warning-900);
+}
+
+[data-theme="dark"] .alert-warning .toast-message,
+[data-theme="dark"] .alert-warning .btn-close {
+  color: var(--warning-900);
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: var(--info-200);
+  border-color: var(--info-300);
+  color: var(--info-900);
+}
+
+[data-theme="dark"] .alert-info .toast-message,
+[data-theme="dark"] .alert-info .btn-close {
+  color: var(--info-900);
+}
+
+/* Dark mode Vue3-Toastify overrides */
+[data-theme="dark"] .Toastify__toast {
+  background: var(--secondary-800);
+  color: var(--secondary-50);
+}
+
+[data-theme="dark"] .Toastify__toast-body {
+  color: var(--secondary-50);
+}
+
+[data-theme="dark"] .Toastify__close-button {
+  color: var(--secondary-50);
+  opacity: 0.7;
+}
+
+[data-theme="dark"] .Toastify__close-button:hover {
+  opacity: 1;
+  color: var(--secondary-50);
+}
+
+[data-theme="dark"] .Toastify__progress-bar {
+  background: var(--primary-500);
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--secondary-900);
