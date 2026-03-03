@@ -96,3 +96,16 @@
 }
 
 /* Note: Theme overrides are now handled in base.css */
+
+/* High contrast card overrides */
+[data-theme="high-contrast"] .base-card {
+  border: 2px solid var(--border-primary);
+  background: var(--bg-card);
+}
+
+[data-theme="high-contrast"] .base-card.border-primary,
+[data-theme="high-contrast"] .base-card.border-success,
+[data-theme="high-contrast"] .base-card.border-danger,
+[data-theme="high-contrast"] .base-card.border-warning {
+  border-left: 4px solid var(--border-primary) !important;
+}

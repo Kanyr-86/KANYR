@@ -864,8 +864,15 @@ export default {
 
 <style scoped>
 .avatar {
-  background-color: var(--bs-primary);
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
   color: white;
   font-weight: bold;
+}
+
+/* High contrast avatar */
+[data-theme="high-contrast"] .avatar {
+  background: var(--primary-600);
+  color: var(--text-inverse);
+  border: 2px solid var(--border-primary);
 }
 </style>

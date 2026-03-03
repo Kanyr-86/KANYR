@@ -156,7 +156,7 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--text-primary);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px var(--shadow-color, rgba(0, 0, 0, 0.1));
   margin-bottom: 1.5rem;
 }
 
@@ -164,7 +164,7 @@
 .card-header h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-heading);
+  color: var(--text-primary);
   margin-bottom: 0;
 }
 
@@ -183,7 +183,7 @@
 .card-body p.card-text {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-heading);
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
@@ -203,16 +203,21 @@
 
 /* High contrast theme adjustments */
 [data-theme="high-contrast"] .card-header h5 {
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .card-body h5 {
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .card-body .display-6,
 [data-theme="high-contrast"] .card-body p.card-text {
-  color: var(--text-dark);
+  color: var(--text-primary);
+}
+
+/* Dark theme override for text-shadow */
+[data-theme="dark"] .dashboard-title {
+  text-shadow: none;
 }
 
 /* Statistics Cards (.stat-card) - Enhanced hover effects */

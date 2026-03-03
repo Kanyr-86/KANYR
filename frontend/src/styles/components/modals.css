@@ -124,3 +124,47 @@
 }
 
 /* Note: Theme overrides are now handled in base.css */
+
+/* High contrast modal overrides */
+[data-theme="high-contrast"] .modal-content {
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+}
+
+[data-theme="high-contrast"] .modal-header {
+  background-color: var(--bg-page);
+  border-bottom: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .modal-title {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+[data-theme="high-contrast"] .modal-body {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .modal-footer {
+  background-color: var(--bg-page);
+  border-top: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .btn-close {
+  background-color: #000000;
+  opacity: 1;
+}
+
+[data-theme="high-contrast"] .modal-body .form-control,
+[data-theme="high-contrast"] .modal-body .form-select {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  color: #000000;
+}
+
+[data-theme="high-contrast"] .modal-body .form-label {
+  color: #000000;
+  font-weight: 700;
+}

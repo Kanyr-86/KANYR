@@ -53,3 +53,22 @@
 }
 
 /* Note: Theme overrides are now handled in base.css */
+
+/* High contrast notification overrides */
+[data-theme="high-contrast"] .notification-inbox .card-header {
+  background-color: var(--bg-page);
+  border-bottom: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .list-group-item {
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .list-group-item.unread {
+  border-left: 4px solid #000000;
+  background-color: var(--bg-page);
+}
+
+[data-theme="high-contrast"] .badge {
+  border: 2px solid var(--border-primary);
+}

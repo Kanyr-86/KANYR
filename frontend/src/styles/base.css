@@ -75,6 +75,37 @@
   border-radius: var(--border-radius-md);
 }
 
+/* High contrast table styles */
+[data-theme="high-contrast"] .table {
+  background-color: var(--bg-page);
+  border: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .table thead th {
+  background-color: var(--bg-page);
+  border-bottom: 2px solid var(--border-primary);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+[data-theme="high-contrast"] .table tbody td {
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .table-hover tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+[data-theme="high-contrast"] .table-responsive {
+  background-color: var(--bg-page);
+  border: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /* Button improvements */
 .btn {
   font-weight: 500;
@@ -511,6 +542,35 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--bg-tertiary) !important;
   }
   
+  /* Fix table-responsive wrapper white background */
+  .table-responsive {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-primary) !important;
+  }
+  
+  /* Fix empty cells showing white */
+  .table td:empty,
+  .table th:empty {
+    background-color: var(--bg-card) !important;
+  }
+  
+  /* Fix table caption visibility */
+  .table caption {
+    color: var(--text-primary) !important;
+    background-color: var(--bg-card) !important;
+  }
+  
+  /* Fix striped tables */
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--bg-tertiary) !important;
+  }
+  
+  /* Fix table-light class in dark mode */
+  .table-light {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+  }
+  
   /* Fix form controls */
   .form-control, .form-select {
     background-color: var(--bg-card) !important;
@@ -724,8 +784,24 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary) !important;
   }
   
-  /* Fix any remaining hardcoded text colors */
-  * {
-    color: var(--text-primary) !important;
+  /* Targeted text color fixes - preserve semantic colors */
+  p, span, div:not(.badge):not(.alert), 
+  h1, h2, h3, h4, h5, h6,
+  label, small, li, td, th {
+    color: var(--text-primary);
   }
+  
+  /* Preserve semantic badge colors */
+  .badge.bg-success { color: #ffffff !important; }
+  .badge.bg-danger { color: #ffffff !important; }
+  .badge.bg-warning { color: #000000 !important; }
+  .badge.bg-info { color: #ffffff !important; }
+  .badge.bg-primary { color: #ffffff !important; }
+  .badge.bg-secondary { color: #ffffff !important; }
+  
+  /* Preserve alert text colors */
+  .alert-success { color: var(--success-900) !important; }
+  .alert-danger { color: var(--danger-900) !important; }
+  .alert-warning { color: var(--warning-900) !important; }
+  .alert-info { color: var(--info-900) !important; }
 }

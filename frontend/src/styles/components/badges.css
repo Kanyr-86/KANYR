@@ -49,3 +49,32 @@
 }
 
 /* Note: Theme overrides are now handled in base.css */
+
+/* High contrast badge overrides */
+[data-theme="high-contrast"] .badge {
+  border: 2px solid var(--border-primary);
+  font-weight: 700;
+}
+
+[data-theme="high-contrast"] .badge.bg-primary,
+[data-theme="high-contrast"] .badge.bg-success,
+[data-theme="high-contrast"] .badge.bg-danger,
+[data-theme="high-contrast"] .badge.bg-info,
+[data-theme="high-contrast"] .badge.bg-secondary {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+[data-theme="high-contrast"] .badge.bg-warning {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+[data-theme="high-contrast"] .status-active,
+[data-theme="high-contrast"] .status-inactive {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}

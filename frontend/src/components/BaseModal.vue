@@ -268,7 +268,7 @@ export default defineComponent({
   margin: 0;
   font-size: 1.25rem;
   font-weight: 500;
-  color: var(--text-heading);
+  color: var(--text-primary);
 }
 
 .modal-body {
@@ -319,7 +319,7 @@ export default defineComponent({
   }
 }
 
-/* Dark theme overrides for BaseModal */
+/* Dark theme overrides */
 [data-theme="dark"] .modal-overlay {
   background-color: rgba(0, 0, 0, 0.7);
 }
@@ -330,18 +330,25 @@ export default defineComponent({
 }
 
 [data-theme="dark"] .modal-header {
+  background-color: var(--bg-tertiary);
   border-bottom-color: var(--border-primary);
 }
 
 [data-theme="dark"] .modal-title {
-  color: var(--text-heading);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-body {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .modal-footer {
+  background-color: var(--bg-tertiary);
   border-top-color: var(--border-primary);
 }
 
-/* High contrast theme overrides for BaseModal */
+/* High contrast theme overrides */
 [data-theme="high-contrast"] .modal-overlay {
   background-color: rgba(0, 0, 0, 0.8);
 }
@@ -357,6 +364,7 @@ export default defineComponent({
 
 [data-theme="high-contrast"] .modal-title {
   color: var(--text-primary);
+  font-weight: 700;
 }
 
 [data-theme="high-contrast"] .modal-footer {

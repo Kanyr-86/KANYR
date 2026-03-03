@@ -640,7 +640,7 @@ export default defineComponent({
 .card-header h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-heading);
+  color: var(--text-primary);
   margin-bottom: 0;
 }
 
@@ -651,7 +651,7 @@ export default defineComponent({
 
 /* High contrast theme adjustments */
 [data-theme="high-contrast"] .card-header h5 {
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 /* Status Indicators (.status-indicator) - Pulse animations */
@@ -669,20 +669,20 @@ export default defineComponent({
 .status-indicator.online {
   background-color: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  color: var(--color-success-dark);
+  color: var(--success-700);
   animation: pulse 2s infinite;
 }
 
 .status-indicator.offline {
   background-color: rgba(100, 116, 139, 0.1);
   border: 1px solid rgba(100, 116, 139, 0.3);
-  color: var(--color-secondary-dark);
+  color: var(--secondary-700);
 }
 
 .status-indicator.warning {
   background-color: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  color: var(--color-warning-dark);
+  color: var(--warning-700);
 }
 
 @keyframes pulse {
@@ -704,7 +704,7 @@ export default defineComponent({
 [data-theme="dark"] .status-indicator.online {
   background-color: rgba(52, 211, 153, 0.15);
   border-color: rgba(52, 211, 153, 0.4);
-  color: var(--color-success);
+  color: var(--success-500);
   animation: pulse-dark 2s infinite;
 }
 
@@ -717,7 +717,7 @@ export default defineComponent({
 [data-theme="dark"] .status-indicator.warning {
   background-color: rgba(251, 191, 36, 0.15);
   border-color: rgba(251, 191, 36, 0.4);
-  color: var(--color-warning);
+  color: var(--warning-500);
 }
 
 @keyframes pulse-dark {
@@ -780,23 +780,23 @@ export default defineComponent({
 }
 
 [data-theme="dark"] .btn-primary {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: var(--primary-600);
+  border-color: var(--primary-600);
 }
 
 [data-theme="dark"] .btn-primary:hover {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
+  background-color: var(--primary-700);
+  border-color: var(--primary-700);
 }
 
 [data-theme="dark"] .btn-secondary {
-  background-color: var(--color-secondary);
-  border-color: var(--color-secondary);
+  background-color: var(--secondary-600);
+  border-color: var(--secondary-600);
 }
 
 [data-theme="dark"] .btn-secondary:hover {
-  background-color: var(--color-secondary-dark);
-  border-color: var(--color-secondary-dark);
+  background-color: var(--secondary-700);
+  border-color: var(--secondary-700);
 }
 
 [data-theme="dark"] .btn-outline-secondary {
@@ -829,27 +829,27 @@ export default defineComponent({
 }
 
 [data-theme="dark"] .badge.bg-info {
-  background-color: var(--color-info);
+  background-color: var(--info-500);
   color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-secondary {
-  background-color: var(--color-secondary);
+  background-color: var(--secondary-600);
   color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-success {
-  background-color: var(--color-success);
+  background-color: var(--success-500);
   color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-warning {
-  background-color: var(--color-warning);
+  background-color: var(--warning-500);
   color: var(--text-dark);
 }
 
 [data-theme="dark"] .badge.bg-primary {
-  background-color: var(--color-primary);
+  background-color: var(--primary-600);
   color: var(--text-inverse);
 }
 
@@ -858,19 +858,19 @@ export default defineComponent({
 }
 
 [data-theme="dark"] .text-primary {
-  color: var(--color-primary) !important;
+  color: var(--primary-600) !important;
 }
 
 [data-theme="dark"] .text-success {
-  color: var(--color-success) !important;
+  color: var(--success-500) !important;
 }
 
 [data-theme="dark"] .text-warning {
-  color: var(--color-warning) !important;
+  color: var(--warning-500) !important;
 }
 
 [data-theme="dark"] .text-danger {
-  color: var(--color-danger) !important;
+  color: var(--danger-500) !important;
 }
 
 [data-theme="dark"] .alert {
@@ -882,13 +882,13 @@ export default defineComponent({
 [data-theme="dark"] .alert.alert-danger {
   background-color: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
-  color: var(--color-danger);
+  color: var(--danger-500);
 }
 
 [data-theme="dark"] .alert.alert-info {
   background-color: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.3);
-  color: var(--color-primary);
+  color: var(--primary-600);
 }
 
 [data-theme="dark"] .form-control {
@@ -899,19 +899,13 @@ export default defineComponent({
 
 [data-theme="dark"] .form-control:focus {
   background-color: var(--bg-tertiary);
-  border-color: var(--color-primary);
+  border-color: var(--primary-600);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-[data-theme="dark"] .form-select {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-primary);
-  color: var(--text-primary);
 }
 
 [data-theme="dark"] .form-select:focus {
   background-color: var(--bg-tertiary);
-  border-color: var(--color-primary);
+  border-color: var(--primary-600);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -927,19 +921,19 @@ export default defineComponent({
 }
 
 [data-theme="dark"] .progress-bar {
-  background-color: var(--color-success);
+  background-color: var(--success-500);
 }
 
 [data-theme="dark"] .progress-bar.bg-info {
-  background-color: var(--color-info);
+  background-color: var(--info-500);
 }
 
 [data-theme="dark"] .progress-bar.bg-warning {
-  background-color: var(--color-warning);
+  background-color: var(--warning-500);
 }
 
 [data-theme="dark"] .progress-bar.bg-danger {
-  background-color: var(--color-danger);
+  background-color: var(--danger-500);
 }
 
 /* High contrast theme overrides for ReportsView */
@@ -1015,27 +1009,27 @@ export default defineComponent({
 }
 
 [data-theme="high-contrast"] .badge.bg-info {
-  background-color: var(--color-info);
+  background-color: var(--info-500);
   color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .badge.bg-secondary {
-  background-color: var(--color-secondary);
+  background-color: var(--secondary-600);
   color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .badge.bg-success {
-  background-color: var(--color-success);
+  background-color: var(--success-500);
   color: var(--text-inverse);
 }
 
 [data-theme="high-contrast"] .badge.bg-warning {
-  background-color: var(--color-warning);
+  background-color: var(--warning-500);
   color: var(--text-dark);
 }
 
 [data-theme="high-contrast"] .badge.bg-primary {
-  background-color: var(--color-primary);
+  background-color: var(--primary-600);
   color: var(--text-inverse);
 }
 
@@ -1044,19 +1038,19 @@ export default defineComponent({
 }
 
 [data-theme="high-contrast"] .text-primary {
-  color: var(--color-primary) !important;
+  color: var(--primary-600) !important;
 }
 
 [data-theme="high-contrast"] .text-success {
-  color: var(--color-success) !important;
+  color: var(--success-500) !important;
 }
 
 [data-theme="high-contrast"] .text-warning {
-  color: var(--color-warning) !important;
+  color: var(--warning-500) !important;
 }
 
 [data-theme="high-contrast"] .text-danger {
-  color: var(--color-danger) !important;
+  color: var(--danger-500) !important;
 }
 
 [data-theme="high-contrast"] .alert {
@@ -1066,13 +1060,13 @@ export default defineComponent({
 }
 
 [data-theme="high-contrast"] .alert.alert-danger {
-  background-color: var(--color-danger);
+  background-color: var(--danger-500);
   border: 2px solid var(--border-primary);
   color: white;
 }
 
 [data-theme="high-contrast"] .alert.alert-info {
-  background-color: var(--color-info);
+  background-color: var(--info-500);
   border: 2px solid var(--border-primary);
   color: white;
 }
@@ -1113,18 +1107,18 @@ export default defineComponent({
 }
 
 [data-theme="high-contrast"] .progress-bar {
-  background-color: var(--color-success);
+  background-color: var(--success-500);
 }
 
 [data-theme="high-contrast"] .progress-bar.bg-info {
-  background-color: var(--color-info);
+  background-color: var(--info-500);
 }
 
 [data-theme="high-contrast"] .progress-bar.bg-warning {
-  background-color: var(--color-warning);
+  background-color: var(--warning-500);
 }
 
 [data-theme="high-contrast"] .progress-bar.bg-danger {
-  background-color: var(--color-danger);
+  background-color: var(--danger-500);
 }
 </style>

@@ -482,6 +482,7 @@ export default defineComponent({
   background-color: var(--bg-tertiary);
   border-bottom: 2px solid var(--border-primary);
   white-space: nowrap;
+  color: var(--text-heading);
 }
 
 .base-table th.sortable {
@@ -491,7 +492,7 @@ export default defineComponent({
 }
 
 .base-table th.sortable:hover {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-hover);
 }
 
 .base-table th.sorted {
@@ -520,12 +521,16 @@ export default defineComponent({
   opacity: 0.3;
 }
 
+.base-table tbody tr {
+  background-color: var(--bg-card);
+}
+
 .base-table tbody tr.clickable {
   cursor: pointer;
 }
 
 .base-table tbody tr.clickable:hover {
-  background-color: rgba(59, 130, 246, 0.05);
+  background-color: var(--bg-hover);
 }
 
 .actions-column {
@@ -539,9 +544,9 @@ export default defineComponent({
   height: 1rem;
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.06) 25%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.06) 75%
+    var(--bg-tertiary) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-tertiary) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
@@ -567,7 +572,14 @@ export default defineComponent({
   border-bottom: none;
 }
 
-/* Dark theme overrides for BaseTable */
+/* Table responsive wrapper */
+.table-responsive {
+  background-color: var(--bg-card);
+}
+
+/* ==========================================
+ * THEME OVERRIDES - DARK MODE
+ * ========================================== */
 [data-theme="dark"] .base-table {
   background-color: var(--bg-page);
 }
@@ -575,14 +587,7 @@ export default defineComponent({
 [data-theme="dark"] .base-table th {
   background-color: var(--bg-tertiary);
   border-bottom-color: var(--border-primary);
-}
-
-[data-theme="dark"] .base-table th.sortable:hover {
-  background-color: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .base-table th.sorted {
-  background-color: var(--bg-tertiary);
+  color: var(--text-heading);
 }
 
 [data-theme="dark"] .base-table tbody tr {
@@ -595,15 +600,12 @@ export default defineComponent({
 }
 
 [data-theme="dark"] .base-table tbody tr.clickable:hover {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--bg-hover);
 }
 
-[data-theme="dark"] .sort-icon {
-  opacity: 0.7;
-}
-
-[data-theme="dark"] .sort-placeholder {
-  opacity: 0.4;
+[data-theme="dark"] .table-responsive {
+  background-color: var(--bg-card);
+  border-color: var(--border-primary);
 }
 
 [data-theme="dark"] .skeleton-cell {
@@ -615,22 +617,18 @@ export default defineComponent({
   );
 }
 
-/* High contrast theme overrides for BaseTable */
+/* ==========================================
+ * THEME OVERRIDES - HIGH CONTRAST
+ * ========================================== */
 [data-theme="high-contrast"] .base-table {
   background-color: var(--bg-page);
+  border: 2px solid var(--border-primary);
 }
 
 [data-theme="high-contrast"] .base-table th {
   background-color: var(--bg-card);
   border-bottom: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .base-table th.sortable:hover {
-  background-color: var(--bg-tertiary);
-}
-
-[data-theme="high-contrast"] .base-table th.sorted {
-  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .base-table tbody tr {
@@ -639,27 +637,11 @@ export default defineComponent({
 }
 
 [data-theme="high-contrast"] .base-table tbody tr:hover {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-hover);
 }
 
-[data-theme="high-contrast"] .base-table tbody tr.clickable:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="high-contrast"] .sort-icon {
-  opacity: 1;
-}
-
-[data-theme="high-contrast"] .sort-placeholder {
-  opacity: 0.6;
-}
-
-[data-theme="high-contrast"] .skeleton-cell {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.1) 25%,
-    rgba(0, 0, 0, 0.2) 50%,
-    rgba(0, 0, 0, 0.1) 75%
-  );
+[data-theme="high-contrast"] .table-responsive {
+  background-color: var(--bg-page);
+  border: 2px solid var(--border-primary);
 }
 </style>

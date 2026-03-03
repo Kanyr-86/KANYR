@@ -103,14 +103,14 @@
 }
 
 .form-control-sm:focus {
-  border-color: var(--color-primary);
+  border-color: var(--primary-600);
   box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
 }
 
 .btn-sm {
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
   border: none;
   color: white;
 }
@@ -156,7 +156,7 @@ hr {
 
 /* Dark theme overrides */
 [data-theme="dark"] .login-page {
-  background-color: var(--bg-sidebar);
+  background-color: var(--secondary-800);
 }
 
 [data-theme="dark"] .card {
@@ -175,13 +175,13 @@ hr {
 }
 
 [data-theme="dark"] .form-control-sm:focus {
-  border-color: var(--color-primary);
+  border-color: var(--primary-600);
   box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.4);
 }
 
 /* High contrast theme overrides */
 [data-theme="high-contrast"] .login-page {
-  background-color: var(--bg-sidebar);
+  background-color: var(--secondary-800);
 }
 
 [data-theme="high-contrast"] .card {

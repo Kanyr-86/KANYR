@@ -1339,7 +1339,7 @@ export default {
 .room-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-300);
+  border-color: var(--primary-500);
 }
 
 .room-card .card-body {
@@ -1347,6 +1347,6 @@ export default {
 }
 
 .room-card:hover .card-body {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: var(--bg-hover);
 }
 </style>

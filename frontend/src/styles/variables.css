@@ -185,6 +185,32 @@
 
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+
+  /* ==========================================
+   * DARK MODE SEMANTIC OVERRIDES - ADDED
+   * ========================================== */
+  
+  /* Dark mode semantic overrides */
+  --text-heading: var(--secondary-50);
+  --text-body: var(--secondary-100);
+  --bg-sidebar: var(--secondary-900);
+  --bg-input: var(--secondary-800);
+  --bg-hover: rgba(99, 102, 241, 0.1);
+  
+  /* Dark mode color adjustments */
+  --color-primary: var(--primary-400);
+  --color-primary-light: var(--primary-300);
+  --color-success: var(--success-400);
+  --color-warning: var(--warning-400);
+  --color-info: var(--info-400);
+  
+  /* Dark mode focus states */
+  --focus-ring: 0 0 0 0.25rem rgba(99, 102, 241, 0.4);
+  --focus-ring-color: rgba(99, 102, 241, 0.4);
+  
+  /* Dark mode shadows */
+  --shadow-focus: 0 0 0 3px var(--primary-400);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* High Contrast Theme */
@@ -209,6 +235,30 @@
 
   --shadow-card: none;
   --shadow-elevated: none;
+
+  /* ==========================================
+   * HIGH CONTRAST SEMANTIC OVERRIDES - ADDED
+   * ========================================== */
+  
+  /* High contrast semantic overrides */
+  --text-heading: #000000;
+  --text-body: #000000;
+  --bg-sidebar: #ffffff;
+  --bg-input: #ffffff;
+  --bg-hover: rgba(0, 0, 0, 0.1);
+  
+  /* High contrast focus states */
+  --focus-ring: 0 0 0 3px #000000;
+  --focus-ring-color: #000000;
+  
+  /* High contrast shadows - no shadows, use borders */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-card: none;
+  --shadow-elevated: none;
+  --shadow-focus: none;
+  --shadow-hover: none;
 }
 
 /* Sidebar specific */
@@ -220,10 +270,47 @@
   --sidebar-hover: var(--bg-tertiary);
   --sidebar-active: var(--primary-500);
   --sidebar-border: var(--border-primary);
-}
 
-/* Unified Button System */
-:root {
+  /* ==========================================
+   * MISSING SEMANTIC VARIABLES - ADDED
+   * ========================================== */
+  
+  /* Text hierarchy */
+  --text-heading: var(--secondary-900);
+  --text-body: var(--secondary-800);
+  
+  /* Component backgrounds */
+  --bg-sidebar: var(--secondary-800);
+  --bg-input: var(--bg-page);
+  --bg-hover: rgba(99, 102, 241, 0.05);
+  
+  /* Legacy color aliases (for backward compatibility) */
+  --color-primary: var(--primary-600);
+  --color-primary-dark: var(--primary-700);
+  --color-primary-light: var(--primary-500);
+  --color-secondary: var(--secondary-600);
+  --color-secondary-dark: var(--secondary-700);
+  --color-success: var(--success-500);
+  --color-success-dark: var(--success-700);
+  --color-danger: var(--danger-500);
+  --color-danger-dark: var(--danger-700);
+  --color-warning: var(--warning-500);
+  --color-warning-dark: var(--warning-700);
+  --color-info: var(--info-500);
+  
+  /* Interactive states */
+  --focus-ring: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+  --focus-ring-color: rgba(99, 102, 241, 0.25);
+  
+  /* Shadows (semantic) */
+  --shadow-focus: 0 0 0 3px var(--primary-500);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Border colors */
+  --border-color: var(--border-primary);
+  --border-focus: var(--primary-500);
+
+  /* Unified Button System */
   /* Action Button Base Styles */
   --btn-action-padding: 12px 20px;
   --btn-action-border-radius: 10px;
@@ -360,39 +447,123 @@
 
 /* High Contrast Theme Adjustments */
 [data-theme="high-contrast"] {
-  .btn-action {
-    border: 2px solid var(--border-primary);
-    background: var(--bg-page);
-    color: var(--text-primary);
+  /* ==========================================
+   * HIGH CONTRAST BUTTON SYSTEM
+   * ========================================== */
+  
+  /* Reset all buttons to consistent base */
+  .btn,
+  .btn-action,
+  button {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    font-weight: 600 !important;
   }
   
-  .btn-action:hover {
-    background: var(--text-primary);
-    color: var(--text-inverse);
-    transform: var(--btn-action-hover-transform);
+  .btn:hover,
+  .btn-action:hover,
+  button:hover {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
   }
   
+  .btn:focus,
+  .btn-action:focus,
+  button:focus {
+    outline: 3px solid #000000 !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Primary buttons - solid black */
+  .btn-primary,
   .btn-action-primary {
-    background: var(--text-primary);
-    color: var(--text-inverse);
-    border-color: var(--border-primary);
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #000000 !important;
   }
   
+  /* Secondary buttons - white with black border */
+  .btn-secondary,
   .btn-action-secondary {
-    background: var(--secondary-600);
-    color: var(--text-primary);
-    border-color: var(--border-primary);
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
   }
   
+  .btn-secondary:hover,
+  .btn-action-secondary:hover {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+  
+  /* Outline buttons - transparent base */
+  .btn-outline-primary,
+  .btn-outline-secondary,
+  .btn-outline-success,
+  .btn-outline-danger,
+  .btn-outline-warning,
+  .btn-outline-info,
   .btn-action-outline {
-    background: var(--bg-page);
-    color: var(--text-primary);
-    border-color: var(--border-primary);
+    background-color: transparent !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
   }
   
+  .btn-outline-primary:hover,
+  .btn-outline-secondary:hover,
+  .btn-outline-success:hover,
+  .btn-outline-danger:hover,
+  .btn-outline-warning:hover,
+  .btn-outline-info:hover,
   .btn-action-outline:hover {
-    background: var(--text-primary);
-    color: var(--text-inverse);
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+  
+  /* Danger buttons - use thicker border for emphasis */
+  .btn-danger {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 3px solid #000000 !important;
+  }
+  
+  .btn-danger:hover {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Info buttons */
+  .btn-info {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  /* Success buttons */
+  .btn-success {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  /* Warning buttons - ensure readable */
+  .btn-warning {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  /* Disabled state */
+  .btn:disabled,
+  .btn-action:disabled,
+  .btn.disabled,
+  .btn-action.disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
   }
 }
 

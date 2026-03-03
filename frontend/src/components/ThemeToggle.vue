@@ -150,7 +150,7 @@ export default {
 .theme-btn-active {
   background: var(--primary-50);
   border-color: var(--primary-500);
-  color: var(--primary-700);
+  color: var(--primary-600);
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
@@ -222,21 +222,20 @@ export default {
 
 [data-theme="high-contrast"] .theme-btn {
   background: var(--bg-page);
-  border: 1px solid var(--border-primary);
+  border: 2px solid var(--border-primary);
   color: var(--text-primary);
 }
 
 [data-theme="high-contrast"] .theme-btn:hover {
-  background: var(--bg-page);
+  background: var(--text-primary);
+  color: var(--text-inverse);
   border-color: var(--border-primary);
-  color: var(--text-primary);
-  transform: translateX(2px);
 }
 
 [data-theme="high-contrast"] .theme-btn-active {
-  background: var(--bg-page);
+  background: var(--text-primary);
+  color: var(--text-inverse);
   border: 2px solid var(--border-primary);
-  color: var(--text-primary);
   box-shadow: none;
 }
 

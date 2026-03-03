@@ -269,12 +269,12 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid var(--border-secondary);
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .dashboard-header h1 {
   margin: 0;
-  color: var(--text-heading);
+  color: var(--text-primary);
   font-size: 2rem;
 }
 
@@ -312,7 +312,7 @@ export default {
 .card-header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: var(--text-heading);
+  color: var(--text-primary);
 }
 
 .card-content {
@@ -359,13 +359,13 @@ export default {
 .value {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-heading);
+  color: var(--text-primary);
 }
 
 .roommates-section h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
-  color: var(--text-heading);
+  color: var(--text-primary);
 }
 
 .roommates-list {
@@ -415,7 +415,7 @@ export default {
 
 .notification-item.unread {
   background-color: var(--bg-tertiary);
-  border-left: 4px solid var(--color-primary);
+  border-left: 4px solid var(--primary-600);
 }
 
 .notification-content {
@@ -442,7 +442,7 @@ export default {
 .unread-indicator {
   width: 6px;
   height: 6px;
-  background-color: var(--color-primary);
+  background-color: var(--primary-600);
   border-radius: 50%;
   margin-left: 0.5rem;
 }
@@ -469,4 +469,21 @@ export default {
 
 /* High contrast theme overrides */
 /* High contrast theme overrides are already handled by CSS variables */
+
+/* Additional high contrast overrides */
+[data-theme="high-contrast"] .card {
+  border: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .card-header {
+  border-bottom: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .notification-item.unread {
+  border-left: 4px solid #000000;
+}
+
+[data-theme="high-contrast"] .unread-indicator {
+  background-color: #000000;
+}
 </style>

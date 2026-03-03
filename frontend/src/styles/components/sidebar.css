@@ -176,3 +176,41 @@
 }
 
 /* Note: Theme overrides are now handled in base.css */
+
+/* High contrast sidebar overrides */
+[data-theme="high-contrast"] .sidebar {
+  background-color: var(--bg-page);
+  border-right: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .sidebar-brand {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+[data-theme="high-contrast"] .sidebar-nav .nav-link {
+  color: var(--text-primary);
+  border: 1px solid transparent;
+}
+
+[data-theme="high-contrast"] .sidebar-nav .nav-link:hover {
+  background-color: var(--text-primary);
+  color: var(--text-inverse);
+  border-color: var(--border-primary);
+}
+
+[data-theme="high-contrast"] .sidebar-nav .nav-link.router-link-active {
+  background-color: #000000;
+  color: #ffffff;
+  border-left: 4px solid #000000;
+}
+
+[data-theme="high-contrast"] .user-avatar {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+}
+
+[data-theme="high-contrast"] .sidebar-footer .btn {
+  border: 2px solid var(--border-primary);
+}
