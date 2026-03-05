@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const DiakService = require('../services/DiakService');
 const DiakRepository = require('../repositories/DiakRepository');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ValidationError, ConflictError } = require('../utils/AppError');
+const { NotFoundError, ValidationError, ConflictError, ForbiddenError } = require('../utils/AppError');
 
 class DiakController {
   constructor(db) {
@@ -564,7 +564,6 @@ class DiakController {
 
     // Ellenőrizzük, hogy az értesítés a megfelelő diákhoz tartozik-e
     if (notification.diak_id !== parseInt(id)) {
-      const ForbiddenError = require('../utils/AppError').ForbiddenError;
       throw new ForbiddenError('Nincs jogosultsága az értesítés elolvasásához');
     }
 
