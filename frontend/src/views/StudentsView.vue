@@ -679,7 +679,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useApiStore } from '../store/api'
 import api from '../services/api'
@@ -688,6 +688,168 @@ import BaseModal from '../components/BaseModal.vue'
 import BaseInput from '../components/forms/BaseInput.vue'
 import BaseSelect from '../components/forms/BaseSelect.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
+import { getSuccessMessage, getErrorMessage, VALIDATION_MESSAGES } from '@/i18n'
+
+/**
+ * Comprehensive validation rules for student forms
+ */
+const VALIDATION_RULES = {
+  // Email validation - standard email format
+  email: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(value.trim())) return VALIDATION_MESSAGES.EMAIL_INVALID
+    return ''
+  },
+
+  // Hungarian phone number validation
+  // Accepts: +36201234567, +36 20 123 4567, 06201234567, 06 20 123 4567
+  telefonszam: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    // Normalize the phone number (remove spaces)
+    const normalized = value.replace(/\s/g, '')
+    // Check if it matches Hungarian phone format
+    const hungarianPhoneRegex = /^(\+36|06)[1-9][0-9]{7,8}$/
+    if (!hungarianPhoneRegex.test(normalized)) {
+      return 'Érvénytelen telefonszám formátum (pl. +36201234567 vagy 06201234567)'
+    }
+    return ''
+  },
+
+  // Name validation - 2-100 characters
+  nev: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    if (value.trim().length < 2) return VALIDATION_MESSAGES.MIN_LENGTH(2)
+    if (value.trim().length > 100) return VALIDATION_MESSAGES.MAX_LENGTH(100)
+    // Check for valid characters (letters, spaces, hyphens)
+    const nameRegex = /^[\p{L}\s\-'.]+$/u
+    if (!nameRegex.test(value.trim())) {
+      return 'A név csak betűket, szóközt és kötőjelet tartalmazhat'
+    }
+    return ''
+  },
+
+  // Birth date validation - must be in the past and reasonable age
+  szuletesi_datum: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    const date = new Date(value)
+    const now = new Date()
+    if (isNaN(date.getTime())) return VALIDATION_MESSAGES.DATE_INVALID
+    
+    // Check if date is in the future
+    if (date > now) return 'A születési dátum nem lehet a jövőben'
+    
+    // Check for reasonable age (between 15 and 100 years old)
+    const age = now.getFullYear() - date.getFullYear()
+    if (age < 15) return 'A diák legalább 15 éves kell legyen'
+    if (age > 100) return 'Érvénytelen születési dátum'
+    
+    return ''
+  },
+
+  // Gender validation
+  nem: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    if (!['férfi', 'nő'].includes(value)) return 'Érvénytelen nem érték'
+    return ''
+  },
+
+  // Személyi igazolvány szám validation - 6 digits + 2 letters
+  szemelyi_igazolvany_szam: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    const normalized = value.trim().toUpperCase()
+    // Format: 6 digits followed by 2 letters
+    const idRegex = /^[0-9]{6}[A-Z]{2}$/
+    if (!idRegex.test(normalized)) {
+      return 'Érvénytelen formátum (6 számjegy + 2 nagybetű, pl: 123456AA)'
+    }
+    return ''
+  },
+
+  // TAJ szám validation - 9 digits
+  taj_szam: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    // Remove spaces
+    const normalized = value.replace(/\s/g, '')
+    // Check for exactly 9 digits
+    const tajRegex = /^[0-9]{9}$/
+    if (!tajRegex.test(normalized)) {
+      return 'A TAJ szám pontosan 9 számjegyből áll'
+    }
+    // Optional: TAJ checksum validation (CDV)
+    // TAJ checksum: multiply digits by 3,7,3,7,3,7,3,7 and sum, mod 10 should equal 9th digit
+    const digits = normalized.split('').map(Number)
+    const weights = [3, 7, 3, 7, 3, 7, 3, 7]
+    let sum = 0
+    for (let i = 0; i < 8; i++) {
+      sum += digits[i] * weights[i]
+    }
+    const checksum = sum % 10
+    if (checksum !== digits[8]) {
+      return 'Érvénytelen TAJ szám (hibás ellenőrző számjegy)'
+    }
+    return ''
+  },
+
+  // Diákigazolvány szám validation - 8 digits
+  diakigazolvany_szam: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    // Remove spaces
+    const normalized = value.replace(/\s/g, '')
+    // Check for exactly 8 digits
+    const studentIdRegex = /^[0-9]{8}$/
+    if (!studentIdRegex.test(normalized)) {
+      return 'A diákigazolvány szám pontosan 8 számjegyből áll'
+    }
+    return ''
+  },
+
+  // Kapcsolat típusa validation
+  kapcsolat_tipusa: (value) => {
+    if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
+    if (!['anya', 'apa', 'gondviselo'].includes(value)) return 'Érvénytelen kapcsolat típus'
+    return ''
+  }
+}
+
+/**
+ * Validate entire form object
+ * @param {Object} formData - Form data to validate
+ * @param {Object} errorsRef - Reactive errors object to populate
+ * @returns {boolean} True if form is valid
+ */
+const validateForm = (formData, errorsRef) => {
+  let isValid = true
+  
+  // Clear previous errors
+  Object.keys(errorsRef).forEach(key => delete errorsRef[key])
+  
+  // Validate each field
+  for (const [field, value] of Object.entries(formData)) {
+    if (VALIDATION_RULES[field]) {
+      const error = VALIDATION_RULES[field](value)
+      if (error) {
+        errorsRef[field] = error
+        isValid = false
+      }
+    }
+  }
+  
+  return isValid
+}
+
+/**
+ * Validate a single field immediately
+ * @param {string} field - Field name
+ * @param {*} value - Field value
+ * @returns {string} Error message or empty string
+ */
+const validateField = (field, value) => {
+  if (VALIDATION_RULES[field]) {
+    return VALIDATION_RULES[field](value)
+  }
+  return ''
+}
 
 export default {
   name: 'StudentsView',
@@ -915,23 +1077,15 @@ export default {
       selectedStatus.value = ''
     }
 
-    // Validation methods
+    // Validation methods - using comprehensive validation rules
     const validateFieldImmediate = (field, value) => {
-      // Placeholder validation - can be extended
-      if (!value || value.trim() === '') {
-        errors.value[field] = 'Kötelező mező'
-      } else {
-        errors.value[field] = ''
-      }
+      const error = validateField(field, value)
+      errors.value[field] = error
     }
     
     const validateEditFieldImmediate = (field, value) => {
-      // Placeholder validation - can be extended
-      if (!value || value.trim() === '') {
-        editErrors.value[field] = 'Kötelező mező'
-      } else {
-        editErrors.value[field] = ''
-      }
+      const error = validateField(field, value)
+      editErrors.value[field] = error
     }
     
     // Computed validation state
@@ -969,17 +1123,26 @@ export default {
     }
     
     const submitEnrollment = async () => {
+      // Validate all fields before submission
+      const isFormValid = validateForm(enrollForm.value, errors.value)
+      
+      if (!isFormValid) {
+        showValidationSummary.value = true
+        toast.error('Kérjük, javítsa a hibákat a mentés előtt!')
+        return
+      }
+      
       enrollLoading.value = true
       try {
         const response = await api.post('/diaks', enrollForm.value)
         if (response.data.success) {
-          toast.success('Diák sikeresen felvéve')
+          toast.success(getSuccessMessage('ENROLL_SUCCESS'))
           closeEnrollModal()
           fetchStudents()
         }
       } catch (error) {
-        console.error('Hiba a diák felvétele közben:', error)
-        toast.error(error.response?.data?.error || 'Hiba történt a diák felvétele közben')
+        console.error(getErrorMessage('CREATE_ERROR'), error)
+        toast.error(error.response?.data?.error || getErrorMessage('CREATE_ERROR'))
       } finally {
         enrollLoading.value = false
       }
@@ -1025,17 +1188,26 @@ export default {
     }
     
     const submitEdit = async () => {
+      // Validate all fields before submission
+      const isFormValid = validateForm(editForm.value, editErrors.value)
+      
+      if (!isFormValid) {
+        showEditValidationSummary.value = true
+        toast.error('Kérjük, javítsa a hibákat a mentés előtt!')
+        return
+      }
+      
       editLoading.value = true
       try {
         const response = await api.put(`/diaks/${currentEditId.value}`, editForm.value)
         if (response.data.success) {
-          toast.success('Diák adatai sikeresen módosítva')
+          toast.success(getSuccessMessage('UPDATE_SUCCESS'))
           closeEditModal()
           fetchStudents()
         }
       } catch (error) {
-        console.error('Hiba a diák módosítása közben:', error)
-        toast.error(error.response?.data?.error || 'Hiba történt a diák módosítása közben')
+        console.error(getErrorMessage('UPDATE_ERROR'), error)
+        toast.error(error.response?.data?.error || getErrorMessage('UPDATE_ERROR'))
       } finally {
         editLoading.value = false
       }
@@ -1065,15 +1237,15 @@ export default {
       try {
         const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
         if (response.data.success) {
-          toast.success('Diák sikeresen törölve')
+          toast.success(getSuccessMessage('DELETE_SUCCESS'))
           closeDeleteModal()
           fetchStudents()
         } else {
-          toast.error(response.data.error || 'Hiba történt a diák törlése közben')
+          toast.error(response.data.error || getErrorMessage('DELETE_ERROR'))
         }
       } catch (error) {
-        console.error('Hiba a diák törlése közben:', error)
-        toast.error(error.response?.data?.error || 'Hiba történt a diák törlése közben')
+        console.error(getErrorMessage('DELETE_ERROR'), error)
+        toast.error(error.response?.data?.error || getErrorMessage('DELETE_ERROR'))
       } finally {
         deleteLoading.value = false
       }

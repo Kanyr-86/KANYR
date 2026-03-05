@@ -675,6 +675,7 @@ import { debounce } from 'lodash-es'
 import { toast } from 'vue3-toastify'
 import BaseInput from '../components/forms/BaseInput.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
+import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
 
 export default {
   name: 'RoomsView',
@@ -783,8 +784,8 @@ export default {
           await Promise.all(rooms.value.map(room => fetchRoomOccupancy(room.szoba_id)))
         }
       } catch (error) {
-        console.error('Hiba a szobák lekérése közben:', error)
-        toast.error('Hiba történt a szobák betöltése közben')
+        console.error(getErrorMessage('LOAD_ERROR'), error)
+        toast.error(getErrorMessage('LOAD_ERROR'))
       } finally {
         loading.value = false
       }
@@ -1169,7 +1170,7 @@ export default {
           )
           
           if (transferableRooms.length === 0) {
-            toast.error('Nincs elérhető szabad szoba a diák áthelyezéséhez!')
+            toast.error(ROOM_MESSAGES.NO_AVAILABLE_ROOMS_FOR_TRANSFER)
             return
           }
           

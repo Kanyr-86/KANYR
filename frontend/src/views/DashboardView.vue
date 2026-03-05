@@ -350,6 +350,7 @@ import api from '../services/api'
 import { toast } from 'vue3-toastify'
 import NotificationInbox from '../components/NotificationInbox.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
+import { getSuccessMessage, getErrorMessage } from '@/i18n'
 
 export default {
   name: 'DashboardView',
@@ -379,11 +380,11 @@ export default {
         if (response.data.success) {
           statistics.value = response.data.data
         } else {
-          toast.error(response.data.error || 'Hiba a statisztikák lekérése közben')
+          toast.error(response.data.error || getErrorMessage('LOAD_ERROR'))
         }
       } catch (error) {
-        console.error('Hiba a statisztikák lekérése közben:', error)
-        toast.error('Nem sikerült betölteni a statisztikákat')
+        console.error(getErrorMessage('LOAD_ERROR'), error)
+        toast.error(getErrorMessage('LOAD_ERROR'))
       } finally {
         loading.value = false
       }
@@ -397,7 +398,7 @@ export default {
 
     const refreshStatistics = async () => {
       await fetchStatistics()
-      toast.success('Statisztikák frissítve')
+      toast.success(getSuccessMessage('UPDATE_SUCCESS'))
     }
 
     return {

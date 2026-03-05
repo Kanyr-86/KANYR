@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getErrorMessage } from '@/i18n'
 
 // ─── Shared interceptor logic ───────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ function applyAuthInterceptors(instance) {
     (error) => {
       if (error.response) {
         const status = error.response.status
-        const message = error.response.data?.error || error.message || 'Szerver hiba'
+        const message = error.response.data?.error || error.message || getErrorMessage('SERVER_ERROR')
 
         if (status === 401) {
           // Unauthorized – clear stored auth and redirect to login
@@ -36,14 +37,14 @@ function applyAuthInterceptors(instance) {
             window.location.href = '/login'
           }
         } else if (status === 403) {
-          console.error('Hozzáférés megtagadva:', message)
+          console.error(getErrorMessage('ACCESS_DENIED'), message)
         } else if (status >= 500) {
-          console.error('Szerver hiba:', message)
+          console.error(getErrorMessage('SERVER_ERROR'), message)
         }
       } else if (error.request) {
-        console.error('Hálózati hiba - nem érkezett válasz:', error.message)
+        console.error(getErrorMessage('NETWORK_ERROR'), error.message)
       } else {
-        console.error('Kérés hiba:', error.message)
+        console.error(getErrorMessage('UNEXPECTED_ERROR'), error.message)
       }
 
       return Promise.reject(error)
@@ -82,19 +83,19 @@ export const handleApiError = (error) => {
   if (error.response) {
     return {
       success: false,
-      error: error.response.data?.error || error.message || 'Szerver hiba',
+      error: error.response.data?.error || error.message || getErrorMessage('SERVER_ERROR'),
       status: error.response.status
     }
   } else if (error.request) {
     return {
       success: false,
-      error: 'Hálózati hiba - kérjük, ellenőrizze az internetkapcsolatát',
+      error: getErrorMessage('NETWORK_ERROR'),
       status: 0
     }
   } else {
     return {
       success: false,
-      error: error.message || 'Váratlan hiba történt',
+      error: error.message || getErrorMessage('UNEXPECTED_ERROR'),
       status: 0
     }
   }

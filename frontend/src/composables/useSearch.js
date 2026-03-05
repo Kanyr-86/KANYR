@@ -1,5 +1,6 @@
 import { ref, watch } from 'vue'
 import { useDebounce } from './useDebounce'
+import { getErrorMessage } from '@/i18n'
 
 /**
  * useSearch - A composable for debounced search functionality
@@ -143,7 +144,7 @@ export function useSearch(searchFn, delay = 300) {
       const results = await searchFn(query.trim())
       searchResults.value = results || []
     } catch (err) {
-      error.value = err.response?.data?.message || err.message || 'A keresés sikertelen'
+      error.value = err.response?.data?.message || err.message || getErrorMessage('LOAD_ERROR')
       searchResults.value = []
     } finally {
       isSearching.value = false

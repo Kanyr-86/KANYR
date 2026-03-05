@@ -206,6 +206,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
+import { getSuccessMessage, getErrorMessage } from '@/i18n'
 
 export default {
   name: 'AuthView',
@@ -222,14 +223,14 @@ export default {
       try {
         const response = await authStore.login(email.value, password.value)
         if (response.success) {
-          toast.success('Sikeres bejelentkezés!')
+          toast.success(getSuccessMessage('LOGIN_SUCCESS'))
           router.push(authStore.getDashboardRoute())
         } else {
-          toast.error(response.error || 'Hibás bejelentkezési adatok')
+          toast.error(response.error || getErrorMessage('INVALID_LOGIN'))
         }
       } catch (error) {
         console.error('Login error:', error)
-        toast.error(error.error || 'Hiba a bejelentkezés során')
+        toast.error(error.error || getErrorMessage('LOGIN_ERROR'))
       } finally {
         loading.value = false
       }

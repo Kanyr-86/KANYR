@@ -1,16 +1,18 @@
 import { reactive, computed } from 'vue'
+import { VALIDATION_MESSAGES } from '@/i18n'
 
 /**
- * Hungarian error messages for validation (memoized for performance)
+ * Validation error messages - using centralized localization
+ * Functions are memoized for performance
  */
 const ERROR_MESSAGES = {
-  required: 'A mező kitöltése kötelező',
-  minLength: (min) => `Legalább ${min} karakter szükséges`,
-  maxLength: (max) => `Legfeljebb ${max} karakter engedélyezett`,
-  min: (min) => `Az érték nem lehet kisebb mint ${min}`,
-  max: (max) => `Az érték nem lehet nagyobb mint ${max}`,
-  email: 'Érvénytelen email cím',
-  pattern: 'Érvénytelen formátum'
+  required: VALIDATION_MESSAGES.REQUIRED,
+  minLength: VALIDATION_MESSAGES.MIN_LENGTH,
+  maxLength: VALIDATION_MESSAGES.MAX_LENGTH,
+  min: VALIDATION_MESSAGES.MIN_VALUE,
+  max: VALIDATION_MESSAGES.MAX_VALUE,
+  email: VALIDATION_MESSAGES.EMAIL_INVALID,
+  pattern: VALIDATION_MESSAGES.PATTERN_INVALID
 }
 
 /**

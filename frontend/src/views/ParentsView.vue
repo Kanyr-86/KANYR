@@ -562,6 +562,7 @@ import { useDebounce } from '../composables/useDebounce'
 import { toast } from 'vue3-toastify'
 import BaseInput from '../components/forms/BaseInput.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
+import { getSuccessMessage, getErrorMessage } from '@/i18n'
 
 export default {
   name: 'ParentsView',
@@ -623,8 +624,8 @@ export default {
           parents.value = response.data.data
         }
       } catch (error) {
-        console.error('Hiba a szülők lekérése közben:', error)
-        toast.error('Hiba történt a szülők betöltése közben')
+        console.error(getErrorMessage('LOAD_ERROR'), error)
+        toast.error(getErrorMessage('LOAD_ERROR'))
       } finally {
         loading.value = false
       }
@@ -685,11 +686,11 @@ export default {
           showCreateModal.value = false
           resetCreateForm()
           fetchParents()
-          toast.success('Szülő sikeresen felvéve')
+          toast.success(getSuccessMessage('CREATE_SUCCESS'))
         }
       } catch (error) {
-        console.error('Hiba a szülő felvétele közben:', error)
-        toast.error('Hiba történt a szülő felvétele közben')
+        console.error(getErrorMessage('CREATE_ERROR'), error)
+        toast.error(getErrorMessage('CREATE_ERROR'))
       } finally {
         createLoading.value = false
       }
@@ -719,11 +720,11 @@ export default {
         if (response.data.success) {
           showEditModal.value = false
           fetchParents()
-          toast.success('Szülő adatai sikeresen módosítva')
+          toast.success(getSuccessMessage('UPDATE_SUCCESS'))
         }
       } catch (error) {
-        console.error('Hiba a szülő módosítása közben:', error)
-        toast.error('Hiba történt a szülő módosítása közben')
+        console.error(getErrorMessage('UPDATE_ERROR'), error)
+        toast.error(getErrorMessage('UPDATE_ERROR'))
       } finally {
         updateLoading.value = false
       }
@@ -758,15 +759,15 @@ export default {
         if (response.data.success) {
           showDeleteModal.value = false
           fetchParents()
-          toast.success('Szülő sikeresen törölve')
+          toast.success(getSuccessMessage('DELETE_SUCCESS'))
         } else {
           // Hiba a válaszban
-          const errorMsg = response.data.error || response.data.message || 'Ismeretlen hiba történt'
+          const errorMsg = response.data.error || response.data.message || getErrorMessage('UNKNOWN_ERROR')
           toast.error(errorMsg)
         }
       } catch (error) {
-        console.error('Hiba a szülő törlése közben:', error)
-        const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Hiba történt a szülő törlése közben'
+        console.error(getErrorMessage('DELETE_ERROR'), error)
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || getErrorMessage('DELETE_ERROR')
         toast.error(errorMsg)
       } finally {
         deleteLoading.value = false

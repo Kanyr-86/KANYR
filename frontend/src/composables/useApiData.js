@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import api from '../services/api'
+import { getErrorMessage } from '@/i18n'
 
 const useApiData = (apiCall, dependencies = [], options = {}) => {
   const { useCache = true, shouldInvalidateCache = false, keyPrefix = '' } = options
@@ -17,7 +18,7 @@ const useApiData = (apiCall, dependencies = [], options = {}) => {
       const result = await apiCall()
       data.value = result.data
     } catch (err) {
-      error.value = err.response?.data?.error || err.message || 'Nem sikerült lekérni az adatokat'
+      error.value = err.response?.data?.error || err.message || getErrorMessage('LOAD_ERROR')
     } finally {
       loading.value = false
     }

@@ -1,9 +1,9 @@
 <template>
   <div v-if="hasError" class="container mt-4">
     <div class="alert alert-danger" role="alert">
-      <h4 class="alert-heading">Hiba történt az alkalmazásban</h4>
-      <p><strong>Hiba üzenet:</strong> {{ errorMessage }}</p>
-      <p v-if="errorStack"><strong>Stack trace:</strong></p>
+      <h4 class="alert-heading">{{ ERROR_BOUNDARY_MESSAGES.TITLE }}</h4>
+      <p><strong>{{ ERROR_BOUNDARY_MESSAGES.ERROR_LABEL }}</strong> {{ errorMessage }}</p>
+      <p v-if="errorStack"><strong>{{ ERROR_BOUNDARY_MESSAGES.STACK_TRACE }}</strong></p>
       <pre v-if="errorStack" class="bg-light p-2 rounded text-danger" style="font-size: 11px; max-height: 200px; overflow: auto; white-space: pre-wrap;">{{ errorStack }}</pre>
       <hr>
       <div class="d-flex gap-2">
@@ -25,6 +25,7 @@
 
 <script>
 import { defineComponent, ref, computed, onErrorCaptured, onMounted } from 'vue'
+import { ERROR_BOUNDARY_MESSAGES, getErrorMessage } from '@/i18n'
 
 export default defineComponent({
   name: 'ErrorBoundary',
@@ -85,8 +86,8 @@ export default defineComponent({
     })
 
     const errorMessage = computed(() => {
-      if (!error.value) return 'Ismeretlen hiba'
-      return error.value.message || String(error.value) || 'Ismeretlen hiba'
+      if (!error.value) return getErrorMessage('UNKNOWN_ERROR')
+      return error.value.message || String(error.value) || getErrorMessage('UNKNOWN_ERROR')
     })
 
     const errorStack = computed(() => {
@@ -116,7 +117,8 @@ export default defineComponent({
       errorMessage,
       errorStack,
       debugInfo,
-      handleReload
+      handleReload,
+      ERROR_BOUNDARY_MESSAGES
     }
   }
 })
