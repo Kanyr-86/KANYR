@@ -1,5 +1,8 @@
 <template>
   <div class="container-fluid">
+    <!-- Loading Overlay -->
+    <LoadingOverlay :show="loading" message="Dashboard betöltése..." />
+    
     <div class="row">
       <div class="col-12">
         <h2 class="dashboard-title">KANYR Dashboard</h2>
@@ -11,7 +14,12 @@
               <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
                 <i class="bi bi-people-fill mb-3" style="font-size: 2.5rem;"></i>
                 <h5 class="card-title mb-3">Diákok</h5>
-                <p class="card-text display-6 fw-bold mb-3">{{ statistics.totalStudents || 0 }}</p>
+                <p class="card-text display-6 fw-bold mb-3">
+                  <template v-if="loading">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  </template>
+                  <template v-else>{{ statistics.totalStudents || 0 }}</template>
+                </p>
                 <span class="badge bg-primary px-3 py-2">Összes</span>
               </div>
             </div>
@@ -21,7 +29,12 @@
               <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
                 <i class="bi bi-person-check-fill mb-3" style="font-size: 2.5rem;"></i>
                 <h5 class="card-title mb-3">Aktív diákok</h5>
-                <p class="card-text display-6 fw-bold mb-3">{{ statistics.activeStudents || 0 }}</p>
+                <p class="card-text display-6 fw-bold mb-3">
+                  <template v-if="loading">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  </template>
+                  <template v-else>{{ statistics.activeStudents || 0 }}</template>
+                </p>
                 <span class="badge bg-success px-3 py-2">Lakók</span>
               </div>
             </div>
@@ -31,7 +44,12 @@
               <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
                 <i class="bi bi-door-closed-fill mb-3" style="font-size: 2.5rem;"></i>
                 <h5 class="card-title mb-3">Szobák</h5>
-                <p class="card-text display-6 fw-bold mb-3">{{ statistics.totalRooms || 0 }}</p>
+                <p class="card-text display-6 fw-bold mb-3">
+                  <template v-if="loading">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  </template>
+                  <template v-else>{{ statistics.totalRooms || 0 }}</template>
+                </p>
                 <span class="badge bg-info px-3 py-2">Összes</span>
               </div>
             </div>
@@ -41,7 +59,12 @@
               <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
                 <i class="bi bi-bar-chart-fill mb-3" style="font-size: 2.5rem;"></i>
                 <h5 class="card-title mb-3">Foglaltság</h5>
-                <p class="card-text display-6 fw-bold mb-3">{{ statistics.averageOccupancy || 0 }}%</p>
+                <p class="card-text display-6 fw-bold mb-3">
+                  <template v-if="loading">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  </template>
+                  <template v-else>{{ statistics.averageOccupancy || 0 }}%</template>
+                </p>
                 <span class="badge bg-warning text-dark px-3 py-2">Átlag</span>
               </div>
             </div>
@@ -326,11 +349,13 @@ import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { toast } from 'vue3-toastify'
 import NotificationInbox from '../components/NotificationInbox.vue'
+import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 export default {
   name: 'DashboardView',
   components: {
-    NotificationInbox
+    NotificationInbox,
+    LoadingOverlay
   },
   setup() {
     const statistics = ref({})

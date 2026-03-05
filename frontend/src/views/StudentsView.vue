@@ -686,11 +686,15 @@ import api from '../services/api'
 import { toast } from 'vue3-toastify'
 import BaseModal from '../components/BaseModal.vue'
 import BaseInput from '../components/forms/BaseInput.vue'
+import BaseSelect from '../components/forms/BaseSelect.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 export default {
   name: 'StudentsView',
   components: {
+    BaseModal,
+    BaseInput,
+    BaseSelect,
     LoadingOverlay
   },
   setup() {
@@ -702,6 +706,70 @@ export default {
     const loading = ref(false)
     const searchQuery = ref('')
     const selectedStatus = ref('')
+    
+    // Modal loading states
+    const enrollLoading = ref(false)
+    const editLoading = ref(false)
+    const deleteLoading = ref(false)
+    
+    // Modal visibility states
+    const showEnrollModal = ref(false)
+    const showEditModal = ref(false)
+    const showViewModal = ref(false)
+    const showDeleteModal = ref(false)
+    
+    // View modal data
+    const viewStudentData = ref(null)
+    const activeViewTab = ref('adatok')
+    
+    // Delete modal data
+    const deleteStudentData = ref(null)
+    
+    // Form data
+    const enrollForm = ref({
+      nev: '',
+      email: '',
+      telefonszam: '',
+      szuletesi_datum: '',
+      nem: '',
+      szemelyi_igazolvany_szam: '',
+      taj_szam: '',
+      diakigazolvany_szam: '',
+      kapcsolat_tipusa: ''
+    })
+    
+    const editForm = ref({
+      nev: '',
+      email: '',
+      telefonszam: '',
+      szuletesi_datum: '',
+      nem: '',
+      szemelyi_igazolvany_szam: '',
+      taj_szam: '',
+      diakigazolvany_szam: '',
+      kapcsolat_tipusa: '',
+      aktiv: true
+    })
+    
+    const currentEditId = ref(null)
+    
+    // Form errors
+    const errors = ref({})
+    const editErrors = ref({})
+    const showValidationSummary = ref(false)
+    const showEditValidationSummary = ref(false)
+    
+    // Options for selects
+    const nemOptions = [
+      { value: 'férfi', label: 'Férfi' },
+      { value: 'nő', label: 'Nő' }
+    ]
+    
+    const kapcsolatOptions = [
+      { value: 'anya', label: 'Anya' },
+      { value: 'apa', label: 'Apa' },
+      { value: 'gondviselo', label: 'Gondviselő' }
+    ]
 
     // Computed properties with safety checks
     const studentsCount = computed(() => {
@@ -804,30 +872,211 @@ export default {
       }
     }
 
-    // Other methods (placeholders - keeping only the essential ones for the fix)
+    // Helper function to format date
+    const formatDate = (dateString) => {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      return date.toLocaleDateString('hu-HU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    }
+    
+    // Helper function to get kapcsolat label
+    const getKapcsolatLabel = (type) => {
+      const labels = {
+        'anya': 'Anya',
+        'apa': 'Apa',
+        'gondviselo': 'Gondviselő'
+      }
+      return labels[type] || type
+    }
+    
+    // Helper function to get field label
+    const getFieldLabel = (field) => {
+      const labels = {
+        'nev': 'Teljes név',
+        'email': 'Email cím',
+        'telefonszam': 'Telefonszám',
+        'szuletesi_datum': 'Születési dátum',
+        'nem': 'Nem',
+        'szemelyi_igazolvany_szam': 'Személyi igazolvány szám',
+        'taj_szam': 'TAJ szám',
+        'diakigazolvany_szam': 'Diákigazolvány szám',
+        'kapcsolat_tipusa': 'Kapcsolat típusa'
+      }
+      return labels[field] || field
+    }
+
+    // Filter methods
     const clearFilters = () => {
       searchQuery.value = ''
       selectedStatus.value = ''
     }
 
+    // Validation methods
+    const validateFieldImmediate = (field, value) => {
+      // Placeholder validation - can be extended
+      if (!value || value.trim() === '') {
+        errors.value[field] = 'Kötelező mező'
+      } else {
+        errors.value[field] = ''
+      }
+    }
+    
+    const validateEditFieldImmediate = (field, value) => {
+      // Placeholder validation - can be extended
+      if (!value || value.trim() === '') {
+        editErrors.value[field] = 'Kötelező mező'
+      } else {
+        editErrors.value[field] = ''
+      }
+    }
+    
+    // Computed validation state
+    const isValid = computed(() => {
+      return Object.values(errors.value).every(error => !error)
+    })
+    
+    const isEditValid = computed(() => {
+      return Object.values(editErrors.value).every(error => !error)
+    })
+
+    // Modal methods - Enroll
     const openEnrollModal = () => {
-      toast.info('Diák felvétel funkció - később implementálva')
+      showEnrollModal.value = true
+      errors.value = {}
+      showValidationSummary.value = false
+    }
+    
+    const closeEnrollModal = () => {
+      showEnrollModal.value = false
+      // Reset form
+      enrollForm.value = {
+        nev: '',
+        email: '',
+        telefonszam: '',
+        szuletesi_datum: '',
+        nem: '',
+        szemelyi_igazolvany_szam: '',
+        taj_szam: '',
+        diakigazolvany_szam: '',
+        kapcsolat_tipusa: ''
+      }
+      errors.value = {}
+      showValidationSummary.value = false
+    }
+    
+    const submitEnrollment = async () => {
+      enrollLoading.value = true
+      try {
+        const response = await api.post('/diaks', enrollForm.value)
+        if (response.data.success) {
+          toast.success('Diák sikeresen felvéve')
+          closeEnrollModal()
+          fetchStudents()
+        }
+      } catch (error) {
+        console.error('Hiba a diák felvétele közben:', error)
+        toast.error(error.response?.data?.error || 'Hiba történt a diák felvétele közben')
+      } finally {
+        enrollLoading.value = false
+      }
     }
 
+    // Modal methods - View
     const viewStudent = (student) => {
-      console.log('View student:', student)
+      viewStudentData.value = student
+      activeViewTab.value = 'adatok'
+      showViewModal.value = true
+    }
+    
+    const closeViewModal = () => {
+      showViewModal.value = false
+      viewStudentData.value = null
     }
 
+    // Modal methods - Edit
     const editStudent = (student) => {
-      console.log('Edit student:', student)
+      currentEditId.value = student.diak_id
+      editForm.value = {
+        nev: student.nev || '',
+        email: student.email || '',
+        telefonszam: student.telefonszam || '',
+        szuletesi_datum: student.szuletesi_datum || '',
+        nem: student.nem || '',
+        szemelyi_igazolvany_szam: student.szemelyi_igazolvany_szam || '',
+        taj_szam: student.taj_szam || '',
+        diakigazolvany_szam: student.diakigazolvany_szam || '',
+        kapcsolat_tipusa: student.kapcsolat_tipusa || '',
+        aktiv: student.aktiv || false
+      }
+      editErrors.value = {}
+      showEditValidationSummary.value = false
+      showEditModal.value = true
+    }
+    
+    const closeEditModal = () => {
+      showEditModal.value = false
+      currentEditId.value = null
+      editErrors.value = {}
+      showEditValidationSummary.value = false
+    }
+    
+    const submitEdit = async () => {
+      editLoading.value = true
+      try {
+        const response = await api.put(`/diaks/${currentEditId.value}`, editForm.value)
+        if (response.data.success) {
+          toast.success('Diák adatai sikeresen módosítva')
+          closeEditModal()
+          fetchStudents()
+        }
+      } catch (error) {
+        console.error('Hiba a diák módosítása közben:', error)
+        toast.error(error.response?.data?.error || 'Hiba történt a diák módosítása közben')
+      } finally {
+        editLoading.value = false
+      }
     }
 
+    // Modal methods - Transfer
     const transferStudent = (student) => {
-      console.log('Transfer student:', student)
+      // Placeholder for transfer functionality
+      toast.info(`${student.nev} költöztetése - funkció fejlesztés alatt`)
     }
 
+    // Modal methods - Delete
     const deleteStudent = (student) => {
-      console.log('Delete student:', student)
+      deleteStudentData.value = student
+      showDeleteModal.value = true
+    }
+    
+    const closeDeleteModal = () => {
+      showDeleteModal.value = false
+      deleteStudentData.value = null
+    }
+    
+    const confirmDelete = async () => {
+      if (!deleteStudentData.value) return
+      
+      deleteLoading.value = true
+      try {
+        const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
+        if (response.data.success) {
+          toast.success('Diák sikeresen törölve')
+          closeDeleteModal()
+          fetchStudents()
+        } else {
+          toast.error(response.data.error || 'Hiba történt a diák törlése közben')
+        }
+      } catch (error) {
+        console.error('Hiba a diák törlése közben:', error)
+        toast.error(error.response?.data?.error || 'Hiba történt a diák törlése közben')
+      } finally {
+        deleteLoading.value = false
+      }
     }
 
     // Lifecycle
@@ -843,20 +1092,59 @@ export default {
       loading,
       searchQuery,
       selectedStatus,
+      // Modal loading states
+      enrollLoading,
+      editLoading,
+      deleteLoading,
+      // Modal visibility states
+      showEnrollModal,
+      showEditModal,
+      showViewModal,
+      showDeleteModal,
+      // Modal data
+      viewStudentData,
+      deleteStudentData,
+      activeViewTab,
+      // Forms
+      enrollForm,
+      editForm,
+      currentEditId,
+      // Form errors
+      errors,
+      editErrors,
+      showValidationSummary,
+      showEditValidationSummary,
+      // Options
+      nemOptions,
+      kapcsolatOptions,
       // Computed
       studentsCount,
       activeStudentsCount,
       safeFilteredStudents,
       filteredStudentsCount,
+      isValid,
+      isEditValid,
       // Methods
       clearFilters,
       openEnrollModal,
+      closeEnrollModal,
+      submitEnrollment,
       viewStudent,
+      closeViewModal,
       editStudent,
+      closeEditModal,
+      submitEdit,
       transferStudent,
       deleteStudent,
+      closeDeleteModal,
+      confirmDelete,
       getInitial,
-      fetchStudents
+      fetchStudents,
+      formatDate,
+      getKapcsolatLabel,
+      getFieldLabel,
+      validateFieldImmediate,
+      validateEditFieldImmediate
     }
   }
 }
