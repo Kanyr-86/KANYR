@@ -82,7 +82,7 @@
 ### Magas prioritás
 - [ ] Database migrations implementálása
 - [ ] Frontend CSS modulárizálása
-- [x] API rate limiting
+- [x] API rate limiting ✅ *express-rate-limit integrálva*
 
 ### Közepes prioritás
 - [ ] Toast library teljes integrálása
