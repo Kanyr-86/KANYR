@@ -15,6 +15,12 @@ const sequelize = new Sequelize({
   dialectOptions: {
     // Engedélyezi az idegen kulcs korlátozásokat SQLite-ban
     foreignKeys: true
+  },
+  // Explicitan engedélyezzük a foreign key constraint-eket SQLite-ban
+  hooks: {
+    afterConnect: async (connection) => {
+      await connection.run('PRAGMA foreign_keys = ON');
+    }
   }
 });
 
