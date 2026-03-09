@@ -22,23 +22,7 @@
     "url": "https://github.com/Kanyr-86/KANYR/issues"
   },
   "homepage": "https://github.com/Kanyr-86/KANYR#readme",
-  "dependencies": {
-    "axios": "^1.13.4",
-    "bootstrap": "^5.3.8",
-    "bootstrap-icons": "^1.13.1",
-    "bootstrap-vue-3": "^0.5.1",
-    "cors": "^2.8.6",
-    "express-rate-limit": "^8.2.1",
-    "first_backend": "file:backend",
-    "helmet": "^8.1.0",
-    "lodash-es": "^4.17.23",
-    "pinia": "^3.0.4",
-    "vue-router": "^4.6.4"
-  },
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "jest": "^27.5.1",
-    "nodemon": "^3.1.11",
-    "react-scripts": "^5.0.1"
+    "concurrently": "^9.2.1"
   }
 }
