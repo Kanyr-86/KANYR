@@ -1,23 +1,23 @@
 /**
- * Express Validator arrays for Authentication endpoints
- * Provides validation rules with Hungarian error messages
+ * Express Validator tömbök hitelesítési végpontokhoz
+ * Validációs szabályokat biztosít magyar hibaüzenetekkel
  */
 
 const { body } = require('express-validator');
 const { VALID_ROLES } = require('../config/roles');
 
 /**
- * Password complexity regex pattern
- * Requires: at least one lowercase, one uppercase, one digit, and one special character
+ * Jelszó komplexitás regex minta
+ * Követelmények: legalább egy kisbetű, egy nagybetű, egy szám és egy speciális karakter
  */
 const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/;
 
 /**
- * Validator array for login
+ * Validátor tömb bejelentkezéshez
  * POST /api/auth/login
  */
 const loginValidator = [
-  // email - required, must be valid email
+  // email - kötelező, érvényes email formátum
   body('email')
     .trim()
     .notEmpty()
@@ -25,18 +25,18 @@ const loginValidator = [
     .isEmail()
     .withMessage('Érvénytelen email cím'),
 
-  // jelszo - required
+  // jelszo - kötelező
   body('jelszo')
     .notEmpty()
     .withMessage('Jelszó megadása kötelező')
 ];
 
 /**
- * Validator array for registration
+ * Validátor tömb regisztrációhoz
  * POST /api/auth/register
  */
 const registerValidator = [
-  // nev - required, min 2 characters
+  // nev - kötelező, min 2 karakter
   body('nev')
     .trim()
     .notEmpty()
@@ -44,7 +44,7 @@ const registerValidator = [
     .isLength({ min: 2 })
     .withMessage('A név legalább 2 karakter hosszú legyen'),
 
-  // email - required, must be valid email
+  // email - kötelező, érvényes email formátum
   body('email')
     .trim()
     .notEmpty()
@@ -52,7 +52,7 @@ const registerValidator = [
     .isEmail()
     .withMessage('Érvénytelen email cím'),
 
-  // jelszo - required, min 8 chars, must contain lowercase, uppercase, number, and special character
+  // jelszo - kötelező, min 8 karakter, tartalmazzon kisbetűt, nagybetűt, számot és speciális karaktert
   body('jelszo')
     .notEmpty()
     .withMessage('Jelszó megadása kötelező')
@@ -61,7 +61,7 @@ const registerValidator = [
     .matches(PASSWORD_COMPLEXITY_REGEX)
     .withMessage('A jelszónak tartalmaznia kell kis- és nagybetűt, számot és speciális karaktert'),
 
-  // szerepkor - optional, must be one of allowed values
+  // szerepkor - opcionális, az engedélyezett értékek egyike kell legyen
   body('szerepkor')
     .optional()
     .isIn(VALID_ROLES)

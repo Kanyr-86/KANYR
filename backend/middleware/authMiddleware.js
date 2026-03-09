@@ -2,14 +2,14 @@ const { verifyToken } = require('../utils/authUtils');
 const { ROLES, mapAdminToRole, isAdminRole, canModifyRole } = require('../config/roles');
 
 /**
- * Authentication middleware - verifies JWT token
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Next middleware function
+ * Hitelesítési middleware - JWT token ellenőrzése
+ * @param {Object} req - Express kérés objektum
+ * @param {Object} res - Express válasz objektum
+ * @param {Function} next - Következő middleware függvény
  */
 async function authenticate(req, res, next) {
   try {
-    // Get token from header
+    // Token lekérdezése a header-ből
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -20,10 +20,10 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Verify token
+    // Token ellenőrzése
     const decoded = verifyToken(token);
 
-    // Use db from app.locals (synced instance) to avoid stale model references
+    // Adatbázis lekérdezése az app.locals-ból (szinkronizált példány)
     const db = req.app.locals.db;
     if (!db) {
       return res.status(500).json({
@@ -41,8 +41,8 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Attach user to request
-    // Map admin boolean to szerepkor for role-based access control
+    // Felhasználó csatolása a kéréshez
+    // Admin boolean leképezése szerepkörre a jogosultság-alapú hozzáféréshez
     const szerepkor = mapAdminToRole(user.admin);
     req.user = {
       userId: user.user_id,
@@ -63,14 +63,14 @@ async function authenticate(req, res, next) {
 }
 
 /**
- * Admin middleware - checks if user is admin (főtitkár)
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Next middleware function
+ * Admin middleware - ellenőrzi, hogy a felhasználó admin (főtitkár) e
+ * @param {Object} req - Express kérés objektum
+ * @param {Object} res - Express válasz objektum
+ * @param {Function} next - Következő middleware függvény
  */
 function isAdmin(req, res, next) {
   try {
-    // Check if user is authenticated and has admin role (főtitkár)
+    // Ellenőrzi, hogy a felhasználó be van-e jelentkezve és rendelkezik-e admin jogokkal (főtitkár)
     if (!req.user || !isAdminRole(req.user.szerepkor)) {
       return res.status(403).json({
         success: false,
@@ -89,15 +89,15 @@ function isAdmin(req, res, next) {
 }
 
 /**
- * Check if user can modify data (create, update, delete)
- * Both főtitkár and titkár can create/update/delete entities
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Next middleware function
+ * Ellenőrzi, hogy a felhasználó módosíthatja-e az adatokat (létrehozás, frissítés, törlés)
+ * Mind a főtitkár, mind a titkár létrehozhat/frissíthet/törölhet entitásokat
+ * @param {Object} req - Express kérés objektum
+ * @param {Object} res - Express válasz objektum
+ * @param {Function} next - Következő middleware függvény
  */
 function canModify(req, res, next) {
   try {
-    // Check if user is authenticated and has permission to modify
+    // Ellenőrzi, hogy a felhasználó be van-e jelentkezve és rendelkezik-e módosítási jogokkal
     if (!req.user || !canModifyRole(req.user.szerepkor)) {
       return res.status(403).json({
         success: false,

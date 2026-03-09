@@ -1,37 +1,37 @@
 /**
- * Request Logger Middleware
- * Logs HTTP request details with response time
+ * Kérés naplózó middleware
+ * HTTP kérés részleteit naplózza válaszidővel együtt
  */
 
 /**
- * Middleware to log all HTTP requests
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
+ * Middleware az összes HTTP kérés naplózásához
+ * @param {Object} req - Express kérés objektum
+ * @param {Object} res - Express válasz objektum
+ * @param {Function} next - Express next függvény
  * 
  * @example
- * // Output format:
+ * // Kimenet formátuma:
  * // [2026-02-23T08:30:45.123Z] GET /api/diaks - 200 - 45ms - ::1
  */
 const requestLogger = (req, res, next) => {
-  // Record start time
+  // Kezdési idő rögzítése
   const startTime = Date.now();
 
-  // Listen for response finish event
+  // Válasz befejezés esemény figyelése
   res.on('finish', () => {
-    // Calculate duration
+    // Időtartam számítása
     const duration = Date.now() - startTime;
     
-    // Get ISO timestamp
+    // ISO időbélyeg lekérdezése
     const timestamp = new Date().toISOString();
     
-    // Log request details
+    // Kérés részleteinek naplózása
     console.log(
       `[${timestamp}] ${req.method} ${req.originalUrl} - ${res.statusCode} - ${duration}ms - ${req.ip}`
     );
   });
 
-  // Continue to next middleware
+  // Folytatás a következő middleware-rel
   next();
 };
 

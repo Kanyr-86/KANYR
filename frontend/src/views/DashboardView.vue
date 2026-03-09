@@ -376,7 +376,7 @@ export default {
       
       loading.value = true
       try {
-        const response = await api.get('/diaks/statistics')
+        const response = await api.get('/students/statistics')
         if (response.data.success) {
           statistics.value = response.data.data
         } else {

@@ -1,28 +1,28 @@
 /**
- * Role-Based Access Control Middleware
- * Provides middleware functions for role-based authorization
+ * Szerepkör-alapú hozzáférés-ellenőrző middleware
+ * Middleware függvényeket biztosít szerepkör-alapú jogosultságkezeléshez
  */
 
 const { UnauthorizedError, ForbiddenError } = require('../utils/AppError');
 const { ROLES } = require('../config/roles');
 
 /**
- * Factory function that creates middleware to check user roles
- * @param {...string} roles - Allowed roles for the route
- * @returns {Function} Express middleware function
+ * Gyártófüggvény, amely middleware-t hoz létre a felhasználói szerepkörök ellenőrzéséhez
+ * @param {...string} roles - Engedélyezett szerepkörök az adott útvonalhoz
+ * @returns {Function} Express middleware függvény
  * 
  * @example
- * // Only allow főtitkár and titkár roles
+ * // Csak főtitkár és titkár szerepkörök engedélyezése
  * router.delete('/user/:id', authenticate, requireRole(ROLES.FOTITKAR, ROLES.TITKAR), deleteUser);
  */
 const requireRole = (...roles) => {
   return (req, res, next) => {
-    // Check if user exists (should be set by authenticate middleware)
+    // Ellenőrzi, hogy a felhasználó létezik-e (az authenticate middleware által kell beállítva)
     if (!req.user) {
       throw new UnauthorizedError();
     }
 
-    // Check if user's role is in the allowed roles
+    // Ellenőrzi, hogy a felhasználó szerepköre az engedélyezett szerepkörök között van-e
     if (!roles.includes(req.user.szerepkor)) {
       throw new ForbiddenError(`Required role: ${roles.join(', ')}`);
     }
@@ -32,27 +32,27 @@ const requireRole = (...roles) => {
 };
 
 /**
- * Factory function that creates middleware for self-or-role access control
- * Allows access if user owns the resource OR has an allowed role
- * @param {string} idParam - Name of the route parameter containing the resource ID
- * @param {...string} roles - Allowed roles that can access any resource
- * @returns {Function} Express middleware function
+ * Gyártófüggvény, amely middleware-t hoz létre saját-vagy-szerepkör hozzáférés-ellenőrzéshez
+ * Engedélyezi a hozzáférést, ha a felhasználó tulajdonosa az erőforrásnak VAGY rendelkezik engedélyezett szerepkörrel
+ * @param {string} idParam - Az útvonal paraméter neve, amely tartalmazza az erőforrás azonosítóját
+ * @param {...string} roles - Engedélyezett szerepkörök, amelyekkel bármely erőforrás elérhető
+ * @returns {Function} Express middleware függvény
  * 
  * @example
- * // Allow user to modify their own data, or főtitkár/titkár to modify any
+ * // Engedélyezi a felhasználónak a saját adatainak módosítását, vagy a főtitkár/titkár számára bármely adat módosítását
  * router.put('/diak/:id', authenticate, requireSelfOrRole('id', ROLES.FOTITKAR, ROLES.TITKAR), updateDiak);
  */
 const requireSelfOrRole = (idParam, ...roles) => {
   return (req, res, next) => {
-    // Check if user exists (should be set by authenticate middleware)
+    // Ellenőrzi, hogy a felhasználó létezik-e (az authenticate middleware által kell beállítva)
     if (!req.user) {
       throw new UnauthorizedError();
     }
 
-    // Get resource ID from route params
+    // Erőforrás azonosító lekérdezése az útvonal paramétereiből
     const resourceId = parseInt(req.params[idParam], 10);
 
-    // Check if user is owner (diakId matches resource) or has allowed role
+    // Ellenőrzi, hogy a felhasználó tulajdonos-e (diakId egyezik az erőforrással) vagy rendelkezik engedélyezett szerepkörrel
     const isOwner = req.user.diakId === resourceId;
     const hasRole = roles.includes(req.user.szerepkor);
 

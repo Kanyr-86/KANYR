@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
   },
   
   getters: {
-    // Computed properties for role-based access
+    // Számított tulajdonságok szerepkör-alapú hozzáféréshez
     isAdmin() {
       return this.user && this.user.admin === true
     },
@@ -53,11 +53,11 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('user')
     },
 
-    // Initialize auth state from localStorage
+    // Auth állapot inicializálása localStorage-ból
     async initializeAuth() {
       if (this.isAuthenticated && this.user) {
         try {
-          // Verify token is still valid
+          // Token érvényességének ellenőrzése
           const response = await authService.getCurrentUser()
           if (response.success) {
             this.setUser(response.data.user)
@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Redirect to appropriate dashboard based on role
+    // Átirányítás a megfelelő dashboard-ra szerepkör alapján
     getDashboardRoute() {
       if (this.isAdmin) {
         return '/dashboard'
@@ -80,22 +80,22 @@ export const useAuthStore = defineStore('auth', {
       return '/login'
     },
 
-    // Check if user has access to specific routes
-    // NOTE: routeName must match the PascalCase names defined in router/index.js
+    // Ellenőrzi, hogy a felhasználónak van-e hozzáférése az adott útvonalakhoz
+    // MEGJEGYZÉS: a routeName-nek meg kell egyeznie a router/index.js-ben definiált PascalCase nevekkel
     hasAccess(routeName) {
       if (!this.isAuthenticated) {
         return false
       }
       
       switch (routeName) {
-        // Admin-only routes (match PascalCase route names from router)
+        // Csak admin útvonalak (egyezik a router-ből származó PascalCase útvonal nevekkel)
         case 'Dashboard':
         case 'Students':
         case 'Parents':
         case 'Rooms':
         case 'Reports':
           return this.isAdmin
-        // Student-only routes
+        // Csak diák útvonalak
         case 'StudentDashboard':
         case 'StudentRooms':
         case 'StudentNotifications':
@@ -105,7 +105,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Login action that updates store
+    // Bejelentkezési művelet, amely frissíti a store-t
     async login(email, password) {
       this.loading = true
       try {
@@ -124,14 +124,14 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Logout action that updates store
+    // Kijelentkezési művelet, amely frissíti a store-t
     async logoutAction() {
       this.loading = true
       try {
         await authService.logout()
         this.logout()
       } catch (error) {
-        // Even if logout fails, clear local state
+        // Még ha a kijelentkezés sikertelen is, töröljük a helyi állapotot
         this.logout()
       } finally {
         this.loading = false

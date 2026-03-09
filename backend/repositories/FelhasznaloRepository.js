@@ -7,13 +7,13 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Create a new user
-   * @param {Object} userData - User data
-   * @returns {Promise<Object>} - Created user
+   * Új felhasználó létrehozása
+   * @param {Object} userData - Felhasználói adatok
+   * @returns {Promise<Object>} - Létrehozott felhasználó
    */
   async create(userData) {
     try {
-      // Hash password before saving
+      // Jelszó hashelése mentés előtt
       const hashedPassword = await hashPassword(userData.password);
 
       const user = await this.Felhasznalo.create({
@@ -23,7 +23,7 @@ class FelhasznaloRepository {
         admin: userData.admin || false
       });
 
-      // Return user without password
+      // Felhasználó visszaadása jelszó nélkül
       const { password, ...userWithoutPassword } = user.toJSON();
       return userWithoutPassword;
     } catch (error) {
@@ -40,9 +40,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Find user by ID
-   * @param {number} userId - User ID
-   * @returns {Promise<Object|null>} - User or null
+   * Felhasználó keresése azonosító alapján
+   * @param {number} userId - Felhasználó azonosító
+   * @returns {Promise<Object|null>} - Felhasználó vagy null
    */
   async findById(userId) {
     try {
@@ -56,9 +56,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Find user by email
-   * @param {string} email - User email
-   * @returns {Promise<Object|null>} - User or null
+   * Felhasználó keresése email alapján
+   * @param {string} email - Felhasználó email címe
+   * @returns {Promise<Object|null>} - Felhasználó vagy null
    */
   async findByEmail(email) {
     try {
@@ -72,9 +72,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Find user by username
-   * @param {string} username - User username
-   * @returns {Promise<Object|null>} - User or null
+   * Felhasználó keresése felhasználónév alapján
+   * @param {string} username - Felhasználónév
+   * @returns {Promise<Object|null>} - Felhasználó vagy null
    */
   async findByUsername(username) {
     try {
@@ -88,9 +88,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Find all users
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} - Array of users
+   * Összes felhasználó lekérdezése
+   * @param {Object} options - Lekérdezési opciók
+   * @returns {Promise<Array>} - Felhasználók tömbje
    */
   async findAll(options = {}) {
     try {
@@ -110,10 +110,10 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Update user
-   * @param {number} userId - User ID
-   * @param {Object} updates - Updates to apply
-   * @returns {Promise<Object>} - Updated user
+   * Felhasználó frissítése
+   * @param {number} userId - Felhasználó azonosító
+   * @param {Object} updates - Alkalmazandó módosítások
+   * @returns {Promise<Object>} - Frissített felhasználó
    */
   async update(userId, updates) {
     try {
@@ -123,14 +123,14 @@ class FelhasznaloRepository {
         throw new Error('Felhasználó nem található');
       }
 
-      // Hash password if it's being updated
+      // Jelszó hashelése, ha frissítésre kerül
       if (updates.password) {
         updates.password = await hashPassword(updates.password);
       }
 
       await user.update(updates);
 
-      // Return user without password
+      // Felhasználó visszaadása jelszó nélkül
       const { password, ...userWithoutPassword } = user.toJSON();
       return userWithoutPassword;
     } catch (error) {
@@ -142,9 +142,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Delete user
-   * @param {number} userId - User ID
-   * @returns {Promise<boolean>} - True if deleted
+   * Felhasználó törlése
+   * @param {number} userId - Felhasználó azonosító
+   * @returns {Promise<boolean>} - Igaz, ha törölve lett
    */
   async delete(userId) {
     try {
@@ -165,10 +165,10 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Authenticate user
-   * @param {string} email - User email
-   * @param {string} password - User password
-   * @returns {Promise<Object>} - Authenticated user
+   * Felhasználó hitelesítése
+   * @param {string} email - Felhasználó email címe
+   * @param {string} password - Felhasználó jelszava
+   * @returns {Promise<Object>} - Hitelesített felhasználó
    */
   async authenticate(email, password) {
     try {
@@ -184,7 +184,7 @@ class FelhasznaloRepository {
         throw new Error('Érvénytelen email vagy jelszó');
       }
 
-      // Return user without password
+      // Felhasználó visszaadása jelszó nélkül
       const { password: _, ...userWithoutPassword } = user.toJSON();
       return userWithoutPassword;
     } catch (error) {
@@ -196,9 +196,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Check if user exists by email
-   * @param {string} email - User email
-   * @returns {Promise<boolean>} - True if user exists
+   * Ellenőrzi, hogy létezik-e felhasználó az email cím alapján
+   * @param {string} email - Felhasználó email címe
+   * @returns {Promise<boolean>} - Igaz, ha a felhasználó létezik
    */
   async existsByEmail(email) {
     try {
@@ -213,9 +213,9 @@ class FelhasznaloRepository {
   }
 
   /**
-   * Check if user exists by username
-   * @param {string} username - User username
-   * @returns {Promise<boolean>} - True if user exists
+   * Ellenőrzi, hogy létezik-e felhasználó a felhasználónév alapján
+   * @param {string} username - Felhasználónév
+   * @returns {Promise<boolean>} - Igaz, ha a felhasználó létezik
    */
   async existsByUsername(username) {
     try {

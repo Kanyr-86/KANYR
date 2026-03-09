@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// JWT secret key - MUST be in environment variables
+// JWT titkos kulcs - KÖTELEZŐEN környezeti változóban kell lennie
 if (!process.env.JWT_SECRET) {
   throw new Error('CRITICAL: JWT_SECRET must be set in environment variables!');
 }
@@ -11,9 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 /**
- * Hash password using bcrypt
- * @param {string} password - Plain text password
- * @returns {Promise<string>} - Hashed password
+ * Jelszó hashelése bcrypt-tel
+ * @param {string} password - Egyszerű szöveges jelszó
+ * @returns {Promise<string>} - Hashelt jelszó
  */
 async function hashPassword(password) {
   try {
@@ -26,10 +26,10 @@ async function hashPassword(password) {
 }
 
 /**
- * Compare password with hashed password
- * @param {string} password - Plain text password
- * @param {string} hashedPassword - Hashed password from database
- * @returns {Promise<boolean>} - True if passwords match, false otherwise
+ * Jelszó összehasonlítása a hashelt jelszóval
+ * @param {string} password - Egyszerű szöveges jelszó
+ * @param {string} hashedPassword - Adatbázisban tárolt hashelt jelszó
+ * @returns {Promise<boolean>} - Igaz, ha a jelszavak egyeznek, egyébként hamis
  */
 async function comparePassword(password, hashedPassword) {
   try {
@@ -41,9 +41,9 @@ async function comparePassword(password, hashedPassword) {
 }
 
 /**
- * Generate JWT token
- * @param {Object} payload - User data to include in token
- * @param {string} expiresIn - Custom expiration time (optional)
+ * JWT token generálása
+ * @param {Object} payload - Felhasználói adatok a tokenben
+ * @param {string} expiresIn - Egyedi lejárati idő (opcionális)
  * @returns {string} - JWT token
  */
 function generateToken(payload, expiresIn = JWT_EXPIRES_IN) {
@@ -58,9 +58,9 @@ function generateToken(payload, expiresIn = JWT_EXPIRES_IN) {
 }
 
 /**
- * Verify JWT token
- * @param {string} token - JWT token to verify
- * @returns {Object} - Decoded token payload
+ * JWT token ellenőrzése
+ * @param {string} token - Ellenőrizendő JWT token
+ * @returns {Object} - Dekódolt token adatok
  */
 function verifyToken(token) {
   try {
@@ -72,9 +72,9 @@ function verifyToken(token) {
 }
 
 /**
- * Generate random password
- * @param {number} length - Length of password to generate
- * @returns {string} - Random password
+ * Véletlenszerű jelszó generálása
+ * @param {number} length - Generálandó jelszó hossza
+ * @returns {string} - Véletlenszerű jelszó
  */
 function generateRandomPassword(length = 12) {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';

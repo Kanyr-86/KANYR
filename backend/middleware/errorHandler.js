@@ -1,6 +1,6 @@
 /**
- * Global Error Handling Middleware for Express
- * Centralizes error handling and provides consistent error responses
+ * Globális hibakezelő middleware Express-hez
+ * Központosítja a hibakezelést és egységes hibaválaszokat biztosít
  */
 
 const { 
@@ -13,26 +13,26 @@ const {
 } = require('../utils/AppError');
 
 /**
- * Express error handling middleware
- * @param {Error} err - Error object
- * @param {Request} req - Express request object
- * @param {Response} res - Express response object
- * @param {Function} next - Express next function
+ * Express hibakezelő middleware
+ * @param {Error} err - Hiba objektum
+ * @param {Request} req - Express kérés objektum
+ * @param {Response} res - Express válasz objektum
+ * @param {Function} next - Express next függvény
  */
 const errorHandler = (err, req, res, next) => {
-  // Log error to console
+  // Hiba naplózása a konzolra
   console.error(`[${err.name}] ${err.message}`);
   
-  // Log stack trace in development
+  // Stack trace naplózása fejlesztői környezetben
   if (process.env.NODE_ENV === 'development') {
     console.error(err.stack);
   }
 
-  // Default values
+  // Alapértelmezett értékek
   let statusCode = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
+  let message = err.message || 'Belső szerver hiba';
 
-  // Handle specific error types
+  // Konkrét hibatípusok kezelése
   if (err instanceof ValidationError) {
     statusCode = 400;
     message = err.message;
@@ -49,17 +49,17 @@ const errorHandler = (err, req, res, next) => {
     statusCode = 409;
     message = err.message;
   } else if (err instanceof AppError) {
-    // Custom AppError with specific status code
+    // Egyedi AppError konkrét státuszkóddal
     statusCode = err.statusCode;
     message = err.message;
   } else {
-    // Unexpected error - hide details in production
+    // Váratlan hiba - részletek elrejtése éles környezetben
     if (process.env.NODE_ENV === 'production') {
-      message = 'Something went wrong';
+      message = 'Valami hiba történt';
     }
   }
 
-  // Send JSON response
+  // JSON válasz küldése
   res.status(statusCode).json({
     success: false,
     error: message

@@ -6,7 +6,7 @@ const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Initialize service with database
+// Szerviz inicializálása adatbázissal
 let felhasznaloService = null;
 
 const initializeService = (db) => {
@@ -17,7 +17,7 @@ const initializeService = (db) => {
   return felhasznaloService;
 };
 
-// Login validation rules - egyszerűsítve, csak nem üres ellenőrzés
+// Bejelentkezési validációs szabályok - egyszerűsítve, csak nem üres ellenőrzés
 const loginValidationRules = [
   body('email')
     .trim()
@@ -30,7 +30,7 @@ const loginValidationRules = [
 
 /**
  * POST /api/auth/login
- * User login
+ * Felhasználó bejelentkezése
  */
 router.post(
   '/login',
@@ -73,14 +73,14 @@ router.post(
 
 /**
  * POST /api/auth/logout
- * User logout (token invalidation)
+ * Felhasználó kijelentkezése (token érvénytelenítése)
  */
 router.post(
   '/logout',
   authenticate,
   (req, res) => {
-    // In a real application, you would add the token to a blacklist
-    // For JWT, logout is typically handled client-side by removing the token
+    // Valós alkalmazásban a token-t hozzá kellene adni egy feketelistához
+    // JWT esetén a kijelentkezés általában kliens oldalon történik a token eltávolításával
     res.json({
       success: true,
       message: 'Sikeres kijelentkezés'
@@ -90,7 +90,7 @@ router.post(
 
 /**
  * GET /api/auth/me
- * Get current user info
+ * Aktuális felhasználói információk lekérdezése
  */
 router.get(
   '/me',
@@ -107,7 +107,7 @@ router.get(
 
 /**
  * GET /api/auth/check-admin
- * Check if current user is admin
+ * Ellenőrzi, hogy az aktuális felhasználó admin-e
  */
 router.get(
   '/check-admin',

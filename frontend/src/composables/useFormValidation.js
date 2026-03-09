@@ -2,8 +2,8 @@ import { reactive, computed } from 'vue'
 import { VALIDATION_MESSAGES } from '@/i18n'
 
 /**
- * Validation error messages - using centralized localization
- * Functions are memoized for performance
+ * Validációs hibaüzenetek - központosított lokalizáció használatával
+ * A függvények a teljesítmény érdekében memoizáltak
  */
 const ERROR_MESSAGES = {
   required: VALIDATION_MESSAGES.REQUIRED,
@@ -16,12 +16,12 @@ const ERROR_MESSAGES = {
 }
 
 /**
- * Built-in validators with memoization
+ * Beépített validátorok memoizálással
  */
 const validators = {
   /**
-   * Required field validator
-   * @param {*} value - Field value
+   * Kötelező mező validátor
+   * @param {*} value - Mező értéke
    * @returns {boolean}
    */
   required: (value) => {
@@ -35,9 +35,9 @@ const validators = {
   },
 
   /**
-   * Minimum length validator
-   * @param {string} value - Field value
-   * @param {number} minLength - Minimum length
+   * Minimális hossz validátor
+   * @param {string} value - Mező értéke
+   * @param {number} minLength - Minimális hossz
    * @returns {boolean}
    */
   minLength: (value, minLength) => {
@@ -46,9 +46,9 @@ const validators = {
   },
 
   /**
-   * Maximum length validator
-   * @param {string} value - Field value
-   * @param {number} maxLength - Maximum length
+   * Maximális hossz validátor
+   * @param {string} value - Mező értéke
+   * @param {number} maxLength - Maximális hossz
    * @returns {boolean}
    */
   maxLength: (value, maxLength) => {

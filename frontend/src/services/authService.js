@@ -6,7 +6,7 @@ export const authService = {
     try {
       const response = await api.post('/auth/login', { email, password })
       if (response.data.success) {
-        // Store token and user data
+        // Token és felhasználói adatok tárolása
         localStorage.setItem('token', response.data.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.data.user))
       }
@@ -20,7 +20,7 @@ export const authService = {
   async logout() {
     try {
       await api.post('/auth/logout')
-      // Clear local storage
+      // Local storage törlése
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       return { success: true }
@@ -51,12 +51,12 @@ export const authService = {
   },
 
 
-  // Check if user is authenticated
+  // Ellenőrzi, hogy a felhasználó be van-e jelentkezve
   isAuthenticated() {
     return !!localStorage.getItem('token')
   },
 
-  // Get current user from localStorage
+  // Aktuális felhasználó lekérdezése a localStorage-ból
   getCurrentUserFromStorage() {
     const user = localStorage.getItem('user')
     return user ? JSON.parse(user) : null

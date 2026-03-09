@@ -691,7 +691,7 @@ import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage, VALIDATION_MESSAGES } from '@/i18n'
 
 /**
- * Comprehensive validation rules for student forms
+ * Átfogó validációs szabályok diák űrlapokhoz
  */
 const VALIDATION_RULES = {
   // Email validation - standard email format
@@ -813,10 +813,10 @@ const VALIDATION_RULES = {
 }
 
 /**
- * Validate entire form object
- * @param {Object} formData - Form data to validate
- * @param {Object} errorsRef - Reactive errors object to populate
- * @returns {boolean} True if form is valid
+ * Teljes űrlap objektum validálása
+ * @param {Object} formData - Validálandó űrlap adatok
+ * @param {Object} errorsRef - Reaktív hiba objektum feltöltéshez
+ * @returns {boolean} Igaz, ha az űrlap érvényes
  */
 const validateForm = (formData, errorsRef) => {
   let isValid = true
@@ -839,10 +839,10 @@ const validateForm = (formData, errorsRef) => {
 }
 
 /**
- * Validate a single field immediately
- * @param {string} field - Field name
- * @param {*} value - Field value
- * @returns {string} Error message or empty string
+ * Egyetlen mező azonnali validálása
+ * @param {string} field - Mező neve
+ * @param {*} value - Mező értéke
+ * @returns {string} Hibaüzenet vagy üres sztring
  */
 const validateField = (field, value) => {
   if (VALIDATION_RULES[field]) {
@@ -860,7 +860,7 @@ export default {
     LoadingOverlay
   },
   setup() {
-    // State
+    // Állapot
     const students = ref([])
     const rooms = ref([])
     const parents = ref([])
@@ -869,25 +869,25 @@ export default {
     const searchQuery = ref('')
     const selectedStatus = ref('')
     
-    // Modal loading states
+    // Modal betöltési állapotok
     const enrollLoading = ref(false)
     const editLoading = ref(false)
     const deleteLoading = ref(false)
     
-    // Modal visibility states
+    // Modal láthatósági állapotok
     const showEnrollModal = ref(false)
     const showEditModal = ref(false)
     const showViewModal = ref(false)
     const showDeleteModal = ref(false)
     
-    // View modal data
+    // Megtekintés modal adatok
     const viewStudentData = ref(null)
     const activeViewTab = ref('adatok')
     
-    // Delete modal data
+    // Törlés modal adatok
     const deleteStudentData = ref(null)
     
-    // Form data
+    // Űrlap adatok
     const enrollForm = ref({
       nev: '',
       email: '',
@@ -915,13 +915,13 @@ export default {
     
     const currentEditId = ref(null)
     
-    // Form errors
+    // Űrlap hibák
     const errors = ref({})
     const editErrors = ref({})
     const showValidationSummary = ref(false)
     const showEditValidationSummary = ref(false)
     
-    // Options for selects
+    // Opciók kiválasztókhoz
     const nemOptions = [
       { value: 'férfi', label: 'Férfi' },
       { value: 'nő', label: 'Nő' }
@@ -933,7 +933,7 @@ export default {
       { value: 'gondviselo', label: 'Gondviselő' }
     ]
 
-    // Computed properties with safety checks
+    // Számított tulajdonságok biztonsági ellenőrzésekkel
     const studentsCount = computed(() => {
       console.log('studentsCount computed, students.value:', students.value)
       if (!students.value || !Array.isArray(students.value)) {
@@ -987,19 +987,19 @@ export default {
       return safeFilteredStudents.value.length
     })
 
-    // Helper function to get initial
+    // Segédfüggvény a kezdőbetű lekéréséhez
     const getInitial = (name) => {
       if (!name || typeof name !== 'string') return '?'
       return name.charAt(0).toUpperCase()
     }
 
-    // Fetch students with detailed logging
+    // Diákok lekérdezése részletes naplózással
     const fetchStudents = async () => {
       console.log('=== fetchStudents START ===')
       loading.value = true
       try {
-        console.log('Calling API: /diaks?includeRelations=true')
-        const response = await api.get('/diaks?includeRelations=true')
+        console.log('Calling API: /students?includeRelations=true')
+        const response = await api.get('/students?includeRelations=true')
         console.log('API Response:', response)
         console.log('Response data:', response.data)
         console.log('Response data type:', typeof response.data)
@@ -1034,7 +1034,7 @@ export default {
       }
     }
 
-    // Helper function to format date
+    // Segédfüggvény a dátum formázásához
     const formatDate = (dateString) => {
       if (!dateString) return '-'
       const date = new Date(dateString)
@@ -1045,7 +1045,7 @@ export default {
       })
     }
     
-    // Helper function to get kapcsolat label
+    // Segédfüggvény a kapcsolat címke lekéréséhez
     const getKapcsolatLabel = (type) => {
       const labels = {
         'anya': 'Anya',
@@ -1055,7 +1055,7 @@ export default {
       return labels[type] || type
     }
     
-    // Helper function to get field label
+    // Segédfüggvény a mező címke lekéréséhez
     const getFieldLabel = (field) => {
       const labels = {
         'nev': 'Teljes név',
@@ -1071,13 +1071,13 @@ export default {
       return labels[field] || field
     }
 
-    // Filter methods
+    // Szűrő metódusok
     const clearFilters = () => {
       searchQuery.value = ''
       selectedStatus.value = ''
     }
 
-    // Validation methods - using comprehensive validation rules
+    // Validációs metódusok - átfogó validációs szabályokkal
     const validateFieldImmediate = (field, value) => {
       const error = validateField(field, value)
       errors.value[field] = error
@@ -1088,7 +1088,7 @@ export default {
       editErrors.value[field] = error
     }
     
-    // Computed validation state
+    // Számított validációs állapot
     const isValid = computed(() => {
       return Object.values(errors.value).every(error => !error)
     })
@@ -1097,7 +1097,7 @@ export default {
       return Object.values(editErrors.value).every(error => !error)
     })
 
-    // Modal methods - Enroll
+    // Modal metódusok - Felvétel
     const openEnrollModal = () => {
       showEnrollModal.value = true
       errors.value = {}
@@ -1134,7 +1134,7 @@ export default {
       
       enrollLoading.value = true
       try {
-        const response = await api.post('/diaks', enrollForm.value)
+        const response = await api.post('/students', enrollForm.value)
         if (response.data.success) {
           toast.success(getSuccessMessage('ENROLL_SUCCESS'))
           closeEnrollModal()
@@ -1148,7 +1148,7 @@ export default {
       }
     }
 
-    // Modal methods - View
+    // Modal metódusok - Megtekintés
     const viewStudent = (student) => {
       viewStudentData.value = student
       activeViewTab.value = 'adatok'
@@ -1160,7 +1160,7 @@ export default {
       viewStudentData.value = null
     }
 
-    // Modal methods - Edit
+    // Modal metódusok - Szerkesztés
     const editStudent = (student) => {
       currentEditId.value = student.diak_id
       editForm.value = {
@@ -1199,7 +1199,7 @@ export default {
       
       editLoading.value = true
       try {
-        const response = await api.put(`/diaks/${currentEditId.value}`, editForm.value)
+        const response = await api.put(`/students/${currentEditId.value}`, editForm.value)
         if (response.data.success) {
           toast.success(getSuccessMessage('UPDATE_SUCCESS'))
           closeEditModal()
@@ -1213,13 +1213,13 @@ export default {
       }
     }
 
-    // Modal methods - Transfer
+    // Modal metódusok - Áthelyezés
     const transferStudent = (student) => {
       // Placeholder for transfer functionality
       toast.info(`${student.nev} költöztetése - funkció fejlesztés alatt`)
     }
 
-    // Modal methods - Delete
+    // Modal metódusok - Törlés
     const deleteStudent = (student) => {
       deleteStudentData.value = student
       showDeleteModal.value = true
@@ -1235,7 +1235,7 @@ export default {
       
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
+        const response = await api.delete(`/students/${deleteStudentData.value.diak_id}`)
         if (response.data.success) {
           toast.success(getSuccessMessage('DELETE_SUCCESS'))
           closeDeleteModal()
@@ -1251,7 +1251,7 @@ export default {
       }
     }
 
-    // Lifecycle
+    // Életciklus
     onMounted(() => {
       console.log('=== StudentsView mounted ===')
       console.log('Initial students.value:', students.value)

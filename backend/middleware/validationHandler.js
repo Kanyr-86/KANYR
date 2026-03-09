@@ -1,25 +1,25 @@
 /**
- * Validation Handler Middleware
- * Processes express-validator results and creates structured validation errors
+ * Validációs hiba kezelő middleware
+ * Feldolgozza az express-validator eredményeit és strukturált validációs hibákat hoz létre
  */
 
 const { validationResult } = require('express-validator');
 const { ValidationError } = require('../utils/AppError');
 
 /**
- * Middleware to handle validation results from express-validator
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
+ * Middleware az express-validator validációs eredményeinek kezeléséhez
+ * @param {Object} req - Express kérés objektum
+ * @param {Object} res - Express válasz objektum
+ * @param {Function} next - Express next függvény
  * 
  * @example
- * // Usage in routes:
+ * // Használat route-okban:
  * const { body } = require('express-validator');
  * const validationHandler = require('../middleware/validationHandler');
  * 
  * router.post('/user',
- *   body('email').isEmail().withMessage('Invalid email'),
- *   body('name').notEmpty().withMessage('Name is required'),
+ *   body('email').isEmail().withMessage('Érvénytelen email'),
+ *   body('name').notEmpty().withMessage('Név megadása kötelező'),
  *   validationHandler,
  *   createUser
  * );
@@ -28,10 +28,10 @@ const validationHandler = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    // Create ValidationError with structured details
-    const error = new ValidationError('Validation failed');
+    // Validációs hiba létrehozása strukturált részletekkel
+    const error = new ValidationError('Validációs hiba');
     
-    // Attach details array with field and message for each error
+    // Részletek tömb csatolása mező és üzenet információkkal minden hibához
     error.details = errors.array().map(err => ({
       field: err.path,
       message: err.msg

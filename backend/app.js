@@ -12,16 +12,16 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS Configuration - read from environment variables
+// CORS konfiguráció - környezeti változókból olvasva
 const getAllowedOrigins = () => {
   if (process.env.ALLOWED_ORIGINS) {
     return process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
   }
-  // Fallback for development
+  // Tartalék érték fejlesztéshez
   return ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
 };
 
-// Middleware
+// Middleware-ek
 app.use(cors({
   origin: getAllowedOrigins(),
   credentials: true,
@@ -29,7 +29,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Security Headers with Helmet
+// Biztonsági fejlécek Helmet-tel
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -45,11 +45,11 @@ app.use(helmet({
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 
-// Request logging middleware
+// Kérés naplózó middleware
 app.use(requestLogger);
 
-// Rate Limiting Configuration
-// Strict limiter for authentication endpoints - prevents brute force attacks
+// Rate limiting konfiguráció
+// Szigorú limiter hitelesítési végpontokhoz - megakadályozza a brute force támadásokat
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 requests per windowMs
@@ -65,7 +65,7 @@ const authLimiter = rateLimit({
   }
 });
 
-// General API limiter for write operations (POST, PUT, DELETE)
+// Általános API limiter írási műveletekhez (POST, PUT, DELETE)
 const writeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 write requests per windowMs
@@ -80,7 +80,7 @@ const writeLimiter = rateLimit({
   }
 });
 
-// Relaxed limiter for read-only endpoints (GET requests)
+// Megengedőbb limiter csak olvasási végpontokhoz (GET kérések)
 const readLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200, // Limit each IP to 200 read requests per windowMs
@@ -95,13 +95,13 @@ const readLimiter = rateLimit({
   }
 });
 
-// Apply rate limiting to auth routes (strictest limits)
+// Rate limiting alkalmazása auth route-okra (legszigorúbb limitek)
 app.use('/api/auth/login', authLimiter);
 
-// Apply write limiter to all routes (will be overridden by read limiter for GET requests)
+// Írási limiter alkalmazása az összes route-ra (felül lesz írva az olvasási limiterrel GET kéréseknél)
 app.use('/api', writeLimiter);
 
-// Apply read limiter specifically for GET requests (more relaxed)
+// Olvasási limiter alkalmazása kifejezetten GET kérésekhez (megengedőbb)
 app.use('/api', (req, res, next) => {
   if (req.method === 'GET') {
     return readLimiter(req, res, next);
@@ -134,41 +134,41 @@ const startServer = async () => {
     app.locals.db = db;
     console.log('✓ Adatbázis elérhető a route-ok számára');
 
-    // Diak route-ok inicializálása (az adatbázis után, hogy app.locals.db elérhető legyen)
-    app.use('/api/diaks', require('./routes/DiakRoutes'));
-    console.log('✓ Diak route-ok inicializálva');
+    // Student route-ok inicializálása (az adatbázis után, hogy app.locals.db elérhető legyen)
+    app.use('/api/students', require('./routes/DiakRoutes'));
+    console.log('✓ Student route-ok inicializálva');
 
-    // Szoba route-ok inicializálása
+    // Room route-ok inicializálása
     const SzobaRoutes = require('./routes/SzobaRoutes');
-    app.use('/api/szobas', SzobaRoutes(app.locals.db));
-    console.log('✓ Szoba route-ok inicializálva');
+    app.use('/api/rooms', SzobaRoutes(app.locals.db));
+    console.log('✓ Room route-ok inicializálva');
 
-    // Szulo route-ok inicializálása
-    app.use('/api/szulos', require('./routes/SzuloRoutes'));
-    console.log('✓ Szulo route-ok inicializálva');
+    // Parent route-ok inicializálása
+    app.use('/api/parents', require('./routes/SzuloRoutes'));
+    console.log('✓ Parent route-ok inicializálva');
 
-    // Lakcim route-ok inicializálása
-    app.use('/api/lakcims', require('./routes/LakcimRoutes'));
-    console.log('✓ Lakcim route-ok inicializálva');
+    // Address route-ok inicializálása
+    app.use('/api/addresses', require('./routes/LakcimRoutes'));
+    console.log('✓ Address route-ok inicializálva');
 
     // Auth route-ok inicializálása
     app.use('/api/auth', require('./routes/authRoutes'));
     console.log('✓ Auth route-ok inicializálva');
 
-    // Felhasznalo route-ok inicializálása
-    app.use('/api/felhasznalos', require('./routes/FelhasznaloRoutes'));
-    console.log('✓ Felhasznalo route-ok inicializálva');
+    // User route-ok inicializálása
+    app.use('/api/users', require('./routes/FelhasznaloRoutes'));
+    console.log('✓ User route-ok inicializálva');
 
-    // SzobaValtoztatas route-ok inicializálása
-    app.use('/api/szobavaltoztatas', require('./routes/SzobaValtoztatasRoutes'));
-    console.log('✓ SzobaValtoztatas route-ok inicializálva');
+    // Room change route-ok inicializálása
+    app.use('/api/room-changes', require('./routes/SzobaValtoztatasRoutes'));
+    console.log('✓ Room change route-ok inicializálva');
 
-    // 404 handler - csak most regisztráljuk, miután minden route be van állítva
+// 404 kezelő - csak most regisztráljuk, miután minden route be van állítva
     app.use((req, res, next) => {
       next(new NotFoundError('Endpoint'));
     });
 
-    // Global error handler - csak most regisztráljuk, miután minden route be van állítva
+    // Globális hibakezelő - csak most regisztráljuk, miután minden route be van állítva
     app.use(errorHandler);
 
     // Szerver indítása

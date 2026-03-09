@@ -1,4 +1,4 @@
-// Simple cache implementation with TTL
+// Egyszerű cache implementáció TTL-lel
 const cache = new Map()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
@@ -39,7 +39,7 @@ const useApiCache = () => {
     const { useCache = true, invalidateCache = false } = options
 
     try {
-      // Check cache first (unless invalidating)
+      // Először a cache ellenőrzése (kivéve, ha invalidálunk)
       if (useCache && !invalidateCache) {
         const cachedData = getCachedData(key)
         if (cachedData) {
@@ -47,10 +47,10 @@ const useApiCache = () => {
         }
       }
 
-      // Fetch data
+      // Adatok lekérése
       const data = await fetchFunction()
       
-      // Cache the result if not invalidating
+      // Eredmény cache-elése, ha nem invalidálunk
       if (useCache && !invalidateCache) {
         setCachedData(key, data)
       }

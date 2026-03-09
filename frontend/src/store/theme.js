@@ -13,11 +13,11 @@ export const useThemeStore = defineStore('theme', {
 
   actions: {
     /**
-     * Set the theme
-     * @param {'light' | 'dark' | 'high-contrast'} theme - Theme to set
+     * Téma beállítása
+     * @param {'light' | 'dark' | 'high-contrast'} theme - A beállítandó téma
      */
     setTheme(theme) {
-      // Validate theme value
+      // Téma érték érvényesítése
       const validThemes = ['light', 'dark', 'high-contrast']
       if (!validThemes.includes(theme)) {
         console.warn(`Invalid theme: ${theme}. Using 'light' as fallback.`)
@@ -30,28 +30,28 @@ export const useThemeStore = defineStore('theme', {
     },
 
     /**
-     * Toggle between light and dark theme (high contrast stays as is)
+     * Váltás világos és sötét téma között (a nagy kontraszt változatlan marad)
      */
     toggleTheme() {
       if (this.theme === 'high-contrast') {
-        // If currently in high contrast, switch to light
+        // Ha jelenleg nagy kontrasztban van, váltson világosra
         this.setTheme('light')
       } else {
-        // Toggle between light and dark
+        // Váltás világos és sötét között
         const newTheme = this.theme === 'light' ? 'dark' : 'light'
         this.setTheme(newTheme)
       }
     },
 
     /**
-     * Apply theme to document
+     * Téma alkalmazása a dokumentumra
      */
     applyTheme() {
-      // Remove all theme attributes first
+      // Először minden téma attribútum eltávolítása
       document.documentElement.removeAttribute('data-theme')
       document.body.classList.remove('dark')
       
-      // Apply current theme
+      // Aktuális téma alkalmazása
       if (this.theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark')
         document.body.classList.add('dark')
@@ -59,23 +59,23 @@ export const useThemeStore = defineStore('theme', {
         document.documentElement.setAttribute('data-theme', 'high-contrast')
         document.body.classList.add('high-contrast')
       } else {
-        // Light theme - no special attributes needed
+        // Világos téma - nincs szükség különleges attribútumokra
         document.body.classList.remove('dark', 'high-contrast')
       }
     },
 
     /**
-     * Initialize theme on app load
+     * Téma inicializálása az alkalmazás betöltésekor
      */
     initializeTheme() {
-      // Check localStorage first, then system preference
+      // Először a localStorage ellenőrzése, majd a rendszer preferencia
       const savedTheme = localStorage.getItem('theme')
       if (savedTheme) {
         this.theme = savedTheme
       } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         this.theme = 'dark'
       } else {
-        this.theme = 'light' // Default to light theme
+        this.theme = 'light' // Alapértelmezett világos téma
       }
       this.applyTheme()
     }

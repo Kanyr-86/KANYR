@@ -1,13 +1,13 @@
 import axios from 'axios'
 import { getErrorMessage } from '@/i18n'
 
-// ─── Shared interceptor logic ───────────────────────────────────────────────
+// ─── Megosztott interceptor logika ───────────────────────────────────────────
 
-// Flag to prevent duplicate redirects when multiple requests fail with 401
+// Zászló a duplikált átirányítások megelőzéséhez, ha több kérés is 401-et ad vissza
 let isRedirectingToLogin = false
 
 function applyAuthInterceptors(instance) {
-  // Attach JWT from localStorage on every request
+  // JWT csatolása localStorage-ból minden kéréshez
   instance.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('token')
@@ -19,7 +19,7 @@ function applyAuthInterceptors(instance) {
     (error) => Promise.reject(error)
   )
 
-  // Unified error handling
+// Egységes hibakezelés
   instance.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -28,8 +28,8 @@ function applyAuthInterceptors(instance) {
         const message = error.response.data?.error || error.message || getErrorMessage('SERVER_ERROR')
 
         if (status === 401) {
-          // Unauthorized – clear stored auth and redirect to login
-          // Prevent duplicate redirects when multiple simultaneous requests fail
+          // Jogosulatlan - töröljük a tárolt hitelesítést és átirányítunk a bejelentkezéshez
+          // Duplikált átirányítások megelőzése, ha több egyidejű kérés is hibát ad
           if (!isRedirectingToLogin) {
             isRedirectingToLogin = true
             localStorage.removeItem('token')
@@ -52,9 +52,9 @@ function applyAuthInterceptors(instance) {
   )
 }
 
-// ─── Axios instances ─────────────────────────────────────────────────────────
+// ─── Axios példányok ─────────────────────────────────────────────────────────
 
-/** General API instance – used by admin views */
+/** Általános API példány – admin nézetekhez használt */
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
@@ -64,21 +64,21 @@ const api = axios.create({
 applyAuthInterceptors(api)
 
 /**
- * Student API instance.
- * baseURL is '/api/diaks' so a call like studentApi.get('/students/room')
- * resolves to GET /api/diaks/students/room  (matches DiakRoutes.js)
+ * Diák API példány.
+ * A baseURL '/api/students', így egy studentApi.get('/students/room') hívás
+ * GET /api/students/students/room -ra fut (egyezik a DiakRoutes.js-el)
  */
 const studentApi = axios.create({
-  baseURL: '/api/diaks',
+  baseURL: '/api/students',
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
   withCredentials: true
 })
 applyAuthInterceptors(studentApi)
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Segédfüggvények ─────────────────────────────────────────────────────────
 
-/** Normalise axios errors into a standard shape */
+/** Axios hibák normalizálása szabványos formára */
 export const handleApiError = (error) => {
   if (error.response) {
     return {

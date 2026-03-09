@@ -1,11 +1,11 @@
 /**
- * Custom Error Classes for Express Application
- * Provides structured error handling with operational error tracking
+ * Egyedi hiba osztályok Express alkalmazáshoz
+ * Strukturált hibakezelést biztosít működési hibák követésével
  */
 
 /**
- * Base AppError class that extends the native Error
- * All custom errors should extend this class
+ * Alap AppError osztály, amely kiterjeszti a natív Error-t
+ * Minden egyedi hibának ezt az osztályt kell kiterjesztenie
  */
 class AppError extends Error {
   constructor(message, statusCode) {
@@ -15,14 +15,14 @@ class AppError extends Error {
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
     this.isOperational = true;
     
-    // Capture stack trace, excluding the constructor from it
+    // Stack trace rögzítése, a konstruktor kihagyásával
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
 /**
- * ValidationError - For invalid request data
- * HTTP Status: 400 Bad Request
+ * ValidationError - Érvénytelen kérés adatokhoz
+ * HTTP státusz: 400 Bad Request
  */
 class ValidationError extends AppError {
   constructor(message = 'Validation failed') {
@@ -32,8 +32,8 @@ class ValidationError extends AppError {
 }
 
 /**
- * UnauthorizedError - For authentication failures
- * HTTP Status: 401 Unauthorized
+ * UnauthorizedError - Hitelesítési hibákhoz
+ * HTTP státusz: 401 Unauthorized
  */
 class UnauthorizedError extends AppError {
   constructor(message = 'Unauthorized') {
@@ -43,8 +43,8 @@ class UnauthorizedError extends AppError {
 }
 
 /**
- * ForbiddenError - For authorization failures
- * HTTP Status: 403 Forbidden
+ * ForbiddenError - Jogosultsági hibákhoz
+ * HTTP státusz: 403 Forbidden
  */
 class ForbiddenError extends AppError {
   constructor(message = 'Forbidden') {
@@ -54,9 +54,9 @@ class ForbiddenError extends AppError {
 }
 
 /**
- * NotFoundError - For missing resources
- * HTTP Status: 404 Not Found
- * @param {string} resourceName - Name of the resource that was not found
+ * NotFoundError - Hiányzó erőforrásokhoz
+ * HTTP státusz: 404 Not Found
+ * @param {string} resourceName - A nem talált erőforrás neve
  */
 class NotFoundError extends AppError {
   constructor(resourceName) {
@@ -67,8 +67,8 @@ class NotFoundError extends AppError {
 }
 
 /**
- * ConflictError - For resource conflicts (e.g., duplicate entries)
- * HTTP Status: 409 Conflict
+ * ConflictError - Erőforrás ütközésekhez (pl. duplikált bejegyzések)
+ * HTTP státusz: 409 Conflict
  */
 class ConflictError extends AppError {
   constructor(message = 'Resource conflict') {
@@ -77,7 +77,7 @@ class ConflictError extends AppError {
   }
 }
 
-// Export all classes individually
+// Minden osztály egyedi exportálása
 module.exports = {
   AppError,
   ValidationError,

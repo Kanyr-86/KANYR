@@ -1,19 +1,19 @@
 /**
- * Transaction Utility for Sequelize ORM
- * Provides a helper function to handle database transactions
+ * Tranzakció segédprogram Sequelize ORM-hez
+ * Segédfüggvényt biztosít adatbázis tranzakciók kezeléséhez
  */
 
 /**
- * Execute a callback within a database transaction
- * Automatically commits on success, rolls back on error
+ * Callback végrehajtása adatbázis tranzakción belül
+ * Siker esetén automatikusan commit-ol, hiba esetén rollback-et végez
  * 
- * @param {Object} db - Sequelize database instance (from models/index.js)
- * @param {Function} callback - Async function that receives transaction object
- * @returns {Promise<any>} - Result of the callback function
- * @throws {Error} - Re-throws any error after rollback
+ * @param {Object} db - Sequelize adatbázis példány (a models/index.js-ből)
+ * @param {Function} callback - Async függvény, amely megkapja a tranzakció objektumot
+ * @returns {Promise<any>} - A callback függvény eredménye
+ * @throws {Error} - Bármely hibát újradob a rollback után
  * 
  * @example
- * // Basic usage in a service:
+ * // Alapvető használat egy szervizben:
  * const { withTransaction } = require('../utils/transaction');
  * 
  * const createDiakWithUser = async (db, diakData, userData) => {
@@ -28,7 +28,7 @@
  * };
  * 
  * @example
- * // Usage in controller:
+ * // Használat kontrollerben:
  * const createOrder = async (req, res, next) => {
  *   try {
  *     const result = await withTransaction(req.app.locals.db, async (t) => {
@@ -43,22 +43,22 @@
  * };
  */
 const withTransaction = async (db, callback) => {
-  // Start a new transaction
+  // Új tranzakció indítása
   const transaction = await db.sequelize.transaction();
 
   try {
-    // Execute the callback with the transaction
+    // Callback végrehajtása a tranzakcióval
     const result = await callback(transaction);
 
-    // Commit the transaction if successful
+    // Tranzakció commit-olása siker esetén
     await transaction.commit();
 
     return result;
   } catch (error) {
-    // Rollback the transaction on error
+    // Tranzakció rollback-je hiba esetén
     await transaction.rollback();
 
-    // Re-throw the error for handling upstream
+    // Hiba újradobása a felsőbb szintű kezeléshez
     throw error;
   }
 };

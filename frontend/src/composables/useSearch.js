@@ -3,23 +3,23 @@ import { useDebounce } from './useDebounce'
 import { getErrorMessage } from '@/i18n'
 
 /**
- * useSearch - A composable for debounced search functionality
+ * useSearch - Composable debounced keresési funkcionalitáshoz
  * 
- * Provides a complete search solution with debouncing, loading state,
- * error handling, and reactive results. Automatically handles the
- * search lifecycle including cleanup on component unmount.
+ * Teljes keresési megoldást biztosít debouncing-gal, betöltési állapottal,
+ * hibakezeléssel és reaktív eredményekkel. Automatikusan kezeli a
+ * keresés életciklusát, beleértve a komponens unmount-olásakor történő takarítást.
  * 
- * @param {Function} searchFn - Async function that performs the search, receives query string
- * @param {number} delay - Debounce delay in milliseconds (default: 300ms)
- * @returns {Object} Search state and methods
- * @returns {Ref<string>} returns.searchQuery - Reactive search input value
- * @returns {Ref<Array>} returns.searchResults - Search results array
- * @returns {Ref<boolean>} returns.isSearching - Loading state
- * @returns {Ref<string|null>} returns.error - Error message if search failed
- * @returns {Function} returns.clearSearch - Clear search query and results
- * @returns {Function} returns.search - Manually trigger search
+ * @param {Function} searchFn - Async függvény, amely végrehajtja a keresést, megkapja a lekérdezési sztringet
+ * @param {number} delay - Debounce késleltetés milliszekundumban (alapértelmezett: 300ms)
+ * @returns {Object} Keresési állapot és metódusok
+ * @returns {Ref<string>} returns.searchQuery - Reaktív keresési bemeneti érték
+ * @returns {Ref<Array>} returns.searchResults - Keresési eredmények tömbje
+ * @returns {Ref<boolean>} returns.isSearching - Betöltési állapot
+ * @returns {Ref<string|null>} returns.error - Hibaüzenet, ha a keresés sikertelen
+ * @returns {Function} returns.clearSearch - Keresési lekérdezés és eredmények törlése
+ * @returns {Function} returns.search - Keresés kézi indítása
  * 
- * @example Basic search input
+ * @example Alap keresési bemenet
  * ```vue
  * <template>
  *   <div>
@@ -27,11 +27,11 @@ import { getErrorMessage } from '@/i18n'
  *       v-model="searchQuery"
  *       type="text"
  *       class="form-control"
- *       placeholder="Search students..."
+ *       placeholder="Diákok keresése..."
  *     />
  *     
  *     <div v-if="isSearching" class="text-muted mt-2">
- *       Searching...
+ *       Keresés...
  *     </div>
  *     
  *     <div v-else-if="error" class="text-danger mt-2">
@@ -45,7 +45,7 @@ import { getErrorMessage } from '@/i18n'
  *     </ul>
  *     
  *     <div v-else-if="searchQuery && !searchResults.length" class="text-muted mt-2">
- *       No results found
+ *       Nincs találat
  *     </div>
  *   </div>
  * </template>
@@ -63,28 +63,28 @@ import { getErrorMessage } from '@/i18n'
  * </script>
  * ```
  * 
- * @example With initial results and custom delay
+ * @example Kezdeti eredményekkel és egyedi késleltetéssel
  * ```javascript
  * const { searchQuery, searchResults, isSearching, error } = useSearch(
  *   async (query) => {
  *     const response = await api.searchStudents(query)
  *     return response.data.students
  *   },
- *   500 // 500ms delay
+ *   500 // 500ms késleltetés
  * )
  * ```
  * 
- * @example With clear button
+ * @example Törlés gombbal
  * ```vue
  * <template>
  *   <div class="input-group">
- *     <input v-model="searchQuery" class="form-control" placeholder="Search..." />
+ *     <input v-model="searchQuery" class="form-control" placeholder="Keresés..." />
  *     <button 
  *       v-if="searchQuery" 
  *       class="btn btn-outline-secondary"
  *       @click="clearSearch"
  *     >
- *       Clear
+ *       Törlés
  *     </button>
  *   </div>
  * </template>
@@ -94,22 +94,22 @@ import { getErrorMessage } from '@/i18n'
  * </script>
  * ```
  * 
- * @example Manual search trigger
+ * @example Kézi keresés indítása
  * ```javascript
  * const { searchQuery, search, searchResults, isSearching } = useSearch(searchApi)
  * 
- * // Programmatically trigger search
- * searchQuery.value = 'initial query'
- * // Or use the search method for manual trigger
- * search('custom query')
+ * // Keresés programozott indítása
+ * searchQuery.value = 'kezdeti lekérdezés'
+ * // Vagy a search metódus használata kézi indításhoz
+ * search('egyedi lekérdezés')
  * ```
  * 
- * @example With result transformation
+ * @example Eredmény transzformációval
  * ```javascript
  * const { searchQuery, searchResults, isSearching } = useSearch(
  *   async (query) => {
  *     const response = await api.search(query)
- *     // Transform results before displaying
+ *     // Eredmények transzformálása megjelenítés előtt
  *     return response.data.map(item => ({
  *       id: item.id,
  *       label: `${item.firstName} ${item.lastName}`,
@@ -126,11 +126,11 @@ export function useSearch(searchFn, delay = 300) {
   const error = ref(null)
 
   /**
-   * Perform the search operation
-   * @param {string} query - Search query string
+   * Keresési művelet végrehajtása
+   * @param {string} query - Keresési lekérdezés sztring
    */
   async function performSearch(query) {
-    // Clear results and don't search if query is empty
+    // Eredmények törlése és ne keressünk, ha a lekérdezés üres
     if (!query || query.trim() === '') {
       searchResults.value = []
       isSearching.value = false
@@ -151,15 +151,15 @@ export function useSearch(searchFn, delay = 300) {
     }
   }
 
-  // Create debounced search function
+  // Debounced keresési függvény létrehozása
   const { debouncedFn: debouncedSearch, cancel: cancelDebounce } = useDebounce(
     performSearch,
     delay
   )
 
   /**
-   * Manually trigger search with optional query
-   * @param {string} [query] - Optional query to search (uses searchQuery.value if not provided)
+   * Keresés kézi indítása opcionális lekérdezéssel
+   * @param {string} [query] - Opcionális lekérdezés (ha nincs megadva, a searchQuery.value-t használja)
    */
   function search(query) {
     if (query !== undefined) {
@@ -169,7 +169,7 @@ export function useSearch(searchFn, delay = 300) {
   }
 
   /**
-   * Clear search query and results
+   * Keresési lekérdezés és eredmények törlése
    */
   function clearSearch() {
     cancelDebounce()
@@ -179,17 +179,17 @@ export function useSearch(searchFn, delay = 300) {
     isSearching.value = false
   }
 
-  // Watch for changes in searchQuery and trigger debounced search
+  // Figyelje a searchQuery változásait és indítsa el a debounced keresést
   watch(searchQuery, (newQuery) => {
     if (newQuery.trim() === '') {
-      // Immediately clear results for empty query
+      // Azonnal törölje az eredményeket üres lekérdezés esetén
       searchResults.value = []
       error.value = null
       isSearching.value = false
       cancelDebounce()
     } else {
-      // Debounce the search
-      isSearching.value = true // Show loading immediately for UX
+      // Keresés debounce-olása
+      isSearching.value = true // Betöltés azonnali megjelenítése a jobb felhasználói élményért
       debouncedSearch(newQuery)
     }
   })

@@ -1,18 +1,18 @@
 /**
- * Jest Configuration for Backend Tests
+ * Jest konfiguráció backend tesztekhez
  */
 
 module.exports = {
-  // Use Node.js test environment
+  // Node.js teszt környezet használata
   testEnvironment: 'node',
 
-  // Test file patterns
+  // Teszt fájl minták
   testMatch: [
     '**/__tests__/**/*.js',
     '**/*.test.js'
   ],
 
-  // Coverage configuration
+  // Lefedettség konfiguráció
   collectCoverageFrom: [
     '**/*.js',
     '!node_modules/**',
@@ -23,18 +23,18 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
 
-  // Setup files to run before tests
+  // Beállító fájlok futtatása tesztek előtt
   // setupFilesAfterEnv: ['./tests/setup.js'],
 
-  // Test timeout (in milliseconds)
+  // Teszt időkorlát (ezredmásodpercben)
   testTimeout: 10000,
 
-  // Verbose output
+  // Részletes kimenet
   verbose: true,
 
-  // Clear mocks between tests
+  // Mock-ok törlése tesztek között
   clearMocks: true,
 
-  // Restore mocks after each test
+  // Mock-ok visszaállítása minden teszt után
   restoreMocks: true
 };

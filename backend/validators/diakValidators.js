@@ -1,22 +1,22 @@
 /**
- * Express Validator arrays for Diak (Student) endpoints
- * Provides validation rules with Hungarian error messages
+ * Express Validator tömbök Diák (hallgató) végpontokhoz
+ * Validációs szabályokat biztosít magyar hibaüzenetekkel
  */
 
 const { body, param, query } = require('express-validator');
 
 /**
- * Hungarian phone number regex pattern
- * Matches: +36 followed by 8-9 digits (mobile: 20, 30, 70; landline: 1, etc.)
+ * Magyar telefonszám regex minta
+ * Illeszkedik: +36 után 8-9 számjegy (mobil: 20, 30, 70; vezetékes: 1, stb.)
  */
 const HUNGARIAN_PHONE_REGEX = /^\+36[1-9][0-9]{7,8}$/;
 
 /**
- * Validator array for creating a new Diak
+ * Validátor tömb új diák létrehozásához
  * POST /api/diak
  */
 const createDiakValidator = [
-  // nev - required, 2-100 characters
+  // nev - kötelező, 2-100 karakter
   body('nev')
     .trim()
     .notEmpty()
@@ -24,32 +24,32 @@ const createDiakValidator = [
     .isLength({ min: 2, max: 100 })
     .withMessage('A név 2-100 karakter hosszú lehet'),
 
-  // email - optional, must be valid email format
+  // email - opcionális, érvényes email formátum
   body('email')
     .optional({ checkFalsy: true })
     .isEmail()
     .withMessage('Érvénytelen email cím')
     .normalizeEmail(),
 
-  // telefonszam - optional, must match Hungarian phone format
+  // telefonszam - opcionális, magyar telefonszám formátum
   body('telefonszam')
     .optional({ checkFalsy: true })
     .matches(HUNGARIAN_PHONE_REGEX)
     .withMessage('Érvénytelen telefonszám formátum (pl. +36301234567)'),
 
-  // szuletesiDatum - optional, must be ISO8601 date
+  // szuletesiDatum - opcionális, ISO8601 dátum formátum
   body('szuletesiDatum')
     .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage('Érvénytelen dátum formátum'),
 
-  // szulo_id - optional, nullable, must be positive integer
+  // szulo_id - opcionális, nullable, pozitív egész szám
   body('szulo_id')
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Érvénytelen szülő azonosító'),
 
-  // cim_id - optional, nullable, must be positive integer
+  // cim_id - opcionális, nullable, pozitív egész szám
   body('cim_id')
     .optional({ nullable: true })
     .isInt({ min: 1 })
@@ -57,16 +57,16 @@ const createDiakValidator = [
 ];
 
 /**
- * Validator array for updating a Diak
+ * Validátor tömb diák frissítéséhez
  * PUT /api/diak/:id
  */
 const updateDiakValidator = [
-  // param id - must be positive integer
+  // param id - pozitív egész szám
   param('id')
     .isInt({ min: 1 })
     .withMessage('Érvénytelen azonosító'),
 
-  // nev - optional, 2-100 characters
+  // nev - opcionális, 2-100 karakter
   body('nev')
     .optional()
     .trim()
@@ -77,23 +77,23 @@ const updateDiakValidator = [
 ];
 
 /**
- * Validator array for getting Diak list with query parameters
+ * Validátor tömb diák lista lekéréséhez lekérdezési paraméterekkel
  * GET /api/diak
  */
 const getDiakValidator = [
-  // query limit - optional, 1-100
+  // query limit - opcionális, 1-100
   query('limit')
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage('A limit 1-100 között lehet'),
 
-  // query offset - optional, min 0
+  // query offset - opcionális, min 0
   query('offset')
     .optional()
     .isInt({ min: 0 })
     .withMessage('Az offset nem lehet negatív'),
 
-  // query sort - optional, must be one of allowed fields
+  // query sort - opcionális, az engedélyezett mezők egyike
   query('sort')
     .optional()
     .isIn(['nev', 'id', 'createdAt'])

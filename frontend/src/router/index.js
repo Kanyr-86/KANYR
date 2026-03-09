@@ -60,7 +60,7 @@ const router = createRouter({
     {
       path: '/',
       redirect: (to) => {
-        // Import auth store to check user role
+        // Auth store importálása a felhasználói szerepkör ellenőrzéséhez
         const authStore = useAuthStore();
         if (authStore.isAuthenticated) {
           return authStore.isAdmin ? '/dashboard' : '/student-dashboard';
@@ -72,12 +72,12 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  // Check if auth store is available (it might not be during initial load)
+  // Ellenőrizzük, hogy az auth store elérhető-e (lehet, hogy még nem az inicializálás során)
   let authStore
   try {
     authStore = useAuthStore()
   } catch (e) {
-    // If auth store is not available, allow navigation to login page
+    // Ha az auth store nem elérhető, engedélyezzük a navigációt a bejelentkezési oldalra
     if (to.path === '/login') {
       next()
     } else {
@@ -86,7 +86,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
-  // Initialize auth state if needed
+  // Auth állapot inicializálása, ha szükséges
   if (!authStore.user && authStore.isAuthenticated) {
     try {
       await authStore.initializeAuth()
@@ -98,16 +98,16 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
   } else if (to.meta.requiresAuth && authStore.isAuthenticated) {
-    // Check if user has access to the specific route
+    // Ellenőrizzük, hogy a felhasználónak van-e hozzáférése az adott útvonalhoz
     if (!authStore.hasAccess(to.name)) {
-      // Redirect to appropriate dashboard based on role
+      // Átirányítás a megfelelő dashboard-ra szerepkör alapján
       const dashboardRoute = authStore.isAdmin ? '/dashboard' : '/student-dashboard'
       next(dashboardRoute)
     } else {
       next()
     }
   } else if (to.path === '/' && authStore.isAuthenticated) {
-    // Redirect to appropriate dashboard based on role
+    // Átirányítás a megfelelő dashboard-ra szerepkör alapján
     const dashboardRoute = authStore.isAdmin ? '/dashboard' : '/student-dashboard'
     next(dashboardRoute)
   } else {

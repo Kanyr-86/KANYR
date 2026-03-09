@@ -6,7 +6,7 @@ export const useToastStore = defineStore('toast', {
   }),
 
   getters: {
-    // Get toast by ID
+    // Toast lekérdezése azonosító alapján
     getToastById: (state) => (id) => {
       return state.toasts.find(toast => toast.id === id)
     }
@@ -14,11 +14,11 @@ export const useToastStore = defineStore('toast', {
 
   actions: {
     /**
-     * Add a new toast notification
-     * @param {string} message - The message to display
-     * @param {string} type - Type of toast: 'success', 'error', 'warning', 'info'
-     * @param {number} duration - Duration in milliseconds before auto-remove
-     * @returns {number} The ID of the created toast
+     * Új toast értesítés hozzáadása
+     * @param {string} message - A megjelenítendő üzenet
+     * @param {string} type - A toast típusa: 'success', 'error', 'warning', 'info'
+     * @param {number} duration - Időtartam milliszekundumban az automatikus eltávolítás előtt
+     * @returns {number} A létrehozott toast azonosítója
      */
     addToast(message, type = 'info', duration = 3000) {
       const id = Date.now() + Math.random()
@@ -32,7 +32,7 @@ export const useToastStore = defineStore('toast', {
 
       this.toasts.push(toast)
 
-      // Auto-remove toast after duration
+      // Toast automatikus eltávolítása az időtartam után
       if (duration > 0) {
         setTimeout(() => {
           this.removeToast(id)
@@ -43,8 +43,8 @@ export const useToastStore = defineStore('toast', {
     },
 
     /**
-     * Remove a toast by ID
-     * @param {number} id - The ID of the toast to remove
+     * Toast eltávolítása azonosító alapján
+     * @param {number} id - Az eltávolítandó toast azonosítója
      */
     removeToast(id) {
       const index = this.toasts.findIndex(toast => toast.id === id)
@@ -54,23 +54,23 @@ export const useToastStore = defineStore('toast', {
     },
 
     /**
-     * Clear all toasts
+     * Összes toast törlése
      */
     clearAll() {
       this.toasts = []
     },
 
     /**
-     * Validate and normalize toast type
-     * @param {string} type - The type to validate
-     * @returns {string} Validated type
+     * Toast típus érvényesítése és normalizálása
+     * @param {string} type - Az érvényesítendő típus
+     * @returns {string} Érvényesített típus
      */
     validateType(type) {
       const validTypes = ['success', 'error', 'warning', 'info']
       return validTypes.includes(type) ? type : 'info'
     },
 
-    // Convenience methods for different toast types
+    // Kényelmi metódusok különböző toast típusokhoz
     success(message, duration = 3000) {
       return this.addToast(message, 'success', duration)
     },

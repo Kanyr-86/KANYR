@@ -1,20 +1,20 @@
 import { onUnmounted } from 'vue'
 
 /**
- * useDebounce - A composable for debouncing function calls
+ * useDebounce - Composable függvényhívások debouncing-jához
  * 
- * Creates a debounced version of a function that delays execution
- * until after a specified delay has elapsed since the last call.
- * Automatically cleans up pending timers on component unmount.
+ * Létrehoz egy debounced verziót egy függvényből, amely késlelteti a végrehajtást,
+ * amíg a megadott késleltetési idő le nem telik az utolsó hívás óta.
+ * Automatikusan takarítja a függőben lévő időzítőket a komponens unmount-olásakor.
  * 
- * @param {Function} fn - The function to debounce
- * @param {number} delay - Delay in milliseconds (default: 300ms)
- * @returns {Object} Debounced function and control methods
- * @returns {Function} returns.debouncedFn - Debounced version of the function
- * @returns {Function} returns.cancel - Cancel any pending execution
- * @returns {Function} returns.flush - Immediately execute pending function
+ * @param {Function} fn - A debounce-olandó függvény
+ * @param {number} delay - Késleltetés milliszekundumban (alapértelmezett: 300ms)
+ * @returns {Object} Debounced függvény és vezérlő metódusok
+ * @returns {Function} returns.debouncedFn - A függvény debounced verziója
+ * @returns {Function} returns.cancel - Bármely függőben lévő végrehajtás megszakítása
+ * @returns {Function} returns.flush - Függőben lévő függvény azonnali végrehajtása
  * 
- * @example Basic usage
+ * @example Alapvető használat
  * ```javascript
  * import { useDebounce } from '@/composables/useDebounce'
  * 
@@ -30,7 +30,7 @@ import { onUnmounted } from 'vue'
  * // Executes after 500ms with { name: 'Jane' }
  * ```
  * 
- * @example With cancel and flush
+ * @example Cancel és flush használata
  * ```javascript
  * const { debouncedFn, cancel, flush } = useDebounce(searchApi, 300)
  * 
@@ -44,7 +44,7 @@ import { onUnmounted } from 'vue'
  * flush() // Executes now with last arguments
  * ```
  * 
- * @example In a component with input handling
+ * @example Komponensben bemenet kezeléssel
  * ```vue
  * <template>
  *   <input 
@@ -73,7 +73,7 @@ import { onUnmounted } from 'vue'
  * </script>
  * ```
  * 
- * @example Form auto-save
+ * @example Űrlap automatikus mentése
  * ```javascript
  * const { debouncedFn: autoSave } = useDebounce(async (formData) => {
  *   await api.updateForm(formData)
@@ -92,19 +92,19 @@ export function useDebounce(fn, delay = 300) {
   let lastThis = null
 
   /**
-   * Debounced function - delays execution until after delay ms
-   * @param {...any} args - Arguments to pass to the original function
+   * Debounced függvény - késlelteti a végrehajtást a késleltetési idő után
+   * @param {...any} args - Az eredeti függvénynek átadandó argumentumok
    */
   function debouncedFn(...args) {
     lastArgs = args
     lastThis = this
 
-    // Clear any existing timeout
+    // Bármely meglévő időkorlát törlése
     if (timeoutId) {
       clearTimeout(timeoutId)
     }
 
-    // Set new timeout
+    // Új időkorlát beállítása
     timeoutId = setTimeout(() => {
       fn.apply(lastThis, lastArgs)
       timeoutId = null
@@ -114,7 +114,7 @@ export function useDebounce(fn, delay = 300) {
   }
 
   /**
-   * Cancel any pending execution
+   * Bármely függőben lévő végrehajtás megszakítása
    */
   function cancel() {
     if (timeoutId) {
@@ -126,7 +126,7 @@ export function useDebounce(fn, delay = 300) {
   }
 
   /**
-   * Immediately execute the pending function with last arguments
+   * Függőben lévő függvény azonnali végrehajtása az utolsó argumentumokkal
    */
   function flush() {
     if (timeoutId && lastArgs) {
@@ -138,7 +138,7 @@ export function useDebounce(fn, delay = 300) {
     }
   }
 
-  // Cleanup on component unmount
+  // Takarítás a komponens unmount-olásakor
   onUnmounted(() => {
     cancel()
   })

@@ -160,7 +160,7 @@ export default {
     const getAvailableRooms = async () => {
       loadingRooms.value = true;
       try {
-        const response = await api.get('/szobas');
+        const response = await api.get('/rooms');
         availableRooms.value = response.data.data.map(room => ({
           ...room,
           isAvailable: room.osszes_hely > 0 // Egyszerűsített ellenőrzés

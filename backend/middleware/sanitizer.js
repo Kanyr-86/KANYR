@@ -1,38 +1,38 @@
 /**
- * Input Sanitizer Middleware
- * Protects against NoSQL injection attacks by removing dangerous keys
+ * Bemeneti adat tisztító middleware
+ * Védelem a NoSQL injekciós támadások ellen veszélyes kulcsok eltávolításával
  */
 
 /**
- * Recursively sanitize an object by removing keys starting with '$'
- * @param {*} obj - Object, array, or primitive to sanitize
- * @returns {*} - Sanitized copy of the input
+ * Rekurzívan tisztít egy objektumot a '$'-el kezdődő kulcsok eltávolításával
+ * @param {*} obj - Tisztítandó objektum, tömb vagy primitív érték
+ * @returns {*} - A bemenet tisztított másolata
  */
 const sanitizeObject = (obj) => {
-  // Return primitives as-is
+  // Primitív értékek változtatás nélküli visszaadása
   if (!obj || typeof obj !== 'object') {
     return obj;
   }
 
-  // Handle arrays - recursively sanitize each element
+  // Tömbök kezelése - minden elem rekurzív tisztítása
   if (Array.isArray(obj)) {
     return obj.map(item => sanitizeObject(item));
   }
 
-  // Handle objects - remove dangerous keys and recursively sanitize values
+  // Objektumok kezelése - veszélyes kulcsok eltávolítása és értékek rekurzív tisztítása
   const sanitized = {};
   for (const key in obj) {
-    // Skip keys starting with '$' (NoSQL injection protection)
+    // '$'-el kezdődő kulcsok kihagyása (NoSQL injekció elleni védelem)
     if (key.startsWith('$')) {
       continue;
     }
 
-    // Also skip keys containing '.' (MongoDB dot notation injection)
+    // '.'-t tartalmazó kulcsok kihagyása is (MongoDB dot notation injekció)
     if (key.includes('.')) {
       continue;
     }
 
-    // Recursively sanitize nested objects/arrays
+    // Beágyazott objektumok/tömbök rekurzív tisztítása
     sanitized[key] = sanitizeObject(obj[key]);
   }
 
@@ -40,23 +40,23 @@ const sanitizeObject = (obj) => {
 };
 
 /**
- * Middleware to sanitize all incoming request data
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
+ * Middleware az összes bejövő kérés adatának tisztításához
+ * @param {Object} req - Express kérés objektum
+ * @param {Object} res - Express válasz objektum
+ * @param {Function} next - Express next függvény
  */
 const sanitizeInput = (req, res, next) => {
-  // Sanitize body
+  // Body tisztítása
   if (req.body) {
     req.body = sanitizeObject(req.body);
   }
 
-  // Sanitize query parameters
+  // Lekérdezési paraméterek tisztítása
   if (req.query) {
     req.query = sanitizeObject(req.query);
   }
 
-  // Sanitize route parameters
+  // Route paraméterek tisztítása
   if (req.params) {
     req.params = sanitizeObject(req.params);
   }
