@@ -281,11 +281,19 @@ class DiakRepository {
 
   /**
    * Aktív diákok lekérése (akik jelenleg szobában laknak)
-   * @returns {Promise<Array>} - aktív diákok listája
+   * @param {Object} options - lekérdezési opciók (limit, offset, sort, order)
+   * @returns {Promise<Object>} - aktív diákok listája és összesítő adatok
    */
-  async findActive() {
+  async findActive(options = {}) {
     try {
-      return await this.Diak.findAll({
+      const {
+        limit = 50,
+        offset = 0,
+        sort = 'nev',
+        order = 'ASC'
+      } = options;
+
+      const queryOptions = {
         include: [
           {
             model: this.SzobaBekoltozes,
@@ -303,8 +311,32 @@ class DiakRepository {
             model: this.Lakcim,
             as: 'lakcim'
           }
+        ],
+        order: [[sort, order]],
+        limit,
+        offset
+      };
+
+      // Get total count for pagination metadata
+      const totalCount = await this.Diak.count({
+        include: [
+          {
+            model: this.SzobaBekoltozes,
+            as: 'bekoltozesek',
+            where: {
+              kikoltozes_datum: null
+            },
+            required: true
+          }
         ]
       });
+
+      const diaks = await this.Diak.findAll(queryOptions);
+
+      return {
+        rows: diaks,
+        count: totalCount
+      };
     } catch (error) {
       throw new Error(`Hiba az aktív diákok lekérésében: ${error.message}`);
     }

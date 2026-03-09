@@ -280,7 +280,7 @@ class DiakController {
    * Diákok keresése
    */
   searchStudents = asyncHandler(async (req, res) => {
-    const { nev, email, szoba_szama, kapcsolat_tipusa, aktiv } = req.query;
+    const { nev, email, szoba_szama, kapcsolat_tipusa, aktiv, limit, offset, sort, order } = req.query;
 
     const searchCriteria = {};
     if (nev) searchCriteria.nev = nev;
@@ -289,13 +289,25 @@ class DiakController {
     if (kapcsolat_tipusa) searchCriteria.kapcsolat_tipusa = kapcsolat_tipusa;
     if (aktiv !== undefined) searchCriteria.aktiv = aktiv === 'true';
 
-    const students = await this.diakService.searchStudents(searchCriteria);
+    const paginationOptions = {
+      limit: limit ? parseInt(limit) : 50,
+      offset: offset ? parseInt(offset) : 0,
+      sort: sort || 'nev',
+      order: order ? (order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC') : 'ASC'
+    };
+
+    const result = await this.diakService.searchStudents(searchCriteria, paginationOptions);
 
     res.json({
       success: true,
-      data: students,
+      data: result.rows,
       searchCriteria,
-      count: students.length
+      pagination: {
+        limit: paginationOptions.limit,
+        offset: paginationOptions.offset,
+        total: result.count,
+        hasMore: paginationOptions.offset + result.rows.length < result.count
+      }
     });
   });
 
@@ -338,12 +350,31 @@ class DiakController {
    * Aktív diákok lekérése
    */
   getActiveStudents = asyncHandler(async (req, res) => {
-    const activeStudents = await this.diakService.repository.findActive();
+    const { 
+      limit = 50, 
+      offset = 0, 
+      sort = 'nev', 
+      order = 'ASC'
+    } = req.query;
+
+    const options = {
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      sort,
+      order: order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'
+    };
+
+    const result = await this.diakService.repository.findActive(options);
 
     res.json({
       success: true,
-      data: activeStudents,
-      count: activeStudents.length
+      data: result.rows,
+      pagination: {
+        limit: options.limit,
+        offset: options.offset,
+        total: result.count,
+        hasMore: options.offset + result.rows.length < result.count
+      }
     });
   });
 

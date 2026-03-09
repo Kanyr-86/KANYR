@@ -377,11 +377,18 @@ class DiakService {
   /**
    * Diák keresése több feltétel alapján
    * @param {Object} searchCriteria - keresési feltételek
-   * @returns {Promise<Array>} - talált diákok
+   * @param {Object} paginationOptions - lapozási opciók (limit, offset, sort, order)
+   * @returns {Promise<Object>} - talált diákok és összesítő adatok
    */
-  async searchStudents(searchCriteria) {
+  async searchStudents(searchCriteria, paginationOptions = {}) {
     try {
       const { nev, email, szoba_szama, kapcsolat_tipusa, aktiv } = searchCriteria;
+      const { 
+        limit = 50, 
+        offset = 0, 
+        sort = 'nev', 
+        order = 'ASC' 
+      } = paginationOptions;
       
       const queryOptions = {
         include: [
@@ -395,7 +402,10 @@ class DiakService {
             where: aktiv === true ? { kikoltozes_datum: null } : undefined,
             required: false
           }
-        ]
+        ],
+        order: [[sort, order]],
+        limit,
+        offset
       };
 
       const whereConditions = {};
@@ -414,7 +424,25 @@ class DiakService {
 
       queryOptions.where = whereConditions;
 
-      return await this.Diak.findAll(queryOptions);
+      // Get total count for pagination metadata
+      const totalCount = await this.Diak.count({
+        where: whereConditions,
+        include: [
+          {
+            model: this.SzobaBekoltozes,
+            as: 'bekoltozesek',
+            where: aktiv === true ? { kikoltozes_datum: null } : undefined,
+            required: false
+          }
+        ]
+      });
+
+      const students = await this.Diak.findAll(queryOptions);
+
+      return {
+        rows: students,
+        count: totalCount
+      };
     } catch (error) {
       throw new Error(`Hiba a diákok keresése során: ${error.message}`);
     }

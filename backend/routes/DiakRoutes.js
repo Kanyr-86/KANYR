@@ -62,7 +62,18 @@ const validateSearch = [
   query('nev').optional().isString().withMessage('A név szöveg formátumban kell legyen'),
   query('email').optional().isEmail().withMessage('Érvényes email címet adjon meg'),
   query('kapcsolat_tipusa').optional().isIn(['anya', 'apa', 'gondviselo']).withMessage('A kapcsolat típusa csak anya, apa vagy gondviselo lehet'),
-  query('aktiv').optional().isBoolean().withMessage('Az aktiv paraméter boolean típusú kell legyen')
+  query('aktiv').optional().isBoolean().withMessage('Az aktiv paraméter boolean típusú kell legyen'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('A limit 1 és 100 közötti egész szám lehet'),
+  query('offset').optional().isInt({ min: 0 }).withMessage('Az offset nemnegatív egész szám kell legyen'),
+  query('sort').optional().isIn(['nev', 'email', 'szuletesi_datum', 'created_at']).withMessage('Érvénytelen rendezési mező'),
+  query('order').optional().isIn(['ASC', 'DESC', 'asc', 'desc']).withMessage('A sorrend csak ASC vagy DESC lehet')
+];
+
+const validatePagination = [
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('A limit 1 és 100 közötti egész szám lehet'),
+  query('offset').optional().isInt({ min: 0 }).withMessage('Az offset nemnegatív egész szám kell legyen'),
+  query('sort').optional().isIn(['nev', 'email', 'szuletesi_datum', 'created_at']).withMessage('Érvénytelen rendezési mező'),
+  query('order').optional().isIn(['ASC', 'DESC', 'asc', 'desc']).withMessage('A sorrend csak ASC vagy DESC lehet')
 ];
 
 const validateEnroll = [
@@ -92,7 +103,7 @@ router.get('/', authenticate, getDiakValidator, validationHandler, asyncHandler(
   return controller.getAllDiaks(req, res);
 }));
 
-router.get('/active', authenticate, asyncHandler(async (req, res) => {
+router.get('/active', authenticate, validatePagination, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getActiveStudents(req, res);
 }));
