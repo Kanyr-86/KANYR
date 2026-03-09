@@ -41,7 +41,13 @@ module.exports = (sequelize) => {
     tableName: 'notifications',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { fields: ['diak_id'] },
+      { fields: ['szoba_valtoztatas_id'] },
+      { fields: ['elolvasva'] },
+      { fields: ['diak_id', 'elolvasva'] }
+    ]
   });
 
   // Kapcsolatok definiálása

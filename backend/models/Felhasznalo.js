@@ -81,7 +81,12 @@ module.exports = (sequelize) => {
     tableName: 'felhasznalos',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { unique: true, fields: ['email'] },
+      { unique: true, fields: ['username'] },
+      { fields: ['diak_id'] }
+    ]
   });
 
   // Kapcsolatok definiálása

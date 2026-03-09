@@ -35,7 +35,10 @@ module.exports = (sequelize) => {
     tableName: 'szobas',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { unique: true, fields: ['szoba_szama'] }
+    ]
   });
 
   // Kapcsolatok definiálása

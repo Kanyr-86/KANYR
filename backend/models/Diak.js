@@ -128,7 +128,16 @@ module.exports = (sequelize) => {
     tableName: 'diaks',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { unique: true, fields: ['email'] },
+      { fields: ['szulo_id'] },
+      { fields: ['cim_id'] },
+      { fields: ['nev'] },
+      { unique: true, fields: ['szemelyi_igazolvany_szam'] },
+      { unique: true, fields: ['taj_szam'] },
+      { unique: true, fields: ['diakigazolvany_szam'] }
+    ]
   });
 
   // Kapcsolatok definiálása

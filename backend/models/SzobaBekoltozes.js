@@ -49,7 +49,14 @@ module.exports = (sequelize) => {
     tableName: 'szoba_bekoltozes',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { fields: ['diak_id'] },
+      { fields: ['szoba_id'] },
+      { fields: ['bekoltozes_datum'] },
+      { fields: ['kikoltozes_datum'] },
+      { fields: ['diak_id', 'kikoltozes_datum'] }
+    ]
   });
 
   // Kapcsolatok definiálása

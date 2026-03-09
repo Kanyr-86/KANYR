@@ -65,7 +65,12 @@ module.exports = (sequelize) => {
     tableName: 'szulos',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { unique: true, fields: ['email'] },
+      { fields: ['cim_id'] },
+      { unique: true, fields: ['szemelyi_igazolvany_szam'] }
+    ]
   });
 
   // Kapcsolatok definiálása

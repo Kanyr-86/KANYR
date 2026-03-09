@@ -64,7 +64,15 @@ module.exports = (sequelize) => {
     tableName: 'szobavaltoztatas',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { fields: ['diak_id'] },
+      { fields: ['jelenlegi_szoba_id'] },
+      { fields: ['kivant_szoba_id'] },
+      { fields: ['statusz'] },
+      { fields: ['academic_year'] },
+      { fields: ['statusz', 'academic_year'] }
+    ]
   });
 
   // Kapcsolatok definiálása

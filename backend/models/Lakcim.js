@@ -49,7 +49,11 @@ module.exports = (sequelize) => {
     tableName: 'lakcims',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      { fields: ['iranyitoszam'] },
+      { fields: ['varos'] }
+    ]
   });
 
   // Kapcsolatok definiálása
