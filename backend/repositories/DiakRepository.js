@@ -1,5 +1,3 @@
-const { Op } = require('sequelize');
-
 class DiakRepository {
   constructor(db) {
     this.db = db;

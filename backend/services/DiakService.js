@@ -1,4 +1,4 @@
-const { Transaction, Op } = require('sequelize');
+const { Op } = require('sequelize');
 
 class DiakService {
   constructor(db, options = {}) {

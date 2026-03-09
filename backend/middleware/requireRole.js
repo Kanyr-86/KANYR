@@ -4,7 +4,6 @@
  */
 
 const { UnauthorizedError, ForbiddenError } = require('../utils/AppError');
-const { ROLES } = require('../config/roles');
 
 /**
  * Gyártófüggvény, amely middleware-t hoz létre a felhasználói szerepkörök ellenőrzéséhez

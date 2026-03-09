@@ -1,6 +1,6 @@
 const logger = require('../utils/logger');
 const { verifyToken } = require('../utils/authUtils');
-const { ROLES, mapAdminToRole, isAdminRole, canModifyRole } = require('../config/roles');
+const { mapAdminToRole, isAdminRole, canModifyRole } = require('../config/roles');
 
 /**
  * Hitelesítési middleware - JWT token ellenőrzése

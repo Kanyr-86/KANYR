@@ -1,3 +1,5 @@
+const { Op } = require('sequelize');
+
 class SzobaService {
   constructor(db) {
     this.db = db;
@@ -44,7 +46,6 @@ class SzobaService {
    */
   async getAllSzobas(options = {}) {
     try {
-      const { Op } = require('sequelize');
       const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
 
       const where = {};
@@ -138,7 +139,6 @@ class SzobaService {
   async getRoomStatistics() {
     try {
       const { sequelize } = this.db;
-      const { Op } = require('sequelize');
 
       // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
       const occupancyData = await this.db.SzobaBekoltozes.findAll({
