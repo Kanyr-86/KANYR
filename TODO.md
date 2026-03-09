@@ -1,5 +1,6 @@
 # KANYR - Projekt Állapot és Feladatok
 
+**Verzió**: 1.11  
 **Utolsó frissítés**: 2026.02.23
 
 ---
@@ -68,6 +69,7 @@
 ### Konfiguráció
 - [x] database.js - Sequelize kapcsolat
 - [x] jest.config.js - ✅ *ÚJ: Jest teszt konfiguráció*
+- [x] roles.js - ✅ *ÚJ: Központi szerepkör konstansok (ROLES, VALID_ROLES, stb.)*
 
 ### App.js
 - [x] CORS konfiguráció
@@ -200,6 +202,14 @@
 ---
 
 ## 📋 Implementációs történet
+
+### 2026.03.09 - Szerepkör rendszer egységesítése
+- Központi szerepkör konstansok létrehozva (`backend/config/roles.js`)
+- Szerepkörök: `főtitkár` (admin), `titkár` (titkár), `diák` (diák)
+- `authMiddleware.js` frissítve a konstansok használatára
+- `authValidators.js` frissítve a dinamikus szerepkör validációra
+- `DiakRoutes.js` frissítve a `ROLES` konstansok használatára
+- Egységes hibaüzenetek mindenütt
 
 ### 2026.02.23 - Backend Infrastruktúra és Biztonság
 - Hibakezelési infrastruktúra (AppError, errorHandler, asyncHandler)

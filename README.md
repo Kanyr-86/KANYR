@@ -92,4 +92,4 @@ Ganz Ábrahám Szakközép és Technikum - 13.B osztály
 ---
 
 **Verzió**: 1.11  
-**Utolsó frissítés**: 2026.02.19
+**Utolsó frissítés**: 2026.02.23

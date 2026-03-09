@@ -5,6 +5,7 @@ const { createDiakValidator, updateDiakValidator, getDiakValidator } = require('
 const validationHandler = require('../middleware/validationHandler');
 const { requireRole, requireSelfOrRole } = require('../middleware/requireRole');
 const asyncHandler = require('../utils/asyncHandler');
+const { ROLES } = require('../config/roles');
 
 const router = express.Router();
 
@@ -146,7 +147,7 @@ router.put('/students/notifications/read-all', authenticate, resolveDiakId, asyn
 }));
 
 // Részletes nézet - minden bejelentkezett felhasználó
-router.get('/:id', authenticate, requireSelfOrRole('id', 'titkár'), validateId, validationHandler, asyncHandler(async (req, res) => {
+router.get('/:id', authenticate, requireSelfOrRole('id', ROLES.TITKAR, ROLES.FOTITKAR), validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getDiakById(req, res);
 }));
@@ -173,8 +174,8 @@ router.post('/bulk-enroll', authenticate, isAdmin, asyncHandler(async (req, res)
   return controller.bulkEnrollStudents(req, res);
 }));
 
-// Létrehozás, módosítás, törlés - csak főtitkár
-router.post('/', authenticate, requireRole('titkár'), createDiakValidator, validationHandler, asyncHandler(async (req, res) => {
+// Létrehozás, módosítás, törlés - csak főtitkár és titkár
+router.post('/', authenticate, requireRole(ROLES.TITKAR, ROLES.FOTITKAR), createDiakValidator, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.createDiak(req, res);
 }));

@@ -4,6 +4,7 @@
  */
 
 const { body } = require('express-validator');
+const { VALID_ROLES } = require('../config/roles');
 
 /**
  * Password complexity regex pattern
@@ -63,8 +64,8 @@ const registerValidator = [
   // szerepkor - optional, must be one of allowed values
   body('szerepkor')
     .optional()
-    .isIn(['titkár', 'diák'])
-    .withMessage('Érvénytelen szerepkör (megengedett: titkár, diák)')
+    .isIn(VALID_ROLES)
+    .withMessage(`Érvénytelen szerepkör (megengedett: ${VALID_ROLES.join(', ')})`)
 ];
 
 module.exports = {

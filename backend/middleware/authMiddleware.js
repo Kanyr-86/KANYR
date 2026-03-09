@@ -1,4 +1,5 @@
 const { verifyToken } = require('../utils/authUtils');
+const { ROLES, mapAdminToRole, isAdminRole, canModifyRole } = require('../config/roles');
 
 /**
  * Authentication middleware - verifies JWT token
@@ -42,12 +43,12 @@ async function authenticate(req, res, next) {
 
     // Attach user to request
     // Map admin boolean to szerepkor for role-based access control
-    const szerepkor = user.admin ? 'admin' : 'titkár';
+    const szerepkor = mapAdminToRole(user.admin);
     req.user = {
       userId: user.user_id,
       username: user.username,
       email: user.email,
-      admin: user.admin,
+      admin: user.admin, // Keep for backward compatibility
       szerepkor: szerepkor
     };
 
@@ -62,18 +63,18 @@ async function authenticate(req, res, next) {
 }
 
 /**
- * Admin middleware - checks if user is admin
+ * Admin middleware - checks if user is admin (főtitkár)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Next middleware function
  */
 function isAdmin(req, res, next) {
   try {
-    // Check if user is authenticated and is admin
-    if (!req.user || !req.user.admin) {
+    // Check if user is authenticated and has admin role (főtitkár)
+    if (!req.user || !isAdminRole(req.user.szerepkor)) {
       return res.status(403).json({
         success: false,
-        error: 'Admin jogok szükségesek ehhez a művelethez'
+        error: 'Főtitkár jogok szükségesek ehhez a művelethez'
       });
     }
 
@@ -89,18 +90,18 @@ function isAdmin(req, res, next) {
 
 /**
  * Check if user can modify data (create, update, delete)
- * Only admin can create/update/delete entities
+ * Both főtitkár and titkár can create/update/delete entities
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Next middleware function
  */
 function canModify(req, res, next) {
   try {
-    // Check if user is authenticated and is admin
-    if (!req.user || !req.user.admin) {
+    // Check if user is authenticated and has permission to modify
+    if (!req.user || !canModifyRole(req.user.szerepkor)) {
       return res.status(403).json({
         success: false,
-        error: 'Csak főtitkár végezheti ezt a műveletet'
+        error: 'Csak titkár vagy főtitkár végezheti ezt a műveletet'
       });
     }
 

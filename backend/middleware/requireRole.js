@@ -4,6 +4,7 @@
  */
 
 const { UnauthorizedError, ForbiddenError } = require('../utils/AppError');
+const { ROLES } = require('../config/roles');
 
 /**
  * Factory function that creates middleware to check user roles
@@ -11,8 +12,8 @@ const { UnauthorizedError, ForbiddenError } = require('../utils/AppError');
  * @returns {Function} Express middleware function
  * 
  * @example
- * // Only allow admin and titkar roles
- * router.delete('/user/:id', authenticate, requireRole('admin', 'titkar'), deleteUser);
+ * // Only allow főtitkár and titkár roles
+ * router.delete('/user/:id', authenticate, requireRole(ROLES.FOTITKAR, ROLES.TITKAR), deleteUser);
  */
 const requireRole = (...roles) => {
   return (req, res, next) => {
@@ -38,8 +39,8 @@ const requireRole = (...roles) => {
  * @returns {Function} Express middleware function
  * 
  * @example
- * // Allow user to modify their own data, or admin/titkar to modify any
- * router.put('/diak/:id', authenticate, requireSelfOrRole('id', 'admin', 'titkar'), updateDiak);
+ * // Allow user to modify their own data, or főtitkár/titkár to modify any
+ * router.put('/diak/:id', authenticate, requireSelfOrRole('id', ROLES.FOTITKAR, ROLES.TITKAR), updateDiak);
  */
 const requireSelfOrRole = (idParam, ...roles) => {
   return (req, res, next) => {
