@@ -1,20 +1,21 @@
 const db = require('./models');
+const logger = require('./utils/logger');
 
 async function testDatabase() {
   try {
     await db.sequelize.authenticate();
-    console.log('✓ Database connected successfully');
+    logger.info('✓ Database connected successfully');
     
     // Táblák létezésének ellenőrzése
     const tables = await db.sequelize.getQueryInterface().showAllTables();
-    console.log('✓ Tables found:', tables);
+    logger.info('✓ Tables found', { tables });
     
     // Tesztadatok létezésének ellenőrzése
     const users = await db.Felhasznalo.findAll();
-    console.log('✓ Users found:', users.length);
+    logger.info('✓ Users found', { count: users.length });
     
     const diaks = await db.Diak.findAll();
-    console.log('✓ Students found:', diaks.length);
+    logger.info('✓ Students found', { count: diaks.length });
     
     // Konkrét felhasználó tesztelése
     const user = await db.Felhasznalo.findOne({
@@ -22,13 +23,13 @@ async function testDatabase() {
     });
     
     if (user) {
-      console.log('✓ Test user found:', user.username, 'diak_id:', user.diak_id);
+      logger.info('✓ Test user found', { username: user.username, diak_id: user.diak_id });
     } else {
-      console.log('✗ Test user not found');
+      logger.warn('✗ Test user not found');
     }
     
   } catch (error) {
-    console.error('✗ Database connection error:', error.message);
+    logger.error('✗ Database connection error', { message: error.message, stack: error.stack });
   } finally {
     await db.sequelize.close();
   }

@@ -3,6 +3,7 @@
  * Központosítja a hibakezelést és egységes hibaválaszokat biztosít
  */
 
+const logger = require('../utils/logger');
 const { 
   AppError, 
   ValidationError, 
@@ -20,13 +21,13 @@ const {
  * @param {Function} next - Express next függvény
  */
 const errorHandler = (err, req, res, next) => {
-  // Hiba naplózása a konzolra
-  console.error(`[${err.name}] ${err.message}`);
-  
-  // Stack trace naplózása fejlesztői környezetben
-  if (process.env.NODE_ENV === 'development') {
-    console.error(err.stack);
-  }
+  // Hiba naplózása a strukturált loggerrel
+  logger.logError(err, {
+    url: req.originalUrl,
+    method: req.method,
+    ip: req.ip,
+    userId: req.user?.userId || null
+  });
 
   // Alapértelmezett értékek
   let statusCode = err.statusCode || 500;

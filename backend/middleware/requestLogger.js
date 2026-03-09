@@ -3,6 +3,8 @@
  * HTTP kérés részleteit naplózza válaszidővel együtt
  */
 
+const logger = require('../utils/logger');
+
 /**
  * Middleware az összes HTTP kérés naplózásához
  * @param {Object} req - Express kérés objektum
@@ -22,13 +24,8 @@ const requestLogger = (req, res, next) => {
     // Időtartam számítása
     const duration = Date.now() - startTime;
     
-    // ISO időbélyeg lekérdezése
-    const timestamp = new Date().toISOString();
-    
-    // Kérés részleteinek naplózása
-    console.log(
-      `[${timestamp}] ${req.method} ${req.originalUrl} - ${res.statusCode} - ${duration}ms - ${req.ip}`
-    );
+    // Naplózás a strukturált loggerrel
+    logger.logRequest(req, res, duration);
   });
 
   // Folytatás a következő middleware-rel

@@ -1,9 +1,13 @@
+const logger = require('../utils/logger');
+
 class SzuloRepository {
   constructor(db) {
-    console.log('SzuloRepository constructor called with db:', db ? 'db object exists' : 'db is null/undefined');
-    console.log('Szulo model available:', db && db.Szulo ? 'yes' : 'no');
-    console.log('Diak model available:', db && db.Diak ? 'yes' : 'no');
-    console.log('Lakcim model available:', db && db.Lakcim ? 'yes' : 'no');
+    logger.debug('SzuloRepository constructor called', {
+      dbExists: db ? true : false,
+      szuloModel: db && db.Szulo ? true : false,
+      diakModel: db && db.Diak ? true : false,
+      lakcimModel: db && db.Lakcim ? true : false
+    });
 
     this.db = db;
     this.Szulo = db.Szulo;

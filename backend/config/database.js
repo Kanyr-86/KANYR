@@ -1,12 +1,13 @@
 const { Sequelize } = require('sequelize');
 const path = require('path');
+const logger = require('../utils/logger');
 require('dotenv').config();
 
 // SQLite adatbázis konfiguráció
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: path.join(__dirname, 'database.sqlite'),
-  logging: process.env.NODE_ENV === 'production' ? false : console.log, // SQL lekérdezések naplózása (csak development)
+  logging: process.env.NODE_ENV === 'production' ? false : logger.logQuery, // SQL lekérdezések naplózása (csak development)
   define: {
     // Alapértelmezett beállítások minden modellhez
     freezeTableName: false, // Sequelize automatikusan többesszámúvá alakítja a táblaneveket
@@ -28,9 +29,9 @@ const sequelize = new Sequelize({
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✓ Sikeres adatbázis kapcsolat létrehozva');
+    logger.info('✓ Sikeres adatbázis kapcsolat létrehozva');
   } catch (error) {
-    console.error('✗ Nem sikerült kapcsolódni az adatbázishoz:', error);
+    logger.error('✗ Nem sikerült kapcsolódni az adatbázishoz', { error: error.message, stack: error.stack });
   }
 };
 

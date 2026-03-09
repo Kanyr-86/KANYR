@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const { verifyToken } = require('../utils/authUtils');
 const { ROLES, mapAdminToRole, isAdminRole, canModifyRole } = require('../config/roles');
 
@@ -54,7 +55,7 @@ async function authenticate(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    logger.error('Auth middleware error', { error: error.message, stack: error.stack });
     return res.status(401).json({
       success: false,
       error: 'Érvénytelen vagy lejárt bejelentkezési token'
@@ -80,7 +81,7 @@ function isAdmin(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('Admin middleware error:', error);
+    logger.error('Admin middleware error', { error: error.message, stack: error.stack });
     return res.status(500).json({
       success: false,
       error: 'Hiba az admin jogok ellenőrzése közben'
@@ -107,7 +108,7 @@ function canModify(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('CanModify middleware error:', error);
+    logger.error('CanModify middleware error', { error: error.message, stack: error.stack });
     return res.status(500).json({
       success: false,
       error: 'Hiba a jogosultság ellenőrzése közben'

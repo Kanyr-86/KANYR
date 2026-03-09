@@ -7,6 +7,7 @@ const db = require('./models');
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
 const { NotFoundError } = require('./utils/AppError');
+const logger = require('./utils/logger');
 require('dotenv').config();
 
 const app = express();
@@ -128,40 +129,40 @@ const startServer = async () => {
     // { force: false } = csak akkor hoz létre táblákat, ha még nem léteznek
     // Ez megakadályozza a táblák felesleges újraépítését minden indításkor
     await db.sequelize.sync({ force: false });
-    console.log('✓ Adatbázis szinkronizálva');
+    logger.info('✓ Adatbázis szinkronizálva');
     
     // Database available to routes via app.locals
     app.locals.db = db;
-    console.log('✓ Adatbázis elérhető a route-ok számára');
+    logger.info('✓ Adatbázis elérhető a route-ok számára');
 
     // Student route-ok inicializálása (az adatbázis után, hogy app.locals.db elérhető legyen)
     app.use('/api/students', require('./routes/DiakRoutes'));
-    console.log('✓ Student route-ok inicializálva');
+    logger.info('✓ Student route-ok inicializálva');
 
     // Room route-ok inicializálása
     const SzobaRoutes = require('./routes/SzobaRoutes');
     app.use('/api/rooms', SzobaRoutes(app.locals.db));
-    console.log('✓ Room route-ok inicializálva');
+    logger.info('✓ Room route-ok inicializálva');
 
     // Parent route-ok inicializálása
     app.use('/api/parents', require('./routes/SzuloRoutes'));
-    console.log('✓ Parent route-ok inicializálva');
+    logger.info('✓ Parent route-ok inicializálva');
 
     // Address route-ok inicializálása
     app.use('/api/addresses', require('./routes/LakcimRoutes'));
-    console.log('✓ Address route-ok inicializálva');
+    logger.info('✓ Address route-ok inicializálva');
 
     // Auth route-ok inicializálása
     app.use('/api/auth', require('./routes/authRoutes'));
-    console.log('✓ Auth route-ok inicializálva');
+    logger.info('✓ Auth route-ok inicializálva');
 
     // User route-ok inicializálása
     app.use('/api/users', require('./routes/FelhasznaloRoutes'));
-    console.log('✓ User route-ok inicializálva');
+    logger.info('✓ User route-ok inicializálva');
 
     // Room change route-ok inicializálása
     app.use('/api/room-changes', require('./routes/SzobaValtoztatasRoutes'));
-    console.log('✓ Room change route-ok inicializálva');
+    logger.info('✓ Room change route-ok inicializálva');
 
 // 404 kezelő - csak most regisztráljuk, miután minden route be van állítva
     app.use((req, res, next) => {
@@ -173,11 +174,11 @@ const startServer = async () => {
 
     // Szerver indítása
     app.listen(PORT, () => {
-      console.log(`✓ Szerver fut a http://localhost:${PORT} címen`);
-      console.log(`✓ Környezet: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`✓ Szerver fut a http://localhost:${PORT} címen`);
+      logger.info(`✓ Környezet: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
-    console.error('✗ Hiba a szerver indításakor:', error);
+    logger.error('✗ Hiba a szerver indításakor', { error: error.message, stack: error.stack });
     process.exit(1);
   }
 };

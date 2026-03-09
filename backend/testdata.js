@@ -1,6 +1,7 @@
 const { sequelize } = require('./config/database');
 const db = require('./models');
 const bcrypt = require('bcrypt');
+const logger = require('./utils/logger');
 
 /**
  * Komprehenzív seed script az SQLite adatbázis feltöltéséhez
@@ -9,16 +10,16 @@ const bcrypt = require('bcrypt');
 
 async function seedDatabase() {
   try {
-    console.log('🔄 Adatbázis szinkronizálása...');
+    logger.info('🔄 Adatbázis szinkronizálása...');
     
     // Táblák törlése (fejlesztéshez)
     // Megjegyzés: Csak szükség esetén töröljük az adatokat
     await sequelize.truncate({ cascade: true, force: true });
     
-    console.log('✓ Adatbázis szinkronizálva\n');
+    logger.info('✓ Adatbázis szinkronizálva');
 
     // ========== LAKCÍMEK LÉTREHOZÁSA ==========
-    console.log('📍 Lakcímek létrehozása...');
+    logger.info('📍 Lakcímek létrehozása...');
     const lakcimek = await db.Lakcim.bulkCreate([
       {
         orszag: 'Magyarország',
@@ -57,10 +58,10 @@ async function seedDatabase() {
         utca_hazszam: 'Szabadság tér 5.'
       }
     ]);
-    console.log(`✓ ${lakcimek.length} lakcím létrehozva\n`);
+    logger.info(`✓ ${lakcimek.length} lakcím létrehozva`);
 
     // ========== SZÜLŐK LÉTREHOZÁSA ==========
-    console.log('👨‍👩‍👧 Szülők létrehozása...');
+    logger.info('👨‍👩‍👧 Szülők létrehozása...');
     const szulok = await db.Szulo.bulkCreate([
       {
         nev: 'Nagy Anna',
@@ -105,10 +106,10 @@ async function seedDatabase() {
         cim_id: lakcimek[5].cim_id
       }
     ]);
-    console.log(`✓ ${szulok.length} szülő létrehozva\n`);
+    logger.info(`✓ ${szulok.length} szülő létrehozva`);
 
     // ========== DIÁKOK LÉTREHOZÁSA ==========
-    console.log('👨‍🎓 Diákok létrehozása...');
+    logger.info('👨‍🎓 Diákok létrehozása...');
     const diaks = await db.Diak.bulkCreate([
       {
         nev: 'Nagy Bernadett',
@@ -189,10 +190,10 @@ async function seedDatabase() {
         nem: 'férfi'
       }
     ]);
-    console.log(`✓ ${diaks.length} diák létrehozva\n`);
+    logger.info(`✓ ${diaks.length} diák létrehozva`);
 
     // ========== SZOBÁK LÉTREHOZÁSA ==========
-    console.log('🚪 Szobák létrehozása...');
+    logger.info('🚪 Szobák létrehozása...');
     const szobak = await db.Szoba.bulkCreate([
       {
         szoba_szama: 'A-101',
@@ -219,10 +220,10 @@ async function seedDatabase() {
         osszes_hely: 2
       }
     ]);
-    console.log(`✓ ${szobak.length} szoba létrehozva\n`);
+    logger.info(`✓ ${szobak.length} szoba létrehozva`);
 
     // ========== SZOBA BEKÖLTÖZÉSEK LÉTREHOZÁSA ==========
-    console.log('🏠 Szoba beköltözések rögzítése...');
+    logger.info('🏠 Szoba beköltözések rögzítése...');
     const bekoltozesek = await db.SzobaBekoltozes.bulkCreate([
       {
         diak_id: diaks[0].diak_id,
@@ -261,10 +262,10 @@ async function seedDatabase() {
         kikoltozes_datum: null
       }
     ]);
-    console.log(`✓ ${bekoltozesek.length} beköltözés rögzítve\n`);
+    logger.info(`✓ ${bekoltozesek.length} beköltözés rögzítve`);
 
     // ========== FELHASZNÁLÓK LÉTREHOZÁSA ==========
-    console.log('👤 Felhasználók létrehozása...');
+    logger.info('👤 Felhasználók létrehozása...');
     
     // Jelszavak hash-elése
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
@@ -321,10 +322,10 @@ async function seedDatabase() {
         diak_id: diaks[5].diak_id  // Link to sixth student (Kiss Tamás)
       }
     ]);
-    console.log(`✓ ${felhasznalok.length} felhasználó létrehozva\n`);
+    logger.info(`✓ ${felhasznalok.length} felhasználó létrehozva`);
 
     // ========== SZOBA VÁLTOZTATÁSI KÉRELMEK LÉTREHOZÁSA ==========
-    console.log('📝 Szoba változtatási kérelmek létrehozása...');
+    logger.info('📝 Szoba változtatási kérelmek létrehozása...');
     const valtoztatasok = await db.SzobaValtoztatas.bulkCreate([
       {
         diak_id: diaks[0].diak_id,
@@ -345,10 +346,10 @@ async function seedDatabase() {
         semester_count: 1
       }
     ]);
-    console.log(`✓ ${valtoztatasok.length} szoba változtatási kérelem létrehozva\n`);
+    logger.info(`✓ ${valtoztatasok.length} szoba változtatási kérelem létrehozva`);
 
     // ========== ÉRTESÍTÉSEK LÉTREHOZÁSA ==========
-    console.log('🔔 Értesítések létrehozása...');
+    logger.info('🔔 Értesítések létrehozása...');
     const notifikaciok = await db.Notification.bulkCreate([
       {
         diak_id: diaks[0].diak_id,
@@ -369,25 +370,27 @@ async function seedDatabase() {
         elolvasva: false
       }
     ]);
-    console.log(`✓ ${notifikaciok.length} értesítés létrehozva\n`);
+    logger.info(`✓ ${notifikaciok.length} értesítés létrehozva`);
 
     // ========== STATISZTIKA ==========
-    console.log('📊 Adatbázis feltöltési statisztika:');
-    console.log(`   • Lakcímek: ${lakcimek.length}`);
-    console.log(`   • Szülők: ${szulok.length}`);
-    console.log(`   • Diákok: ${diaks.length}`);
-    console.log(`   • Szobák: ${szobak.length}`);
-    console.log(`   • Beköltözések: ${bekoltozesek.length}`);
-    console.log(`   • Felhasználók: ${felhasznalok.length}`);
-    console.log(`   • Szoba változtatási kérelmek: ${valtoztatasok.length}`);
-    console.log(`   • Értesítések: ${notifikaciok.length}`);
-    console.log('\n✅ Adatbázis sikeresen feltöltve tesztadatokkal!');
-    console.log('\n📝 Alapértelmezett hozzáférési adatok:');
-    console.log('   Titkár (admin): admin@kanyr.hu / admin123');
-    console.log('   Diák (user): {diak_nev}@student.hu / student123');
+    logger.info('📊 Adatbázis feltöltési statisztika', {
+      lakcimek: lakcimek.length,
+      szulok: szulok.length,
+      diaks: diaks.length,
+      szobak: szobak.length,
+      bekoltozesek: bekoltozesek.length,
+      felhasznalok: felhasznalok.length,
+      valtoztatasok: valtoztatasok.length,
+      notifikaciok: notifikaciok.length
+    });
+    logger.info('✅ Adatbázis sikeresen feltöltve tesztadatokkal!');
+    logger.info('📝 Alapértelmezett hozzáférési adatok', {
+      admin: 'admin@kanyr.hu / admin123',
+      diak: '{diak_nev}@student.hu / student123'
+    });
 
   } catch (error) {
-    console.error('❌ Hiba az adatbázis feltöltésekor:', error);
+    logger.error('❌ Hiba az adatbázis feltöltésekor', { error: error.message, stack: error.stack });
     process.exit(1);
   } finally {
     await sequelize.close();

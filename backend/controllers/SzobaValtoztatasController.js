@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const logger = require('../utils/logger');
 
 class SzobaValtoztatasController {
   constructor(db) {
@@ -91,7 +92,7 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      console.error('Hiba a szoba lekérésekor:', error);
+      logger.error('Hiba a szoba lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt a szoba adatainak lekérésekor'
@@ -208,7 +209,7 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      console.error('Hiba a szobaváltási kérelem benyújtásakor:', error);
+      logger.error('Hiba a szobaváltási kérelem benyújtásakor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt a szobaváltási kérelem benyújtásakor'
@@ -253,7 +254,7 @@ class SzobaValtoztatasController {
         data: kerelemek
       });
     } catch (error) {
-      console.error('Hiba a szobaváltási kérelmek lekérésekor:', error);
+      logger.error('Hiba a szobaváltási kérelmek lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt a szobaváltási kérelmek lekérésekor'
@@ -373,7 +374,7 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      console.error('Hiba a szobaváltási kérelem frissítésekor:', error);
+      logger.error('Hiba a szobaváltási kérelem frissítésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: error.message || 'Hiba történt a szobaváltási kérelem frissítésekor'
@@ -421,7 +422,7 @@ class SzobaValtoztatasController {
         data: tortenet
       });
     } catch (error) {
-      console.error('Hiba a szobaváltási történet lekérésekor:', error);
+      logger.error('Hiba a szobaváltási történet lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt a szobaváltási történet lekérésekor'
@@ -457,7 +458,7 @@ class SzobaValtoztatasController {
         data: notifications
       });
     } catch (error) {
-      console.error('Hiba az értesítések lekérésekor:', error);
+      logger.error('Hiba az értesítések lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt az értesítések lekérésekor'
@@ -508,7 +509,7 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      console.error('Hiba az értesítés olvasottnak jelölésekor:', error);
+      logger.error('Hiba az értesítés olvasottnak jelölésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt az értesítés olvasottnak jelölésekor'
@@ -551,7 +552,7 @@ class SzobaValtoztatasController {
         data: notifications
       });
     } catch (error) {
-      console.error('Hiba az admin értesítések lekérésekor:', error);
+      logger.error('Hiba az admin értesítések lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt az admin értesítések lekérésekor'
@@ -584,7 +585,7 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      console.error('Hiba az admin értesítés olvasottnak jelölésekor:', error);
+      logger.error('Hiba az admin értesítés olvasottnak jelölésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
       res.status(500).json({
         success: false,
         error: 'Hiba történt az admin értesítés olvasottnak jelölésekor'
