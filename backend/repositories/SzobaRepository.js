@@ -231,16 +231,33 @@ class SzobaRepository {
         offset
       });
 
-      // Ellenőrizzük minden szoba elérhetőségét
+      // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés az összes szoba aktuális foglaltságára (N+1 probléma megoldva)
+      const szobaIds = szobas.map(szoba => szoba.szoba_id);
+      
+      const occupancyData = await this.SzobaBekoltozes.findAll({
+        attributes: [
+          'szoba_id',
+          [this.db.sequelize.fn('COUNT', this.db.sequelize.col('bekoltozes_id')), 'occupancy']
+        ],
+        where: {
+          szoba_id: { [Op.in]: szobaIds },
+          kikoltozes_datum: null
+        },
+        group: ['szoba_id'],
+        raw: true
+      });
+
+      // Occupancy adatok map-elése gyors kereséshez
+      const occupancyMap = new Map();
+      occupancyData.forEach(item => {
+        occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
+      });
+
+      // Szűrjük és formázzuk az elérhető szobákat
       const availableRooms = [];
       
       for (const szoba of szobas) {
-        const currentOccupancy = await this.SzobaBekoltozes.count({
-          where: {
-            szoba_id: szoba.szoba_id,
-            kikoltozes_datum: null
-          }
-        });
+        const currentOccupancy = occupancyMap.get(szoba.szoba_id) || 0;
 
         if (currentOccupancy < szoba.osszes_hely) {
           availableRooms.push({
