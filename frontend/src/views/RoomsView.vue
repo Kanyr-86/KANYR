@@ -852,22 +852,24 @@ export default {
           const roomsData = response.data.data
           
           // Párhuzamos elfoglaltság és lakók lekérdezése
-          const roomDetailPromises = roomsData.map(room =>
-            Promise.allSettled([
+          const roomDetailPromises = roomsData.map(async (room) => {
+            await Promise.allSettled([
               // Elfoglaltság lekérdezése
-              api.get(`/szobas/${room.szoba_id}/occupancy`)
-                .then(occupancyResponse => {
+              (async () => {
+                try {
+                  const occupancyResponse = await api.get(`/szobas/${room.szoba_id}/occupancy`)
                   if (occupancyResponse.data.success) {
                     room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
                   }
-                })
-                .catch(error => {
+                } catch (error) {
                   console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
                   room.currentOccupancy = 0
-                }),
+                }
+              })(),
               // Lakók lekérdezése a szoba neme miatt
-              api.get(`/szobas/${room.szoba_id}/occupants`)
-                .then(studentsResponse => {
+              (async () => {
+                try {
+                  const studentsResponse = await api.get(`/szobas/${room.szoba_id}/occupants`)
                   if (studentsResponse.data.success && studentsResponse.data.data.length > 0) {
                     // Az első lakó neme határozza meg a szoba nemét
                     const firstResident = studentsResponse.data.data[0]
@@ -878,13 +880,13 @@ export default {
                   } else {
                     roomGenders.value[room.szoba_id] = null // Üres szoba, nincs neme
                   }
-                })
-                .catch(error => {
+                } catch (error) {
                   console.error(`Hiba a szoba ${room.szoba_id} lakóinak lekérése közben:`, error)
                   roomGenders.value[room.szoba_id] = null
-                })
+                }
+              })()
             ])
-          )
+          })
           
           // Minden hívás párhuzamosan
           await Promise.allSettled(roomDetailPromises)

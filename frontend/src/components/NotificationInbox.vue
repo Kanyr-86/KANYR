@@ -176,10 +176,10 @@ export default {
         
         // Use Promise.all for better performance when marking multiple notifications
         await Promise.all(
-          unreadNotifications.map(notification => 
-            api.put(`/room-changes/admin/notifications/${notification.notification_id}/read`)
-              .then(() => { notification.elolvasva = true })
-          )
+          unreadNotifications.map(async (notification) => {
+            await api.put(`/room-changes/admin/notifications/${notification.notification_id}/read`)
+            notification.elolvasva = true
+          })
         )
         
         toast.success('Összes értesítés olvasottnak jelölve')
