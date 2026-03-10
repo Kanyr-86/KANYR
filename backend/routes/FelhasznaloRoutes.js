@@ -144,4 +144,12 @@ const initializeController = (db) => {
     (req, res) => initializeController(req.app.locals.db).removeAdmin(req, res)
   );
 
+  router.post(
+    '/:id/force-logout',
+    authenticate,
+    isAdmin,
+    idValidationRule,
+    (req, res) => initializeController(req.app.locals.db).forceLogout(req, res)
+  );
+
 module.exports = router;

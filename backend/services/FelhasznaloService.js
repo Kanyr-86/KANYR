@@ -1,9 +1,12 @@
-const { generateToken, generateRandomPassword } = require('../utils/authUtils');
+const { generateTokenWithVersion, generateRandomPassword } = require('../utils/authUtils');
+const TokenBlacklistService = require('./TokenBlacklistService');
+const logger = require('../utils/logger');
 
 class FelhasznaloService {
   constructor(db, { repository }) {
     this.db = db;
     this.repository = repository;
+    this.tokenBlacklistService = new TokenBlacklistService(db);
   }
 
   /**
@@ -161,13 +164,17 @@ class FelhasznaloService {
     try {
       const user = await this.repository.authenticate(email, password);
 
-      // Generate JWT token
-      const token = generateToken({
-        userId: user.user_id,
-        username: user.username,
-        email: user.email,
-        admin: user.admin
-      });
+      // Ellenőrizzük a biztonsági jelzőket
+      const securityFlags = user.security_flags || {};
+      if (securityFlags.force_logout) {
+        // Töröljük a force_logout flag-et sikeres bejelentkezés után
+        await this.repository.update(user.user_id, {
+          security_flags: { ...securityFlags, force_logout: false }
+        });
+      }
+
+      // Generate JWT token with version
+      const token = generateTokenWithVersion(user);
 
       return {
         user: {
@@ -206,14 +213,38 @@ class FelhasznaloService {
   }
 
   /**
-   * Update user password
+   * Update user password and revoke all tokens
    * @param {number} userId - User ID
    * @param {string} newPassword - New password
+   * @param {Object} options - Options
+   * @param {boolean} options.revokeTokens - Whether to revoke existing tokens (default: true)
    * @returns {Promise<Object>} - Updated user
    */
-  async updatePassword(userId, newPassword) {
+  async updatePassword(userId, newPassword, options = { revokeTokens: true }) {
     try {
-      const user = await this.repository.update(userId, { password: newPassword });
+      // Get current user to check token version
+      const currentUser = await this.repository.findById(userId);
+      if (!currentUser) {
+        throw new Error('Felhasználó nem található');
+      }
+
+      // Increment token version to invalidate all existing tokens
+      const newTokenVersion = (currentUser.token_version || 1) + 1;
+
+      const updates = {
+        password: newPassword,
+        token_version: newTokenVersion,
+        last_password_change: new Date()
+      };
+
+      const user = await this.repository.update(userId, updates);
+
+      // Revoke all existing tokens for this user
+      if (options.revokeTokens) {
+        await this.tokenBlacklistService.revokeAllUserTokens(userId);
+        logger.info('All tokens revoked after password change', { userId, newTokenVersion });
+      }
+
       return user;
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
@@ -230,8 +261,28 @@ class FelhasznaloService {
    */
   async resetPassword(userId) {
     try {
+      // Get current user to check token version
+      const currentUser = await this.repository.findById(userId);
+      if (!currentUser) {
+        throw new Error('Felhasználó nem található');
+      }
+
       const newPassword = generateRandomPassword();
-      const user = await this.repository.update(userId, { password: newPassword });
+
+      // Increment token version to invalidate all existing tokens
+      const newTokenVersion = (currentUser.token_version || 1) + 1;
+
+      const updates = {
+        password: newPassword,
+        token_version: newTokenVersion,
+        last_password_change: new Date()
+      };
+
+      const user = await this.repository.update(userId, updates);
+
+      // Revoke all existing tokens for this user
+      await this.tokenBlacklistService.revokeAllUserTokens(userId);
+      logger.info('All tokens revoked after password reset', { userId, newTokenVersion });
 
       return {
         user,
@@ -242,6 +293,150 @@ class FelhasznaloService {
         throw error;
       }
       throw new Error(`Hiba a jelszó visszaállítása közben: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update user role and revoke all tokens
+   * @param {number} userId - User ID
+   * @param {boolean} admin - New admin status
+   * @returns {Promise<Object>} - Updated user
+   */
+  async updateUserRole(userId, admin) {
+    try {
+      // Get current user to check token version
+      const currentUser = await this.repository.findById(userId);
+      if (!currentUser) {
+        throw new Error('Felhasználó nem található');
+      }
+
+      // Increment token version to invalidate all existing tokens
+      const newTokenVersion = (currentUser.token_version || 1) + 1;
+
+      const updates = {
+        admin,
+        token_version: newTokenVersion
+      };
+
+      const user = await this.repository.update(userId, updates);
+
+      // Revoke all existing tokens for this user
+      await this.tokenBlacklistService.revokeAllUserTokens(userId);
+      logger.info('All tokens revoked after role change', {
+        userId,
+        newTokenVersion,
+        oldRole: currentUser.admin,
+        newRole: admin
+      });
+
+      return user;
+    } catch (error) {
+      if (error.message === 'Felhasználó nem található') {
+        throw error;
+      }
+      throw new Error(`Hiba a felhasználói szerepkör frissítése közben: ${error.message}`);
+    }
+  }
+
+  /**
+   * Force logout user by setting security flag and incrementing token version
+   * @param {number} userId - User ID
+   * @param {string} reason - Reason for force logout
+   * @returns {Promise<Object>} - Updated user
+   */
+  async forceLogout(userId, reason = 'security') {
+    try {
+      const currentUser = await this.repository.findById(userId);
+      if (!currentUser) {
+        throw new Error('Felhasználó nem található');
+      }
+
+      const securityFlags = currentUser.security_flags || {};
+      const newTokenVersion = (currentUser.token_version || 1) + 1;
+
+      const updates = {
+        token_version: newTokenVersion,
+        security_flags: {
+          ...securityFlags,
+          force_logout: true,
+          force_logout_reason: reason,
+          force_logout_at: new Date().toISOString()
+        }
+      };
+
+      const user = await this.repository.update(userId, updates);
+
+      // Revoke all existing tokens
+      await this.tokenBlacklistService.revokeAllUserTokens(userId);
+
+      logger.warn('Force logout executed for user', { userId, reason, newTokenVersion });
+
+      return user;
+    } catch (error) {
+      if (error.message === 'Felhasználó nem található') {
+        throw error;
+      }
+      throw new Error(`Hiba a kényszerített kijelentkeztetés közben: ${error.message}`);
+    }
+  }
+
+  /**
+   * Flag user for suspicious activity
+   * @param {number} userId - User ID
+   * @param {Object} activityDetails - Details about the suspicious activity
+   * @returns {Promise<Object>} - Updated user
+   */
+  async flagSuspiciousActivity(userId, activityDetails) {
+    try {
+      const currentUser = await this.repository.findById(userId);
+      if (!currentUser) {
+        throw new Error('Felhasználó nem található');
+      }
+
+      const securityFlags = currentUser.security_flags || {};
+      const suspiciousActivities = securityFlags.suspicious_activities || [];
+
+      // Add new suspicious activity to history (keep last 10)
+      suspiciousActivities.unshift({
+        ...activityDetails,
+        timestamp: new Date().toISOString()
+      });
+      if (suspiciousActivities.length > 10) {
+        suspiciousActivities.pop();
+      }
+
+      const updates = {
+        security_flags: {
+          ...securityFlags,
+          suspicious_activity: true,
+          suspicious_activity_count: (securityFlags.suspicious_activity_count || 0) + 1,
+          suspicious_activities: suspiciousActivities,
+          last_suspicious_activity: new Date().toISOString()
+        }
+      };
+
+      // If too many suspicious activities, force logout
+      if (updates.security_flags.suspicious_activity_count >= 5) {
+        updates.token_version = (currentUser.token_version || 1) + 1;
+        updates.security_flags.force_logout = true;
+        updates.security_flags.force_logout_reason = 'too_many_suspicious_activities';
+        updates.security_flags.force_logout_at = new Date().toISOString();
+
+        // Revoke all tokens
+        await this.tokenBlacklistService.revokeAllUserTokens(userId);
+
+        logger.warn('Force logout due to suspicious activity', { userId, activityDetails });
+      } else {
+        logger.warn('Suspicious activity flagged for user', { userId, activityDetails });
+      }
+
+      const user = await this.repository.update(userId, updates);
+      return user;
+    } catch (error) {
+      if (error.message === 'Felhasználó nem található') {
+        throw error;
+      }
+      throw new Error(`Hiba a gyanús tevékenység jelölése közben: ${error.message}`);
     }
   }
 

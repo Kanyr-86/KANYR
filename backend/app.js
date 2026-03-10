@@ -6,8 +6,10 @@ const { testConnection } = require('./config/database');
 const db = require('./models');
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
+const { detectSuspiciousActivity, trackSensitiveOperations } = require('./middleware/securityMiddleware');
 const { NotFoundError } = require('./utils/AppError');
 const logger = require('./utils/logger');
+const TokenBlacklistService = require('./services/TokenBlacklistService');
 require('dotenv').config();
 
 const app = express();
@@ -48,6 +50,10 @@ app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 
 // Kérés naplózó middleware
 app.use(requestLogger);
+
+// Biztonsági middleware-ek
+app.use(detectSuspiciousActivity);
+app.use(trackSensitiveOperations);
 
 // Rate limiting konfiguráció
 // Szigorú limiter hitelesítési végpontokhoz - megakadályozza a brute force támadásokat
@@ -127,7 +133,6 @@ const startServer = async () => {
     
     // Adatbázis szinkronizálása (táblák létrehozása, ha nem léteznek)
     // { force: false } = csak akkor hoz létre táblákat, ha még nem léteznek
-    // Ez megakadályozza a táblák felesleges újraépítését minden indításkor
     await db.sequelize.sync({ force: false });
     logger.info('✓ Adatbázis szinkronizálva');
     
@@ -177,6 +182,26 @@ const startServer = async () => {
       logger.info(`✓ Szerver fut a http://localhost:${PORT} címen`);
       logger.info(`✓ Környezet: ${process.env.NODE_ENV || 'development'}`);
     });
+
+    // Időzített takarítás - lejárt tokenek törlése a feketelistáról (24 óránként)
+    const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 óra
+    const tokenBlacklistService = new TokenBlacklistService(db);
+
+    const cleanupExpiredTokens = async () => {
+      try {
+        const deleted = await tokenBlacklistService.cleanupExpiredTokens();
+        logger.info('Expired token cleanup completed', { deletedCount: deleted });
+      } catch (error) {
+        logger.error('Error during token cleanup', { error: error.message });
+      }
+    };
+
+    // Első takarítás indításkor
+    cleanupExpiredTokens();
+
+    // Időzített takarítás beállítása
+    setInterval(cleanupExpiredTokens, CLEANUP_INTERVAL);
+    logger.info('✓ Token blacklist cleanup scheduler initialized');
   } catch (error) {
     logger.error('✗ Hiba a szerver indításakor', { error: error.message, stack: error.stack });
     process.exit(1);

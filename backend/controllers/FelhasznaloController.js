@@ -240,7 +240,7 @@ class FelhasznaloController {
 
   /**
    * POST /api/felhasznalos/:id/password
-   * Update user password
+   * Update user password - invalidates all existing tokens
    */
   async updatePassword(req, res) {
     try {
@@ -254,7 +254,7 @@ class FelhasznaloController {
       }
 
       const { id } = req.params;
-      const { newPassword } = req.body;
+      const { newPassword, revokeTokens } = req.body;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -270,12 +270,25 @@ class FelhasznaloController {
         });
       }
 
-      const user = await this.felhasznaloService.updatePassword(parseInt(id), newPassword);
+      // Parse user ID
+      const userId = parseInt(id);
+
+      // Check if user is changing their own password
+      const isSelfChange = req.user && req.user.userId === userId;
+
+      // Update password with token revocation
+      const user = await this.felhasznaloService.updatePassword(
+        userId,
+        newPassword,
+        { revokeTokens: revokeTokens !== false } // default to true
+      );
 
       res.json({
         success: true,
         data: user,
-        message: 'Jelszó sikeresen frissítve'
+        message: 'Jelszó sikeresen frissítve. Kérjük, jelentkezzen be újra az összes eszközön.',
+        requireRelogin: true,
+        isSelfChange
       });
     } catch (error) {
       if (error.message.includes('nem található')) {
@@ -294,7 +307,7 @@ class FelhasznaloController {
 
   /**
    * POST /api/felhasznalos/:id/reset-password
-   * Reset user password (admin only)
+   * Reset user password (admin only) - invalidates all existing tokens
    */
   async resetPassword(req, res) {
     try {
@@ -317,7 +330,8 @@ class FelhasznaloController {
           user,
           temporaryPassword: newPassword
         },
-        message: `Jelszó sikeresen visszaállítva. Ideiglenes jelszó: ${newPassword}`
+        message: `Jelszó sikeresen visszaállítva. Minden meglévő munkamenet érvénytelenné vált. Ideiglenes jelszó: ${newPassword}`,
+        requireRelogin: true
       });
     } catch (error) {
       if (error.message.includes('nem található')) {
@@ -336,7 +350,7 @@ class FelhasznaloController {
 
   /**
    * POST /api/felhasznalos/:id/make-admin
-   * Make user admin (admin only)
+   * Make user admin (admin only) - invalidates all existing tokens
    */
   async makeAdmin(req, res) {
     try {
@@ -349,12 +363,21 @@ class FelhasznaloController {
         });
       }
 
-      const user = await this.felhasznaloService.updateUser(parseInt(id), { admin: true });
+      // Prevent changing own admin status
+      if (req.user && req.user.userId === parseInt(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nem változtathatja meg saját admin jogosultságát'
+        });
+      }
+
+      const user = await this.felhasznaloService.updateUserRole(parseInt(id), true);
 
       res.json({
         success: true,
         data: user,
-        message: 'Felhasználó sikeresen adminná változtatva'
+        message: 'Felhasználó sikeresen adminná változtatva. A felhasználónak újra be kell jelentkeznie.',
+        requireRelogin: true
       });
     } catch (error) {
       if (error.message.includes('nem található')) {
@@ -373,7 +396,7 @@ class FelhasznaloController {
 
   /**
    * POST /api/felhasznalos/:id/remove-admin
-   * Remove admin rights from user (admin only)
+   * Remove admin rights from user (admin only) - invalidates all existing tokens
    */
   async removeAdmin(req, res) {
     try {
@@ -386,12 +409,21 @@ class FelhasznaloController {
         });
       }
 
-      const user = await this.felhasznaloService.updateUser(parseInt(id), { admin: false });
+      // Prevent changing own admin status
+      if (req.user && req.user.userId === parseInt(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nem változtathatja meg saját admin jogosultságát'
+        });
+      }
+
+      const user = await this.felhasznaloService.updateUserRole(parseInt(id), false);
 
       res.json({
         success: true,
         data: user,
-        message: 'Admin jogok sikeresen eltávolítva'
+        message: 'Admin jogok sikeresen eltávolítva. A felhasználónak újra be kell jelentkeznie.',
+        requireRelogin: true
       });
     } catch (error) {
       if (error.message.includes('nem található')) {
@@ -401,6 +433,52 @@ class FelhasznaloController {
         });
       } else {
         res.status(400).json({
+          success: false,
+          error: error.message
+        });
+      }
+    }
+  }
+
+  /**
+   * POST /api/felhasznalos/:id/force-logout
+   * Force logout user (admin only)
+   */
+  async forceLogout(req, res) {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvénytelen felhasználó ID'
+        });
+      }
+
+      // Prevent self-logout
+      if (req.user && req.user.userId === parseInt(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nem jelentkeztetheti ki saját magát'
+        });
+      }
+
+      const user = await this.felhasznaloService.forceLogout(parseInt(id), reason || 'admin_action');
+
+      res.json({
+        success: true,
+        data: user,
+        message: 'Felhasználó sikeresen kijelentkeztetve az összes eszközről.'
+      });
+    } catch (error) {
+      if (error.message.includes('nem található')) {
+        res.status(404).json({
+          success: false,
+          error: error.message
+        });
+      } else {
+        res.status(500).json({
           success: false,
           error: error.message
         });

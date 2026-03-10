@@ -29,6 +29,8 @@
     "globals": "^17.4.0"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
   }

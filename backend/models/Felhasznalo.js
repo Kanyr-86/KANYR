@@ -76,6 +76,30 @@ module.exports = (sequelize) => {
         model: 'diaks',
         key: 'diak_id'
       }
+    },
+    token_version: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+      validate: {
+        isInt: {
+          msg: 'A token verziónak egész számnak kell lennie'
+        },
+        min: {
+          args: [1],
+          msg: 'A token verzió minimum 1 lehet'
+        }
+      }
+    },
+    last_password_change: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    security_flags: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: {},
+      comment: 'Biztonsági jelzők (pl. force_logout, suspicious_activity)'
     }
   }, {
     tableName: 'felhasznalos',
@@ -85,7 +109,8 @@ module.exports = (sequelize) => {
     indexes: [
       { unique: true, fields: ['email'] },
       { unique: true, fields: ['username'] },
-      { fields: ['diak_id'] }
+      { fields: ['diak_id'] },
+      { fields: ['token_version'] }
     ]
   });
 

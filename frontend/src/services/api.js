@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getErrorMessage } from '@/i18n'
+import { useToastStore } from '@/store/toast'
 
 // ─── Megosztott interceptor logika ───────────────────────────────────────────
 
@@ -19,7 +20,7 @@ function applyAuthInterceptors(instance) {
     (error) => Promise.reject(error)
   )
 
-// Egységes hibakezelés
+  // Egységes hibakezelés
   instance.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -32,6 +33,26 @@ function applyAuthInterceptors(instance) {
           // Duplikált átirányítások megelőzése, ha több egyidejű kérés is hibát ad
           if (!isRedirectingToLogin) {
             isRedirectingToLogin = true
+
+            // Show toast notification for token revocation
+            try {
+              const toastStore = useToastStore()
+              // Check if this is a token revocation message
+              if (message && (
+                message.includes('visszavonva') ||
+                message.includes('érvénytelenné vált') ||
+                message.includes('lejárt')
+              )) {
+                toastStore.showToast({
+                  type: 'warning',
+                  message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
+                  duration: 5000
+                })
+              }
+            } catch (e) {
+              // Toast store might not be available during initialization
+            }
+
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             window.location.href = '/login'

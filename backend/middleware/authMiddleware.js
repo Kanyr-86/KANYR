@@ -1,9 +1,16 @@
 const logger = require('../utils/logger');
 const { verifyToken } = require('../utils/authUtils');
 const { mapAdminToRole, isAdminRole, canModifyRole } = require('../config/roles');
+const TokenBlacklistService = require('../services/TokenBlacklistService');
 
 /**
  * Hitelesítési middleware - JWT token ellenőrzése
+ * Ellenőrzi:
+ * - Token létezését és érvényességét
+ * - Token nincs-e a feketelistán (visszavonva)
+ * - Token verzió egyezik-e a felhasználó jelenlegi verziójával
+ * - Felhasználó létezését
+ * - Biztonsági jelzőket (force_logout, stb.)
  * @param {Object} req - Express kérés objektum
  * @param {Object} res - Express válasz objektum
  * @param {Function} next - Következő middleware függvény
@@ -33,6 +40,18 @@ async function authenticate(req, res, next) {
       });
     }
 
+    // Token feketelista ellenőrzése
+    const tokenBlacklistService = new TokenBlacklistService(db);
+    const isRevoked = await tokenBlacklistService.isTokenRevoked(token);
+
+    if (isRevoked) {
+      logger.warn('Revoked token used', { userId: decoded.userId, ip: req.ip });
+      return res.status(401).json({
+        success: false,
+        error: 'A token visszavonva lett. Kérjük, jelentkezzen be újra.'
+      });
+    }
+
     const user = await db.Felhasznalo.findByPk(decoded.userId);
 
     if (!user) {
@@ -42,15 +61,56 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Felhasználó csatolása a kéréshez
+    // Token verzió ellenőrzése (jelszó/csoport változtatás esetén érvénytelenné válik)
+    const currentTokenVersion = user.token_version || 1;
+    const tokenVersion = decoded.tokenVersion || 1;
+
+    if (tokenVersion !== currentTokenVersion) {
+      logger.warn('Token version mismatch', {
+        userId: decoded.userId,
+        tokenVersion,
+        currentTokenVersion,
+        ip: req.ip
+      });
+      return res.status(401).json({
+        success: false,
+        error: 'A token érvénytelenné vált. Kérjük, jelentkezzen be újra.'
+      });
+    }
+
+    // Biztonsági jelzők ellenőrzése
+    const securityFlags = user.security_flags || {};
+    if (securityFlags.force_logout) {
+      logger.warn('Force logout flag detected', { userId: decoded.userId, ip: req.ip });
+      return res.status(401).json({
+        success: false,
+        error: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.'
+      });
+    }
+
+    if (securityFlags.suspicious_activity) {
+      logger.warn('Suspicious activity flag detected', { userId: decoded.userId, ip: req.ip });
+      // Nem utasítjuk el a kérést, de naplózzuk és értesíthetjük a felhasználót
+    }
+
     // Admin boolean leképezése szerepkörre a jogosultság-alapú hozzáféréshez
     const szerepkor = mapAdminToRole(user.admin);
+
+    // Felhasználó csatolása a kéréshez
     req.user = {
       userId: user.user_id,
       username: user.username,
       email: user.email,
       admin: user.admin, // Keep for backward compatibility
-      szerepkor: szerepkor
+      szerepkor: szerepkor,
+      tokenVersion: currentTokenVersion
+    };
+
+    // Token metadata hozzáadása a kéréshez
+    req.tokenInfo = {
+      token,
+      decoded,
+      issuedAt: new Date(decoded.iat * 1000)
     };
 
     next();

@@ -58,6 +58,32 @@ function generateToken(payload, expiresIn = JWT_EXPIRES_IN) {
 }
 
 /**
+ * JWT token generálása token verzióval
+ * @param {Object} user - Felhasználó objektum
+ * @param {string} expiresIn - Egyedi lejárati idő (opcionális)
+ * @returns {string} - JWT token
+ */
+function generateTokenWithVersion(user, expiresIn = JWT_EXPIRES_IN) {
+  try {
+    const payload = {
+      userId: user.user_id,
+      username: user.username,
+      email: user.email,
+      admin: user.admin,
+      tokenVersion: user.token_version || 1,
+      iat: Math.floor(Date.now() / 1000)
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: expiresIn
+    });
+    return token;
+  } catch (error) {
+    throw new Error('Hiba a token generálása közben');
+  }
+}
+
+/**
  * JWT token ellenőrzése
  * @param {string} token - Ellenőrizendő JWT token
  * @returns {Object} - Dekódolt token adatok
@@ -68,6 +94,20 @@ function verifyToken(token) {
     return decoded;
   } catch (error) {
     throw new Error('Érvénytelen vagy lejárt token');
+  }
+}
+
+/**
+ * JWT token dekódolása ellenőrzés nélkül (payload kinyerése)
+ * @param {string} token - JWT token
+ * @returns {Object|null} - Dekódolt payload vagy null
+ */
+function decodeToken(token) {
+  try {
+    const decoded = jwt.decode(token);
+    return decoded;
+  } catch (error) {
+    return null;
   }
 }
 
@@ -92,7 +132,9 @@ module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
+  generateTokenWithVersion,
   verifyToken,
+  decodeToken,
   generateRandomPassword,
   JWT_SECRET,
   JWT_EXPIRES_IN
