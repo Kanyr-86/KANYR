@@ -647,7 +647,7 @@
     >
       <div v-if="deleteStudentData">
         <p>Biztosan törölni szeretné a következő diákot?</p>
-        <p><strong>{{ deleteStudentData.nev }}</strong></p>
+        <p><strong>{{ deleteStudentData?.nev || 'N/A' }}</strong></p>
         <p>
           <small class="text-muted">
             Figyelem: A diák törlése csak akkor lehetséges, ha nincs hozzárendelve aktív szoba.
