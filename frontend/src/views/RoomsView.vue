@@ -676,6 +676,7 @@ import { toast } from 'vue3-toastify'
 import BaseInput from '../components/forms/BaseInput.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
+import { useApiCancel } from '../composables/useApiCancel'
 
 export default {
   name: 'RoomsView',
@@ -684,6 +685,7 @@ export default {
     BaseInput
   },
   setup() {
+    const { createAbortController, isAbortError } = useApiCancel()
     const rooms = ref([])
     const loading = ref(false)
     const searchQuery = ref('')
@@ -777,14 +779,16 @@ export default {
 
     const fetchRooms = async () => {
       loading.value = true
+      const { signal } = createAbortController()
       try {
-        const response = await api.get('/rooms')
+        const response = await api.get('/rooms', { signal })
         if (response.data.success) {
           rooms.value = response.data.data
           // Fetch occupancy for each room
           await Promise.all(rooms.value.map(room => fetchRoomOccupancy(room.szoba_id)))
         }
       } catch (error) {
+        if (isAbortError(error)) return
         console.error(getErrorMessage('LOAD_ERROR'), error)
         toast.error(getErrorMessage('LOAD_ERROR'))
       } finally {
@@ -793,8 +797,9 @@ export default {
     }
 
     const fetchRoomOccupancy = async (roomId) => {
+      const { signal } = createAbortController()
       try {
-        const response = await api.get(`/rooms/${roomId}/occupancy`)
+        const response = await api.get(`/rooms/${roomId}/occupancy`, { signal })
         if (response.data.success) {
           const room = rooms.value.find(r => r.szoba_id === roomId)
           if (room) {
@@ -803,29 +808,34 @@ export default {
           }
         }
       } catch (error) {
+        if (isAbortError(error)) return
         console.error('Hiba a szoba elfoglaltságának lekérése közben:', error)
       }
     }
 
     const fetchAvailableRooms = async () => {
+      const { signal } = createAbortController()
       try {
-        const response = await api.get('/rooms/available')
+        const response = await api.get('/rooms/available', { signal })
         if (response.data.success) {
           availableRooms.value = response.data.data
         }
       } catch (error) {
+        if (isAbortError(error)) return
         console.error('Hiba az elérhető szobák lekérése közben:', error)
       }
     }
 
     const fetchAvailableStudents = async () => {
+      const { signal } = createAbortController()
       try {
-        const response = await api.get('/students')
+        const response = await api.get('/students', { signal })
         if (response.data.success) {
           // Minden diák megjelenítése (aktív és inaktív is)
           availableStudents.value = response.data.data
         }
       } catch (error) {
+        if (isAbortError(error)) return
         console.error('Hiba a diákok lekérése közben:', error)
       }
     }
@@ -846,9 +856,10 @@ export default {
 
     // Szobák betöltése részletes információkkal
     const fetchRoomsWithDetailsForTransfer = async () => {
+      const { signal: mainSignal } = createAbortController()
       try {
         // Szobák lekérdezése
-        const response = await api.get('/szobas')
+        const response = await api.get('/szobas', { signal: mainSignal })
         if (response.data.success) {
           const roomsData = response.data.data
           
@@ -857,20 +868,23 @@ export default {
             await Promise.allSettled([
               // Elfoglaltság lekérdezése
               (async () => {
+                const { signal } = createAbortController()
                 try {
-                  const occupancyResponse = await api.get(`/szobas/${room.szoba_id}/occupancy`)
+                  const occupancyResponse = await api.get(`/szobas/${room.szoba_id}/occupancy`, { signal })
                   if (occupancyResponse.data.success) {
                     room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
                   }
                 } catch (error) {
+                  if (isAbortError(error)) return
                   console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
                   room.currentOccupancy = 0
                 }
               })(),
               // Lakók lekérdezése a szoba neme miatt
               (async () => {
+                const { signal } = createAbortController()
                 try {
-                  const studentsResponse = await api.get(`/szobas/${room.szoba_id}/occupants`)
+                  const studentsResponse = await api.get(`/szobas/${room.szoba_id}/occupants`, { signal })
                   if (studentsResponse.data.success && studentsResponse.data.data.length > 0) {
                     // Az első lakó neme határozza meg a szoba nemét
                     const firstResident = studentsResponse.data.data[0]
@@ -882,6 +896,7 @@ export default {
                     roomGenders.value[room.szoba_id] = null // Üres szoba, nincs neme
                   }
                 } catch (error) {
+                  if (isAbortError(error)) return
                   console.error(`Hiba a szoba ${room.szoba_id} lakóinak lekérése közben:`, error)
                   roomGenders.value[room.szoba_id] = null
                 }
@@ -899,6 +914,7 @@ export default {
           })
         }
       } catch (error) {
+        if (isAbortError(error)) return
         console.error('Hiba a szobák lekérése közben:', error)
         toast.error('Hiba történt a szobák betöltése közben')
       }

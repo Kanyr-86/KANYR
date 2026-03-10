@@ -8,6 +8,9 @@ const useApiData = (apiCall, dependencies = [], options = {}) => {
   const loading = ref(true)
   const error = ref(null)
   
+  // Create AbortController for request cancellation
+  const controller = new AbortController()
+  
   const fetchData = async () => {
     if (!apiCall) return
 
@@ -15,12 +18,20 @@ const useApiData = (apiCall, dependencies = [], options = {}) => {
     error.value = null
 
     try {
-      const result = await apiCall()
+      // Pass the abort signal to the API call
+      const result = await apiCall({ signal: controller.signal })
       data.value = result.data
     } catch (err) {
+      // Don't update state if the request was aborted
+      if (err.name === 'AbortError' || err.name === 'CanceledError') {
+        return
+      }
       error.value = err.response?.data?.error || err.message || getErrorMessage('LOAD_ERROR')
     } finally {
-      loading.value = false
+      // Only update loading state if not aborted
+      if (!controller.signal.aborted) {
+        loading.value = false
+      }
     }
   }
 
@@ -30,6 +41,11 @@ const useApiData = (apiCall, dependencies = [], options = {}) => {
 
   onMounted(() => {
     fetchData()
+  })
+
+  // Cancel the request when component unmounts
+  onUnmounted(() => {
+    controller.abort()
   })
 
   return {

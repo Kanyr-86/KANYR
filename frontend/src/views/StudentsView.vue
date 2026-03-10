@@ -689,6 +689,7 @@ import BaseInput from '../components/forms/BaseInput.vue'
 import BaseSelect from '../components/forms/BaseSelect.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage, VALIDATION_MESSAGES } from '@/i18n'
+import { useApiCancel } from '../composables/useApiCancel'
 
 /**
  * Átfogó validációs szabályok diák űrlapokhoz
@@ -860,6 +861,9 @@ export default {
     LoadingOverlay
   },
   setup() {
+    // API request cancellation
+    const { createAbortController, isAbortError } = useApiCancel()
+    
     // Állapot
     const students = ref([])
     const rooms = ref([])
@@ -997,9 +1001,10 @@ export default {
     const fetchStudents = async () => {
       console.log('=== fetchStudents START ===')
       loading.value = true
+      const { signal } = createAbortController()
       try {
         console.log('Calling API: /students?includeRelations=true')
-        const response = await api.get('/students?includeRelations=true')
+        const response = await api.get('/students?includeRelations=true', { signal })
         console.log('API Response:', response)
         console.log('Response data:', response.data)
         console.log('Response data type:', typeof response.data)
@@ -1022,6 +1027,10 @@ export default {
           students.value = []
         }
       } catch (error) {
+        if (isAbortError(error)) {
+          console.log('Request was aborted - component unmounted')
+          return
+        }
         console.error('ERROR in fetchStudents:', error)
         console.error('Error message:', error.message)
         console.error('Error response:', error.response?.data)

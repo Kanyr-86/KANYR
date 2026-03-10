@@ -1,4 +1,4 @@
-<template>
+  <template>
   <div class="container-fluid">
     <!-- Loading Overlay -->
     <LoadingOverlay :show="loading" message="Szülők betöltése..." />
@@ -563,6 +563,7 @@ import { toast } from 'vue3-toastify'
 import BaseInput from '../components/forms/BaseInput.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage } from '@/i18n'
+import { useApiCancel } from '../composables/useApiCancel'
 
 export default {
   name: 'ParentsView',
@@ -570,6 +571,9 @@ export default {
     LoadingOverlay
   },
   setup() {
+    // API request cancellation
+    const { createAbortController, isAbortError } = useApiCancel()
+    
     const parents = ref([])
     const loading = ref(false)
     const searchQuery = ref('')
@@ -618,12 +622,17 @@ export default {
 
     const fetchParents = async () => {
       loading.value = true
+      const { signal } = createAbortController()
       try {
-        const response = await api.get('/parents')
+        const response = await api.get('/parents', { signal })
         if (response.data.success) {
           parents.value = response.data.data
         }
       } catch (error) {
+        if (isAbortError(error)) {
+          console.log('Request was aborted - component unmounted')
+          return
+        }
         console.error(getErrorMessage('LOAD_ERROR'), error)
         toast.error(getErrorMessage('LOAD_ERROR'))
       } finally {
