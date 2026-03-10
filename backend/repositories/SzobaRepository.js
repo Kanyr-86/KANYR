@@ -283,47 +283,55 @@ class SzobaRepository {
    * @returns {Promise<Object>} - Létrehozott beköltözés
    */
   async createBekoltozes(bekoltozesData) {
-    try {
-      const { diak_id, szoba_id, bekoltozes_datum } = bekoltozesData;
+    const { diak_id, szoba_id, bekoltozes_datum } = bekoltozesData;
 
-      // Ellenőrizzük, hogy a diák és szoba létezik
-      const diak = await this.db.Diak.findByPk(diak_id);
-      const szoba = await this.Szoba.findByPk(szoba_id);
-
-      if (!diak) {
-        throw new Error(`A ${diak_id} ID-jú diák nem található!`);
-      }
+    return await this.db.sequelize.transaction(async (transaction) => {
+      // 1. Szoba lekérdezése sor szintű zárolással (FOR UPDATE) - ez megakadályozza a konkurens módosításokat
+      const szoba = await this.Szoba.findByPk(szoba_id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE
+      });
 
       if (!szoba) {
         throw new Error(`A ${szoba_id} ID-jú szoba nem található!`);
       }
 
-      // Ellenőrizzük, hogy a szoba elérhető-e
+      // 2. Diák lekérdezése
+      const diak = await this.db.Diak.findByPk(diak_id, { transaction });
+
+      if (!diak) {
+        throw new Error(`A ${diak_id} ID-jú diák nem található!`);
+      }
+
+      // 3. Szoba aktuális foglaltságának lekérdezése a tranzakción belül
       const currentOccupancy = await this.SzobaBekoltozes.count({
         where: {
           szoba_id: szoba_id,
           kikoltozes_datum: null
-        }
+        },
+        transaction
       });
 
+      // 4. Kapacitás ellenőrzése
       if (currentOccupancy >= szoba.osszes_hely) {
         throw new Error(`A szoba tele van! Maximális férőhely: ${szoba.osszes_hely}`);
       }
 
-      // Ellenőrizzük, hogy a diák már be van-e költözve ebbe a szobába
+      // 5. Ellenőrizzük, hogy a diák már be van-e költözve ebbe a szobába
       const existingBekoltozes = await this.SzobaBekoltozes.findOne({
         where: {
           diak_id: diak_id,
           szoba_id: szoba_id,
           kikoltozes_datum: null
-        }
+        },
+        transaction
       });
 
       if (existingBekoltozes) {
         throw new Error('A diák már be van költözve ebbe a szobába!');
       }
 
-      // ELLENŐRZÉS: Ha van már a szobában diák, csak azonos nemű költözhet be
+      // 6. ELLENŐRZÉS: Ha van már a szobában diák, csak azonos nemű költözhet be
       if (currentOccupancy > 0) {
         // Lekérdezzük a szobában lakó első diák nemét
         const existingResident = await this.SzobaBekoltozes.findOne({
@@ -335,7 +343,8 @@ class SzobaRepository {
             model: this.db.Diak,
             as: 'diak',
             attributes: ['nem']
-          }]
+          }],
+          transaction
         });
 
         if (existingResident && existingResident.diak.nem !== diak.nem) {
@@ -343,17 +352,15 @@ class SzobaRepository {
         }
       }
 
-      // Új beköltözés létrehozása
+      // 7. Új beköltözés létrehozása
       const newBekoltozes = await this.SzobaBekoltozes.create({
         diak_id,
         szoba_id,
         bekoltozes_datum
-      });
+      }, { transaction });
 
       return newBekoltozes;
-    } catch (error) {
-      throw new Error(`Hiba a beköltözés létrehozásakor: ${error.message}`);
-    }
+    });
   }
 
   /**
@@ -434,8 +441,12 @@ class SzobaRepository {
     const { szoba_id, bekoltozes_datum, diak_ids } = bulkData;
     
     return await this.db.sequelize.transaction(async (transaction) => {
-      // 1. Szoba létezésének ellenőrzése
-      const szoba = await this.Szoba.findByPk(szoba_id, { transaction });
+      // 1. Szoba létezésének ellenőrzése sor szintű zárolással
+      const szoba = await this.Szoba.findByPk(szoba_id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE
+      });
+      
       if (!szoba) {
         throw new Error(`A ${szoba_id} ID-jú szoba nem található!`);
       }
