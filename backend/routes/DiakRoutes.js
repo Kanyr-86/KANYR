@@ -3,7 +3,8 @@ const { body, param, query } = require('express-validator');
 const DiakController = require('../controllers/DiakController');
 const { createDiakValidator, updateDiakValidator, getDiakValidator } = require('../validators/diakValidators');
 const validationHandler = require('../middleware/validationHandler');
-const { requireRole, requireSelfOrRole } = require('../middleware/requireRole');
+const { requireRole } = require('../middleware/requireRole');
+const { attachDiakId, requireDiakOwnership } = require('../middleware/ownershipMiddleware');
 const asyncHandler = require('../utils/asyncHandler');
 const { ROLES } = require('../config/roles');
 
@@ -157,8 +158,8 @@ router.put('/students/notifications/read-all', authenticate, resolveDiakId, asyn
   return controller.markAllNotificationsAsRead({ params: { id: req.diakId } }, res);
 }));
 
-// Részletes nézet - minden bejelentkezett felhasználó
-router.get('/:id', authenticate, requireSelfOrRole('id', ROLES.TITKAR, ROLES.FOTITKAR), validateId, validationHandler, asyncHandler(async (req, res) => {
+// Részletes nézet - students can only view their own data, admins can view any
+router.get('/:id', authenticate, attachDiakId, requireDiakOwnership('id'), validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getDiakById(req, res);
 }));
@@ -168,7 +169,7 @@ router.get('/:id/report', authenticate, isAdmin, validateId, validationHandler, 
   return controller.generateStudentReport(req, res);
 }));
 
-router.get('/:id/room', authenticate, validateId, validationHandler, asyncHandler(async (req, res) => {
+router.get('/:id/room', authenticate, attachDiakId, requireDiakOwnership('id'), validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getStudentRoom(req, res);
 }));

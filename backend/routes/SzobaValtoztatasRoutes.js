@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, param, query } = require('express-validator');
 const SzobaValtoztatasController = require('../controllers/SzobaValtoztatasController');
+const { attachDiakId, requireNotificationOwnership } = require('../middleware/ownershipMiddleware');
 
 const router = express.Router();
 
@@ -73,8 +74,8 @@ router.get('/students/notifications', authenticate, (req, res) => {
   return controller.getNotifications(req, res);
 });
 
-// Diák értesítésének megjelölése olvasottnak - minden bejelentkezett felhasználó (diák)
-router.put('/students/notifications/:id/read', authenticate, validateId, (req, res) => {
+// Diák értesítésének megjelölése olvasottnak - students can only mark their own notifications as read
+router.put('/students/notifications/:id/read', authenticate, attachDiakId, requireNotificationOwnership('id'), validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.markNotificationAsRead(req, res);
 });

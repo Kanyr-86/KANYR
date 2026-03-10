@@ -138,7 +138,7 @@ router.get(
   async (req, res) => SzobaController.getBekoltozesekWithFilters(req, res)
 );
 
-// Részletes nézet és szobában lakók - minden bejelentkezett felhasználó
+// Részletes nézet - minden bejelentkezett felhasználó
 router.get(
   '/:id',
   authenticate,
@@ -146,9 +146,11 @@ router.get(
   async (req, res) => SzobaController.getSzobaById(req, res)
 );
 
+// Szobában lakók - csak admin/titkár (contains sensitive student data)
 router.get(
   '/:id/occupants',
   authenticate,
+  canModify,
   validateIdParam,
   async (req, res) => SzobaController.getStudentsInRoom(req, res)
 );

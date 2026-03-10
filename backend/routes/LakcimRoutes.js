@@ -2,6 +2,7 @@ const express = require('express');
 const { body, param, query } = require('express-validator');
 const LakcimController = require('../controllers/LakcimController');
 const { authenticate, isAdmin, canModify } = require('../middleware/authMiddleware');
+const { attachDiakId, requireLakcimOwnership } = require('../middleware/ownershipMiddleware');
 
 const router = express.Router();
 
@@ -44,19 +45,20 @@ const initializeController = (db) => {
 
 // Route definitions
 
-// Listázások és részletes nézet - minden bejelentkezett felhasználó
-router.get('/', authenticate, validatePagination, (req, res) => {
+// Listázások - csak titkár/főtitkár (students shouldn't see all addresses)
+router.get('/', authenticate, canModify, validatePagination, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getAllLakcims(req, res);
 });
 
-router.get('/:id', authenticate, validateId, (req, res) => {
+// Részletes nézet - students can only view their own address data, admins can view any
+router.get('/:id', authenticate, attachDiakId, requireLakcimOwnership('id'), validateId, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getLakcimById(req, res);
 });
 
-// Város szerinti keresés - minden bejelentkezett felhasználó
-router.get('/city/:varos', authenticate, (req, res) => {
+// Város szerinti keresés - csak titkár/főtitkár
+router.get('/city/:varos', authenticate, canModify, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getLakcimsByCity(req, res);
 });

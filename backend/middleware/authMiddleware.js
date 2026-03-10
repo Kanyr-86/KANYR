@@ -103,7 +103,8 @@ async function authenticate(req, res, next) {
       email: user.email,
       admin: user.admin, // Keep for backward compatibility
       szerepkor: szerepkor,
-      tokenVersion: currentTokenVersion
+      tokenVersion: currentTokenVersion,
+      diakId: user.diak_id // Include diak_id for ownership checks
     };
 
     // Token metadata hozzáadása a kéréshez

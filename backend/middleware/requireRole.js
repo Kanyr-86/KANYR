@@ -51,12 +51,16 @@ const requireSelfOrRole = (idParam, ...roles) => {
     // Erőforrás azonosító lekérdezése az útvonal paramétereiből
     const resourceId = parseInt(req.params[idParam], 10);
 
+    if (isNaN(resourceId)) {
+      throw new ForbiddenError('Érvénytelen erőforrás azonosító');
+    }
+
     // Ellenőrzi, hogy a felhasználó tulajdonos-e (diakId egyezik az erőforrással) vagy rendelkezik engedélyezett szerepkörrel
     const isOwner = req.user.diakId === resourceId;
     const hasRole = roles.includes(req.user.szerepkor);
 
     if (!isOwner && !hasRole) {
-      throw new ForbiddenError('Csak saját adatokat módosíthatja');
+      throw new ForbiddenError('Csak saját adatokhoz férhet hozzá');
     }
 
     next();

@@ -131,17 +131,17 @@
                   <tr v-for="student in safeFilteredStudents" :key="student.diak_id" class="align-middle">
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                          {{ getInitial(student.nev) }}
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;"
+                             v-text="getInitial(student.nev)">
                         </div>
                         <div>
-                          <div class="fw-semibold">{{ student.nev }}</div>
+                          <div class="fw-semibold" v-text="student.nev"></div>
                           <small class="text-muted">{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
                         </div>
                       </div>
                     </td>
                     <td class="d-none d-md-table-cell">
-                      <span class="badge">{{ student.email }}</span>
+                      <span class="badge" v-text="student.email"></span>
                     </td>
                     <td class="d-none d-lg-table-cell">{{ student.telefonszam || '-' }}</td>
                     <td>
@@ -555,11 +555,11 @@
                 <div class="card-body">
                   <div class="mb-2">
                     <strong>Név:</strong>
-                    <span class="ms-2">{{ viewStudentData.nev }}</span>
+                    <span class="ms-2" v-text="viewStudentData.nev"></span>
                   </div>
-                  <div class="mb-2">
                     <strong>Email:</strong>
-                    <span class="ms-2">{{ viewStudentData.email }}</span>
+                        <div>
+                    <span class="ms-2" v-text="viewStudentData.email"></span>
                   </div>
                   <div class="mb-2">
                     <strong>Telefonszám:</strong>
@@ -647,7 +647,7 @@
     >
       <div v-if="deleteStudentData">
         <p>Biztosan törölni szeretné a következő diákot?</p>
-        <p><strong>{{ deleteStudentData?.nev || 'N/A' }}</strong></p>
+            <p><strong v-text="deleteStudentData?.nev || 'N/A'"></strong></p>
         <p>
           <small class="text-muted">
             Figyelem: A diák törlése csak akkor lehetséges, ha nincs hozzárendelve aktív szoba.

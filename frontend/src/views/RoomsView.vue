@@ -180,11 +180,11 @@
                     <div class="list-group-item d-flex justify-content-between align-items-center" 
                          v-for="student in room.diakok" :key="student.diak_id">
                       <div class="d-flex align-items-center">
-                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
-                          {{ student.nev.charAt(0).toUpperCase() }}
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;"
+                             v-text="student.nev ? student.nev.charAt(0).toUpperCase() : ''">
                         </div>
                         <div>
-                          <div class="fw-semibold">{{ student.nev }}</div>
+                          <div class="fw-semibold" v-text="student.nev"></div>
                         </div>
                       </div>
                       <span class="badge" :class="student.aktiv ? 'status-active' : 'status-inactive'">
@@ -537,7 +537,7 @@
                                :disabled="!isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id)">
                       </td>
                       <td>
-                        <strong>{{ student.nev }}</strong>
+                        <strong v-text="student.nev"></strong>
                         <span v-if="bulkTransferData.diak_ids.includes(student.diak_id)" class="ms-2">
                           <span v-if="!student.aktiv" class="badge bg-success">Új beköltöztetés</span>
                           <span v-else class="badge bg-warning text-dark">Átköltöztetés</span>
@@ -644,9 +644,9 @@
                     </thead>
                     <tbody>
                       <tr v-for="student in selectedRoomDetails.diakok" :key="student.diak_id">
-                        <td>{{ student.nev }}</td>
-                        <td>{{ student.email || '-' }}</td>
-                        <td>{{ student.telefon || '-' }}</td>
+                        <td v-text="student.nev"></td>
+                        <td v-text="student.email || '-'"></td>
+                        <td v-text="student.telefon || '-'"></td>
                         <td>{{ formatDate(student.bekoltozes_datum) }}</td>
                       </tr>
                     </tbody>

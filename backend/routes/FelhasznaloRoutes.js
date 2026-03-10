@@ -2,6 +2,7 @@ const express = require('express');
 const { body, param, query } = require('express-validator');
 const FelhasznaloController = require('../controllers/FelhasznaloController');
 const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+const { requireOwnProfile } = require('../middleware/ownershipMiddleware');
 
 const router = express.Router();
 
@@ -69,23 +70,29 @@ const initializeController = (db) => {
   );
 
   // Protected routes - saját profil kezelése (minden bejelentkezett felhasználó)
+  // Users can only update their own profile, admins can update any profile
   router.put(
     '/:id',
     authenticate,
+    requireOwnProfile(),
     userValidationRules,
     (req, res) => initializeController(req.app.locals.db).updateUser(req, res)
   );
 
+  // Users can only change their own password, admins can reset any password
   router.post(
     '/:id/password',
     authenticate,
+    requireOwnProfile(),
     passwordValidationRules,
     (req, res) => initializeController(req.app.locals.db).updatePassword(req, res)
   );
 
+  // Only admins can delete users
   router.delete(
     '/:id',
     authenticate,
+    isAdmin,
     idValidationRule,
     (req, res) => initializeController(req.app.locals.db).deleteUser(req, res)
   );
