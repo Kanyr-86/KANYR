@@ -72,6 +72,48 @@ const authLimiter = rateLimit({
   }
 });
 
+// Nagyon szigorú limiter jelszó visszaállítási műveletekhez - védelem brute force támadások ellen
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 óra
+  max: 3, // Maximum 3 jelszó visszaállítás óránként IP címenként
+  message: {
+    error: 'Túl sok jelszó visszaállítási kísérlet. Kérjük, próbálja újra 1 óra múlva.',
+    retryAfter: 60 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false, // Minden kérést számolunk, még a sikereseket is
+  handler: (req, res, next, options) => {
+    logger.warn('Rate limit exceeded for password reset', {
+      ip: req.ip,
+      path: req.path,
+      userAgent: req.headers['user-agent']
+    });
+    res.status(429).json(options.message);
+  }
+});
+
+// Szigorú limiter érzékeny admin műveletekhez (make-admin, remove-admin, force-logout)
+const adminActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 perc
+  max: 10, // Maximum 10 admin művelet 15 percenként IP címenként
+  message: {
+    error: 'Túl sok admin művelet. Kérjük, próbálja újra 15 perc múlva.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false,
+  handler: (req, res, next, options) => {
+    logger.warn('Rate limit exceeded for admin actions', {
+      ip: req.ip,
+      userId: req.user?.userId,
+      path: req.path
+    });
+    res.status(429).json(options.message);
+  }
+});
+
 // Általános API limiter írási műveletekhez (POST, PUT, DELETE)
 const writeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -104,6 +146,14 @@ const readLimiter = rateLimit({
 
 // Rate limiting alkalmazása auth route-okra (legszigorúbb limitek)
 app.use('/api/auth/login', authLimiter);
+
+// Szigorú rate limiting jelszó visszaállítási végpontokhoz - védelem brute force ellen
+app.use('/api/users/:id/reset-password', passwordResetLimiter);
+
+// Rate limiting érzékeny admin műveletekhez
+app.use('/api/users/:id/make-admin', adminActionLimiter);
+app.use('/api/users/:id/remove-admin', adminActionLimiter);
+app.use('/api/users/:id/force-logout', adminActionLimiter);
 
 // Írási limiter alkalmazása az összes route-ra (felül lesz írva az olvasási limiterrel GET kéréseknél)
 app.use('/api', writeLimiter);

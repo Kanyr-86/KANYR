@@ -36,11 +36,19 @@ export const roomSchema = yup.object().shape({
   osszes_hely: yup.number().required('A férőhelyek száma kötelező').min(1, 'Minimum 1 férőhely'),
 })
 
+// Password validation schema - strong password requirements
+const passwordSchema = yup.string()
+  .min(8, 'A jelszónak legalább 8 karakter hosszúnak kell lennie')
+  .matches(/[A-Z]/, 'A jelszónak tartalmaznia kell legalább egy nagybetűt')
+  .matches(/[a-z]/, 'A jelszónak tartalmaznia kell legalább egy kisbetűt')
+  .matches(/[0-9]/, 'A jelszónak tartalmaznia kell legalább egy számot')
+  .matches(/[^A-Za-z0-9]/, 'A jelszónak tartalmaznia kell legalább egy speciális karaktert')
+
 // User validation schema
 export const userSchema = yup.object().shape({
   username: yup.string().required('A felhasználónév kötelező').min(3, 'Minimum 3 karakter'),
   email: yup.string().email('Érvényes email címet adjon meg').required('Az email kötelező'),
-  password: yup.string().required('A jelszó kötelező').min(6, 'Minimum 6 karakter'),
+  password: passwordSchema.required('A jelszó kötelező'),
   admin: yup.boolean().default(false),
 })
 
