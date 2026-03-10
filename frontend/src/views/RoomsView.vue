@@ -680,7 +680,8 @@ import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
 export default {
   name: 'RoomsView',
   components: {
-    LoadingOverlay
+    LoadingOverlay,
+    BaseInput
   },
   setup() {
     const rooms = ref([])
