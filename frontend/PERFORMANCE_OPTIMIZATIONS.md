@@ -43,10 +43,27 @@ This document outlines all the performance optimizations implemented in the KANY
 - Added Suspense boundaries for better loading states
 - Reduced initial bundle size by ~40%
 
-#### ✅ Component Lazy Loading
-- Lazy loaded Navbar and Sidebar components
-- Suspense fallbacks for better UX during loading
-- Optimized import statements for better tree-shaking
+#### ✅ Component Lazy Loading with Vue 3 defineAsyncComponent
+- **DashboardView.vue**: Lazy loaded `NotificationInbox` and `LoadingOverlay` components
+- **StudentsView.vue**: Lazy loaded `BaseModal`, `BaseInput`, `BaseSelect`, and `LoadingOverlay` components
+- **RoomsView.vue**: Lazy loaded `BaseInput` and `LoadingOverlay` components
+- **ParentsView.vue**: Lazy loaded `BaseInput` and `LoadingOverlay` components
+- **ReportsView.vue**: Lazy loaded `LoadingOverlay` component
+- **StudentDashboard.vue**: Added `defineAsyncComponent` import for future lazy loading
+- **StudentRoomsView.vue**: Added `defineAsyncComponent` import for future lazy loading
+- **StudentNotificationsView.vue**: Added `defineAsyncComponent` import for future lazy loading
+- **App.vue**: Lazy loaded global components (`Sidebar`, `ErrorBoundary`, `ToastContainer`, `ConfirmDialog`)
+
+#### Benefits of Component-level Lazy Loading
+- Components are only loaded when needed (when the parent component renders)
+- Reduced initial JavaScript bundle size
+- Better code organization with clear separation of concerns
+- Improved application startup performance
+
+#### ✅ Vue Router Dynamic Imports
+- All routes already use dynamic imports: `() => import('../views/ViewName.vue')`
+- Router-level code splitting ensures only required route components are loaded
+- Improves initial page load time significantly
 
 ### 4. Memory Management and Cleanup
 
@@ -102,6 +119,79 @@ This document outlines all the performance optimizations implemented in the KANY
 - Identified and removed unused code
 - Optimized dependency imports
 - Reduced bundle size through code splitting
+
+### 8. Bootstrap Bundle Optimization (NEW - March 2025)
+
+#### ✅ Bootstrap Tree Shaking
+**Problem Identified:**
+- Full Bootstrap CSS import: `~200KB+` minified
+- Full Bootstrap JS import: `~60KB+` minified (unused)
+- `bootstrap-vue-3` package installed but never used
+
+**Solution Implemented:**
+
+1. **Removed unused Bootstrap JS import**
+   - File: `src/main.js`
+   - Removed: `import 'bootstrap'` (entire JS bundle)
+   - Reason: All components use custom Vue implementations, not Bootstrap JS
+
+2. **Created optimized Bootstrap CSS**
+   - File: `src/styles/bootstrap-optimized.css`
+   - Imports only essential CSS components:
+     - Grid system (container, row, col)
+     - Flexbox utilities
+     - Spacing utilities (margin, padding, gap)
+     - Text utilities
+     - Sizing utilities
+     - Button styles (all variants + outline)
+     - Table styles
+     - Spinner styles
+     - Alert styles
+     - Close button styles
+     - Card styles
+     - Modal structure classes
+     - Visibility utilities (visually-hidden)
+     - Border utilities
+     - Background utilities
+     - Position utilities
+     - Shadow utilities
+   - Imports: `bootstrap-reboot.min.css` (essential base styles)
+   - Estimated size: `~60-80KB` minified (vs `~200KB` full Bootstrap)
+   - **Estimated savings: ~60-70% reduction in Bootstrap CSS**
+
+3. **Removed unused dependency**
+   - Removed: `bootstrap-vue-3` from package.json
+   - This package was installed but never used in any component
+
+4. **Vite Configuration for Code Splitting**
+   - File: `vite.config.js`
+   - Added manual chunks for better caching:
+     - `vendor-vue`: vue, vue-router, pinia
+     - `vendor-ui`: vue3-toastify
+     - `vendor-utils`: axios, lodash-es, yup
+     - `bootstrap-styles`: bootstrap-reboot
+   - Enabled CSS code splitting
+   - Added Terser minification with console/debugger removal
+   - Configured proper asset file naming for cache busting
+   - Added rollup-plugin-visualizer for bundle analysis
+
+5. **Bundle Analyzer**
+   - Added `rollup-plugin-visualizer` dev dependency
+   - Generates `dist/stats.html` on build
+   - Run `npm run build:analyze` to view bundle visualization
+
+#### ✅ Benefits
+- **Estimated total bundle reduction: ~150-200KB**
+- Faster initial page load
+- Better caching with separated vendor chunks
+- Ability to analyze bundle composition
+- Cleaner dependency tree
+
+#### ✅ Files Modified
+- `src/main.js` - Updated Bootstrap imports
+- `src/styles/bootstrap-optimized.css` - NEW: Optimized Bootstrap CSS
+- `vite.config.js` - Added code splitting and bundle analyzer
+- `package.json` - Removed unused dependency, added dev dependencies
 
 ## Performance Metrics
 

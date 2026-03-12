@@ -184,7 +184,7 @@
                     class="form-control" 
                     v-model="filters.diakNev"
                     placeholder="Keresés név alapján..."
-                    @input="fetchBekoltozesek"
+                    @input="debouncedFetchBekoltozesek"
                     :disabled="loading"
                   >
                 </div>
@@ -465,10 +465,13 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, computed } from 'vue'
+import { defineComponent, ref, onMounted, computed, defineAsyncComponent, watch } from 'vue'
 import { useAuthStore } from '../store/auth'
+import { useDebounce } from '../composables/useDebounce'
 import api from '../services/api'
-import LoadingOverlay from '../components/LoadingOverlay.vue'
+
+// Lazy load heavy components
+const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
 
 export default defineComponent({
   name: 'ReportsView',
@@ -545,6 +548,9 @@ export default defineComponent({
         bekoltozesekLoading.value = false
       }
     }
+
+    // Debounced keresés a diák név mezőhöz
+    const { debouncedFn: debouncedFetchBekoltozesek } = useDebounce(fetchBekoltozesek, 300)
     
     // Szűrők törlése
     const clearFilters = () => {
@@ -624,6 +630,7 @@ export default defineComponent({
       bekoltozesekLoading,
       filters,
       fetchBekoltozesek,
+      debouncedFetchBekoltozesek,
       clearFilters,
       formatDate,
       calculateOccupancyPercentage,

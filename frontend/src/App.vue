@@ -20,13 +20,15 @@
 </template>
 
 <script>
-import { defineComponent, computed, onMounted, ref } from 'vue'
+import { defineComponent, computed, onMounted, ref, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
-import Sidebar from './components/Sidebar.vue'
-import ErrorBoundary from './components/ErrorBoundary.vue'
-import ToastContainer from './components/ToastContainer.vue'
-import ConfirmDialog from './components/ConfirmDialog.vue'
 import { useTheme } from './composables/useTheme'
+
+// Lazy load global components
+const Sidebar = defineAsyncComponent(() => import('./components/Sidebar.vue'))
+const ErrorBoundary = defineAsyncComponent(() => import('./components/ErrorBoundary.vue'))
+const ToastContainer = defineAsyncComponent(() => import('./components/ToastContainer.vue'))
+const ConfirmDialog = defineAsyncComponent(() => import('./components/ConfirmDialog.vue'))
 
 export default defineComponent({
   name: 'App',

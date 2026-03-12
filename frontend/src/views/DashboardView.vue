@@ -344,13 +344,19 @@
 </style>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { toast } from 'vue3-toastify'
-import NotificationInbox from '../components/NotificationInbox.vue'
-import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage } from '@/i18n'
+
+// Lazy load heavy components
+const NotificationInbox = defineAsyncComponent(() => 
+  import('../components/NotificationInbox.vue')
+)
+const LoadingOverlay = defineAsyncComponent(() => 
+  import('../components/LoadingOverlay.vue')
+)
 
 export default {
   name: 'DashboardView',

@@ -123,112 +123,123 @@
         </div>
         
         <!-- Szobák kártyák -->
-        <div v-else class="row">
-          <div class="col-md-4" v-for="room in filteredRooms" :key="room.szoba_id">
-            <div class="card shadow-sm h-100">
-              <div class="card-header border-0">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h5 class="mb-0">{{ room.szoba_szama }}</h5>
-                  </div>
-                  <div>
-                    <span class="badge" :class="getRoomStatusClass(room)">
-                      {{ getRoomStatusText(room) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="row mb-3">
-                  <div class="col-6">
-                    <div class="d-flex align-items-center">
-                      <i class="bi bi-people-fill text-primary me-2"></i>
-                      <div>
-                        <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
-                        <small class="text-muted">Férőhely</small>
-                      </div>
+        <div v-else class="rooms-container">
+          <RecycleScroller
+            class="scroller"
+            :items="filteredRooms"
+            :item-size="280"
+            key-field="szoba_id"
+            v-slot="{ item: room }"
+          >
+            <div class="room-card-wrapper">
+              <div class="card shadow-sm h-100">
+                <div class="card-header border-0">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h5 class="mb-0">{{ room.szoba_szama }}</h5>
                     </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="d-flex align-items-center">
-                      <i class="bi bi-person-fill text-success me-2"></i>
-                      <div>
-                        <div class="fw-semibold">{{ room.currentOccupancy || 0 }} fő</div>
-                        <small class="text-muted">Jelenlegi lakók</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="progress mb-3" style="height: 8px;">
-                  <div class="progress-bar" 
-                       :class="getTransferRoomProgressClass(room)"
-                       :style="{ width: getOccupancyPercentage(room) + '%' }">
-                  </div>
-                </div>
-                
-                <div class="mb-3">
-                  <div class="d-flex justify-content-between">
-                    <small class="text-muted">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
-                    <small class="text-muted">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
-                  </div>
-                </div>
-                
-                <div v-if="room.diakok && room.diakok.length > 0">
-                  <h6 class="mb-2">Lakók:</h6>
-                  <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center" 
-                         v-for="student in room.diakok" :key="student.diak_id">
-                      <div class="d-flex align-items-center">
-                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;"
-                             v-text="student.nev ? student.nev.charAt(0).toUpperCase() : ''">
-                        </div>
-                        <div>
-                          <div class="fw-semibold" v-text="student.nev"></div>
-                        </div>
-                      </div>
-                      <span class="badge" :class="student.aktiv ? 'status-active' : 'status-inactive'">
-                        {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
+                    <div>
+                      <span class="badge" :class="getRoomStatusClass(room)">
+                        {{ getRoomStatusText(room) }}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div v-else>
-                  <div class="alert alert-light border text-center mb-0">
-                    <i class="bi bi-emoji-smile text-muted me-2"></i>
-                    <span class="text-muted">Nincs bent lakó</span>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-people-fill text-primary me-2"></i>
+                        <div>
+                          <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
+                          <small class="text-muted">Férőhely</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-person-fill text-success me-2"></i>
+                        <div>
+                          <div class="fw-semibold">{{ room.currentOccupancy || 0 }} fő</div>
+                          <small class="text-muted">Jelenlegi lakók</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar" 
+                         :class="getTransferRoomProgressClass(room)"
+                         :style="{ width: getOccupancyPercentage(room) + '%' }">
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                      <small class="text-muted">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
+                      <small class="text-muted">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                    </div>
+                  </div>
+                  
+                  <div v-if="room.diakok && room.diakok.length > 0">
+                    <h6 class="mb-2">Lakók:</h6>
+                    <div class="list-group list-group-flush">
+                      <div class="list-group-item d-flex justify-content-between align-items-center" 
+                           v-for="student in room.diakok.slice(0, 3)" :key="student.diak_id">
+                        <div class="d-flex align-items-center">
+                          <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;"
+                               v-text="student.nev ? student.nev.charAt(0).toUpperCase() : ''">
+                          </div>
+                          <div>
+                            <div class="fw-semibold" v-text="student.nev"></div>
+                          </div>
+                        </div>
+                        <span class="badge" :class="student.aktiv ? 'status-active' : 'status-inactive'">
+                          {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
+                        </span>
+                      </div>
+                      <div v-if="room.diakok.length > 3" class="list-group-item text-center text-muted">
+                        <small>+{{ room.diakok.length - 3 }} további lakó</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <div class="alert alert-light border text-center mb-0">
+                      <i class="bi bi-emoji-smile text-muted me-2"></i>
+                      <span class="text-muted">Nincs bent lakó</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="card-footer border-0">
-                <div class="d-flex justify-content-between">
-                  <button 
-                    class="btn btn-outline-primary btn-sm" 
-                    @click="viewRoomDetails(room)"
-                    :disabled="loading"
-                  >
-                    <i class="bi bi-eye me-1"></i>Részletek
-                  </button>
-                  <div class="btn-group" role="group">
+                <div class="card-footer border-0">
+                  <div class="d-flex justify-content-between">
                     <button 
-                      class="btn btn-outline-warning btn-sm" 
-                      @click="editRoom(room)"
+                      class="btn btn-outline-primary btn-sm" 
+                      @click="viewRoomDetails(room)"
                       :disabled="loading"
                     >
-                      <i class="bi bi-pencil me-1"></i>Szerkesztés
+                      <i class="bi bi-eye me-1"></i>Részletek
                     </button>
-                    <button 
-                      class="btn btn-outline-danger btn-sm" 
-                      @click="deleteRoom(room)"
-                      :disabled="loading"
-                    >
-                      <i class="bi bi-trash me-1"></i>Törlés
-                    </button>
+                    <div class="btn-group" role="group">
+                      <button 
+                        class="btn btn-outline-warning btn-sm" 
+                        @click="editRoom(room)"
+                        :disabled="loading"
+                      >
+                        <i class="bi bi-pencil me-1"></i>Szerkesztés
+                      </button>
+                      <button 
+                        class="btn btn-outline-danger btn-sm" 
+                        @click="deleteRoom(room)"
+                        :disabled="loading"
+                      >
+                        <i class="bi bi-trash me-1"></i>Törlés
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </RecycleScroller>
         </div>
       </div>
     </div>
@@ -668,21 +679,25 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { debounce } from 'lodash-es'
 import { toast } from 'vue3-toastify'
-import BaseInput from '../components/forms/BaseInput.vue'
-import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
 import { useApiCancel } from '../composables/useApiCancel'
+import { RecycleScroller } from 'vue-virtual-scroller'
+
+// Lazy load heavy components
+const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
+const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
 
 export default {
   name: 'RoomsView',
   components: {
     LoadingOverlay,
-    BaseInput
+    BaseInput,
+    RecycleScroller
   },
   setup() {
     const { createAbortController, isAbortError } = useApiCancel()
@@ -1348,25 +1363,58 @@ export default {
 </script>
 
 <style scoped>
-/* Szoba kártya stílusok */
-.room-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-card-gradient);
-  cursor: pointer;
+/* Virtual Scroller Styles */
+.rooms-container {
+  height: 600px;
+  overflow: hidden;
 }
 
-.room-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-500);
+.scroller {
+  height: 100%;
 }
 
-.room-card .card-body {
-  transition: all 0.3s ease;
+.room-card-wrapper {
+  padding: 8px 12px;
+  height: 280px;
 }
 
-.room-card:hover .card-body {
-  background-color: var(--bg-hover);
+.room-card-wrapper .card {
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.room-card-wrapper .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Avatar styles */
+.avatar {
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rooms-container {
+    height: 500px;
+  }
+  
+  .room-card-wrapper {
+    padding: 6px 8px;
+    height: 260px;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .room-card-wrapper .card {
+  background: var(--bg-card, #2d3748);
+  border-color: var(--border-dark, #4a5568);
+}
+
+[data-theme="dark"] .room-card-wrapper .card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 </style>

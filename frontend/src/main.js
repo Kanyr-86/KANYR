@@ -15,9 +15,15 @@ import './styles/components/buttons.css'
 import './styles/components/tables.css'
 import './styles/components/modals.css'
 import './styles/components/notification-inbox.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
+
+// Optimized Bootstrap imports - only essential CSS
+import './styles/bootstrap-optimized.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
-import 'bootstrap'
+
+// Note: Bootstrap JS is NOT imported because we use custom Vue components
+// If you need specific Bootstrap JS components (like tooltips), import them individually:
+// import { Modal, Dropdown, Tooltip } from 'bootstrap/dist/js/bootstrap.esm.min.js'
+
 import 'vue3-toastify/dist/index.css'
 
 const app = createApp(App)

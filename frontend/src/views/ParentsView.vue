@@ -555,20 +555,23 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { useDebounce } from '../composables/useDebounce'
 import { toast } from 'vue3-toastify'
-import BaseInput from '../components/forms/BaseInput.vue'
-import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { getSuccessMessage, getErrorMessage } from '@/i18n'
 import { useApiCancel } from '../composables/useApiCancel'
+
+// Lazy load heavy components
+const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
+const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
 
 export default {
   name: 'ParentsView',
   components: {
-    LoadingOverlay
+    LoadingOverlay,
+    BaseInput
   },
   setup() {
     // API request cancellation
