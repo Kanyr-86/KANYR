@@ -4,6 +4,7 @@ const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
 const TokenBlacklistService = require('../services/TokenBlacklistService');
 const { authenticate } = require('../middleware/authMiddleware');
+const { csrfProtectionMiddleware, getCsrfToken } = require('../middleware/csrfMiddleware');
 
 const router = express.Router();
 
@@ -147,5 +148,12 @@ router.get(
     });
   }
 );
+
+/**
+ * GET /api/auth/csrf-token
+ * Új CSRF token kérése
+ * Hasznos ha a token lejárt vagy újra kell generálni
+ */
+router.get('/csrf-token', getCsrfToken);
 
 module.exports = router;

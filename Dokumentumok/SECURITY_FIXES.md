@@ -288,3 +288,166 @@ The following files should also be updated with the same pattern:
 3. **Regression testing**:
    - Ensure all existing functionality still works
    - Verify special characters display correctly (é, á, ű, etc.)
+
+---
+
+# CSRF (Cross-Site Request Forgery) Protection
+
+## Date
+2026-03-12
+
+## Problem
+The application was vulnerable to CSRF attacks. If a logged-in user visited a malicious website, that site could make unauthorized state-changing requests (POST, PUT, DELETE) to the API on behalf of the user. Since the application uses JWT tokens stored in localStorage and `withCredentials: true`, attackers could exploit this to perform actions like:
+- Creating/modifying/deleting student records
+- Changing room assignments
+- Modifying user profiles
+- Any other state-changing operation
+
+## Solution Overview
+Implemented CSRF protection using the **double-submit cookie pattern**:
+1. Server generates a cryptographically secure random CSRF token
+2. Token is set as a cookie (accessible by JavaScript) and also returned in response headers
+3. Client reads the cookie and sends the token in a custom header (`X-CSRF-Token`) for state-changing requests
+4. Server validates that the header token matches the stored token
+
+This prevents CSRF attacks because:
+- Attackers cannot read the cookie (same-origin policy)
+- Attackers cannot set custom headers on cross-origin requests (CORS preflight)
+- Attackers cannot guess the random token
+
+## Files Created
+
+### `backend/middleware/csrfMiddleware.js`
+New middleware module providing:
+- `generateToken()` - Generates cryptographically secure random tokens
+- `getClientId()` - Creates unique client identifier based on IP, User-Agent, and user ID
+- `csrfTokenMiddleware` - Generates and sets CSRF token cookie for all requests
+- `csrfProtectionMiddleware` - Validates CSRF tokens on state-changing requests (POST, PUT, DELETE, PATCH)
+- `getCsrfToken` - Route handler to fetch a fresh CSRF token
+
+**Key Features:**
+- 32-byte cryptographically secure random tokens
+- 24-hour token lifetime with automatic cleanup
+- Constant-time token comparison to prevent timing attacks
+- Skips validation for safe methods (GET, HEAD, OPTIONS)
+- Skips validation for login endpoint (user not authenticated yet)
+- Skips validation when user is not authenticated
+
+## Files Modified
+
+### `backend/app.js`
+- Added `cookie-parser` middleware to parse cookies
+- Added `csrfTokenMiddleware` globally to generate tokens for all requests
+- Added `csrfProtectionMiddleware` before all API routes to validate tokens
+- Updated CORS configuration to allow `X-CSRF-Token` header
+
+### `backend/routes/authRoutes.js`
+- Added CSRF middleware imports
+- Added `GET /api/auth/csrf-token` endpoint for fetching fresh tokens
+
+### `backend/package.json`
+- Added `cookie-parser` dependency
+
+### `frontend/src/services/api.js`
+- Added CSRF token management functions:
+  - `getCsrfTokenFromCookie()` - Reads token from cookie
+  - `fetchCsrfToken()` - Fetches fresh token from server
+  - `ensureCsrfToken()` - Ensures valid token is available
+- Updated request interceptor to include CSRF token in headers for state-changing requests
+- Updated response interceptor to handle CSRF errors (403 with CSRF error codes)
+- Automatic page reload with toast notification on CSRF token expiration
+
+## How It Works
+
+### Request Flow
+```
+1. User loads page → Server generates CSRF token → Sets XSRF-TOKEN cookie
+2. User makes POST/PUT/DELETE request:
+   a. Frontend reads XSRF-TOKEN cookie
+   b. Adds X-CSRF-Token header with token value
+   c. Sends request with both JWT and CSRF tokens
+3. Server validates:
+   a. JWT token (authentication)
+   b. CSRF token matches stored value (CSRF protection)
+4. If CSRF token invalid/missing → 403 Forbidden error
+```
+
+### CSRF Error Handling
+When a CSRF error occurs (token expired or invalid):
+1. Frontend catches the 403 error with CSRF error code
+2. Attempts to fetch a fresh CSRF token
+3. Shows toast notification: "Biztonsági token lejárt. Az oldal újratöltése..."
+4. Reloads the page after 2 seconds to get fresh tokens
+
+## API Changes
+
+### New Endpoint
+- `GET /api/auth/csrf-token` - Returns a fresh CSRF token
+  - Response: `{ success: true, data: { csrfToken: "..." } }`
+
+### Headers
+- **Request**: `X-CSRF-Token: <token-value>` (required for POST, PUT, DELETE, PATCH)
+- **Response**: `X-CSRF-Token: <token-value>` (included in all responses)
+
+### Error Responses
+CSRF errors return 403 Forbidden with specific error codes:
+- `CSRF_MISSING` - No CSRF token provided
+- `CSRF_EXPIRED` - Token expired or not found in storage
+- `CSRF_INVALID` - Token doesn't match stored value
+
+## Testing Recommendations
+
+### 1. Normal Operation
+1. Log in to the application
+2. Verify CSRF token cookie is set (`XSRF-TOKEN`)
+3. Perform state-changing operations (create student, update room, etc.)
+4. Verify all operations succeed
+
+### 2. CSRF Token Validation
+1. Open browser developer tools
+2. Find a POST/PUT/DELETE request
+3. Verify `X-CSRF-Token` header is present
+4. Verify header value matches cookie value
+
+### 3. CSRF Attack Simulation
+1. Log in to the application
+2. Open browser console on a different origin (or use curl)
+3. Try to make a POST request without CSRF token:
+   ```javascript
+   fetch('http://localhost:3000/api/students', {
+     method: 'POST',
+     headers: { 'Authorization': 'Bearer <token>' },
+     body: JSON.stringify({ nev: 'Test' })
+   })
+   ```
+4. Should receive 403 Forbidden with "CSRF token hiányzik" error
+
+### 4. Token Expiration
+1. Log in and note the CSRF token
+2. Wait for token to expire (24 hours) or manually clear server storage
+3. Try to make a state-changing request
+4. Should receive CSRF error and page should reload automatically
+
+### 5. Regression Testing
+- Ensure all existing functionality still works
+- Test file uploads (if applicable)
+- Test form submissions
+- Test API calls from different browsers
+
+## Security Considerations
+
+### Token Storage
+- Tokens are stored in-memory on the server (Map)
+- In production, consider using Redis for distributed environments
+- Tokens are tied to client IP + User-Agent + User ID for additional security
+
+### Cookie Security
+- `httpOnly: false` - Required so JavaScript can read the cookie
+- `secure: true` in production - Only sent over HTTPS
+- `sameSite: 'strict'` - Prevents cross-site cookie sending
+- `maxAge: 24 hours` - Token lifetime
+
+### Additional Protections
+- Rate limiting already in place prevents brute-force token guessing
+- CORS configuration restricts allowed origins
+- JWT authentication required before CSRF validation

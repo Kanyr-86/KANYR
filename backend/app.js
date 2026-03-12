@@ -2,11 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 const { testConnection } = require('./config/database');
 const db = require('./models');
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
 const { detectSuspiciousActivity, trackSensitiveOperations } = require('./middleware/securityMiddleware');
+const { csrfTokenMiddleware, csrfProtectionMiddleware, getCsrfToken } = require('./middleware/csrfMiddleware');
 const { NotFoundError } = require('./utils/AppError');
 const logger = require('./utils/logger');
 const TokenBlacklistService = require('./services/TokenBlacklistService');
@@ -29,7 +31,7 @@ app.use(cors({
   origin: getAllowedOrigins(),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
 }));
 
 // Biztonsági fejlécek Helmet-tel
@@ -47,13 +49,20 @@ app.use(helmet({
 
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
+app.use(cookieParser()); // Cookie parser - needed for CSRF tokens
 
 // Kérés naplózó middleware
 app.use(requestLogger);
 
+// CSRF token middleware - generates token for all requests
+app.use(csrfTokenMiddleware);
+
 // Biztonsági middleware-ek
 app.use(detectSuspiciousActivity);
 app.use(trackSensitiveOperations);
+
+// CSRF protection middleware - validates tokens on state-changing requests
+// Applied after auth middleware in route definitions
 
 // Rate limiting konfiguráció
 // Szigorú limiter hitelesítési végpontokhoz - megakadályozza a brute force támadásokat
@@ -189,6 +198,11 @@ const startServer = async () => {
     // Database available to routes via app.locals
     app.locals.db = db;
     logger.info('✓ Adatbázis elérhető a route-ok számára');
+
+    // CSRF protection middleware - validates tokens on state-changing requests
+    // Applied before all API routes to intercept state-changing requests
+    app.use('/api', csrfProtectionMiddleware);
+    logger.info('✓ CSRF protection middleware initialized');
 
     // Student route-ok inicializálása (az adatbázis után, hogy app.locals.db elérhető legyen)
     app.use('/api/students', require('./routes/DiakRoutes'));
