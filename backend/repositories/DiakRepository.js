@@ -11,7 +11,7 @@ class DiakRepository {
   /**
    * Összes diák lekérése
    * @param {Object} options - lekérdezési opciók (limit, offset, sort, etc.)
-   * @returns {Promise<Array>} - diákok listája
+   * @returns {Promise<Object>} - diákok listája és összesítő adatok { rows, count }
    */
   async findAll(options = {}) {
     try {
@@ -55,10 +55,13 @@ class DiakRepository {
         ];
       }
 
+      // Get total count for pagination metadata
+      const totalCount = await this.Diak.count();
+
       const diaks = await this.Diak.findAll(queryOptions);
 
       // Post-process: aktiv mező és szoba adatok hozzáadása
-      return diaks.map(diak => {
+      const processedDiaks = diaks.map(diak => {
         const diakData = diak.toJSON ? diak.toJSON() : diak;
         
         // Aktív beköltözés keresése
@@ -76,6 +79,11 @@ class DiakRepository {
         
         return diakData;
       });
+
+      return {
+        rows: processedDiaks,
+        count: totalCount
+      };
     } catch (error) {
       throw new Error(`Hiba a diákok lekérésében: ${error.message}`);
     }

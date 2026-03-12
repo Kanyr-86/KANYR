@@ -1,5 +1,6 @@
 const { generateTokenWithVersion, generateRandomPassword } = require('../utils/authUtils');
 const TokenBlacklistService = require('./TokenBlacklistService');
+const cacheService = require('./CacheService');
 const logger = require('../utils/logger');
 
 class FelhasznaloService {
@@ -29,6 +30,10 @@ class FelhasznaloService {
 
       // Create user
       const user = await this.repository.create(userData);
+      
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      
       return user;
     } catch (error) {
       throw new Error(`Hiba a felhasználó létrehozása közben: ${error.message}`);
@@ -42,13 +47,18 @@ class FelhasznaloService {
    */
   async getUserById(userId) {
     try {
-      const user = await this.repository.findById(userId);
+      // Cache individual user lookups
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId });
+      
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        const user = await this.repository.findById(userId);
 
-      if (!user) {
-        throw new Error('Felhasználó nem található');
-      }
+        if (!user) {
+          throw new Error('Felhasználó nem található');
+        }
 
-      return user;
+        return user;
+      }, cacheService.defaultTTL);
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
         throw error;
@@ -64,6 +74,7 @@ class FelhasznaloService {
    */
   async getUserByEmail(email) {
     try {
+      // Don't cache email lookups for security (password-related)
       const user = await this.repository.findByEmail(email);
 
       if (!user) {
@@ -88,6 +99,7 @@ class FelhasznaloService {
    */
   async getUserByUsername(username) {
     try {
+      // Don't cache username lookups for security
       const user = await this.repository.findByUsername(username);
 
       if (!user) {
@@ -112,8 +124,17 @@ class FelhasznaloService {
    */
   async getAllUsers(options = {}) {
     try {
-      const users = await this.repository.findAll(options);
-      return users;
+      // Generate cache key based on options
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.USERS_LIST, {
+        limit: options.limit || 'all',
+        offset: options.offset || 0,
+        sort: options.sort || 'default'
+      });
+
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        const users = await this.repository.findAll(options);
+        return users;
+      }, cacheService.listsTTL);
     } catch (error) {
       throw new Error(`Hiba a felhasználók listázása közben: ${error.message}`);
     }
@@ -128,6 +149,11 @@ class FelhasznaloService {
   async updateUser(userId, updates) {
     try {
       const user = await this.repository.update(userId, updates);
+      
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
+      
       return user;
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
@@ -145,6 +171,11 @@ class FelhasznaloService {
   async deleteUser(userId) {
     try {
       const result = await this.repository.delete(userId);
+      
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
+      
       return result;
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
@@ -245,6 +276,10 @@ class FelhasznaloService {
         logger.info('All tokens revoked after password change', { userId, newTokenVersion });
       }
 
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
+
       return user;
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
@@ -283,6 +318,10 @@ class FelhasznaloService {
       // Revoke all existing tokens for this user
       await this.tokenBlacklistService.revokeAllUserTokens(userId);
       logger.info('All tokens revoked after password reset', { userId, newTokenVersion });
+
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
 
       return {
         user,
@@ -329,6 +368,10 @@ class FelhasznaloService {
         newRole: admin
       });
 
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
+
       return user;
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
@@ -370,6 +413,10 @@ class FelhasznaloService {
       await this.tokenBlacklistService.revokeAllUserTokens(userId);
 
       logger.warn('Force logout executed for user', { userId, reason, newTokenVersion });
+
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
 
       return user;
     } catch (error) {
@@ -431,6 +478,11 @@ class FelhasznaloService {
       }
 
       const user = await this.repository.update(userId, updates);
+      
+      // Invalidate user caches
+      cacheService.invalidateUserCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_USER, { id: userId }));
+      
       return user;
     } catch (error) {
       if (error.message === 'Felhasználó nem található') {
@@ -447,7 +499,7 @@ class FelhasznaloService {
    */
   async isAdmin(userId) {
     try {
-      const user = await this.repository.findById(userId);
+      const user = await this.getUserById(userId);
 
       if (!user) {
         throw new Error('Felhasználó nem található');

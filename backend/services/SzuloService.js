@@ -1,4 +1,5 @@
 const SzuloRepository = require('../repositories/SzuloRepository');
+const cacheService = require('./CacheService');
 
 class SzuloService {
   constructor(db) {
@@ -11,7 +12,16 @@ class SzuloService {
    * @returns {Promise<Array>} Array of parents
    */
   async getAllSzulos(options = {}) {
-    return this.szuloRepository.findAll(options);
+    // Generate cache key based on options
+    const cacheKey = cacheService.generateKey(cacheService.keyPatterns.PARENTS_LIST, {
+      limit: options.limit || 'all',
+      offset: options.offset || 0,
+      sort: options.sort || 'default'
+    });
+
+    return await cacheService.getOrCompute(cacheKey, async () => {
+      return this.szuloRepository.findAll(options);
+    }, cacheService.listsTTL);
   }
 
   /**
@@ -21,7 +31,15 @@ class SzuloService {
    * @returns {Promise<Object|null>} Parent object or null
    */
   async getSzuloById(id, includeRelations = true) {
-    return this.szuloRepository.findById(id, includeRelations);
+    // Cache individual parent lookups
+    const cacheKey = cacheService.generateKey(cacheService.keyPatterns.SINGLE_PARENT, { 
+      id, 
+      include: includeRelations 
+    });
+
+    return await cacheService.getOrCompute(cacheKey, async () => {
+      return this.szuloRepository.findById(id, includeRelations);
+    }, cacheService.defaultTTL);
   }
 
   /**
@@ -30,7 +48,10 @@ class SzuloService {
    * @returns {Promise<Object>} Created parent
    */
   async createSzulo(szuloData) {
-    return this.szuloRepository.create(szuloData);
+    const result = await this.szuloRepository.create(szuloData);
+    // Invalidate parent list caches
+    cacheService.invalidateParentCache();
+    return result;
   }
 
   /**
@@ -40,7 +61,19 @@ class SzuloService {
    * @returns {Promise<Object>} Updated parent
    */
   async updateSzulo(id, updates) {
-    return this.szuloRepository.update(id, updates);
+    const result = await this.szuloRepository.update(id, updates);
+    // Invalidate parent caches
+    cacheService.invalidateParentCache();
+    // Invalidate specific parent cache
+    cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_PARENT, { 
+      id, 
+      include: true 
+    }));
+    cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_PARENT, { 
+      id, 
+      include: false 
+    }));
+    return result;
   }
 
   /**
@@ -49,7 +82,18 @@ class SzuloService {
    * @returns {Promise<void>}
    */
   async deleteSzulo(id) {
-    return this.szuloRepository.delete(id);
+    await this.szuloRepository.delete(id);
+    // Invalidate parent caches
+    cacheService.invalidateParentCache();
+    // Invalidate specific parent cache
+    cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_PARENT, { 
+      id, 
+      include: true 
+    }));
+    cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_PARENT, { 
+      id, 
+      include: false 
+    }));
   }
 }
 

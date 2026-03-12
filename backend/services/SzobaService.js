@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const cacheService = require('./CacheService');
 
 class SzobaService {
   constructor(db) {
@@ -15,7 +16,10 @@ class SzobaService {
    */
   async createSzoba(szobaData) {
     try {
-      return await this.SzobaRepository.createSzoba(szobaData);
+      const result = await this.SzobaRepository.createSzoba(szobaData);
+      // Invalidate room caches when a new room is created
+      cacheService.invalidateRoomCache();
+      return result;
     } catch (error) {
       throw new Error(`Hiba a szoba létrehozásakor: ${error.message}`);
     }
@@ -28,7 +32,11 @@ class SzobaService {
    */
   async getSzobaById(szobaId) {
     try {
-      return await this.SzobaRepository.getSzobaById(szobaId);
+      // Cache single room lookups
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.SINGLE_ROOM, { id: szobaId });
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        return await this.SzobaRepository.getSzobaById(szobaId);
+      }, cacheService.defaultTTL);
     } catch (error) {
       throw new Error(`Hiba a szoba lekérdezésekor: ${error.message}`);
     }
@@ -48,32 +56,39 @@ class SzobaService {
     try {
       const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
 
-      const where = {};
-      if (prefix) {
-        where.szoba_szama = {
-          [Op.startsWith]: prefix
-        };
-      }
-
-      // OPTIMALIZÁLVA: Egyetlen lekérdezés eager loading-gal (N+1 probléma megoldva)
-      const szobak = await this.db.Szoba.findAll({
-        where,
-        order: [[sort, order]],
-        limit,
-        offset,
-        include: [{
-          model: this.db.SzobaBekoltozes,
-          as: 'bekoltozesek',
-          where: { kikoltozes_datum: null },
-          required: false,
-          include: [{
-            model: this.db.Diak,
-            as: 'diak'
-          }]
-        }]
+      // Generate cache key based on query parameters
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.ROOMS_LIST, {
+        limit, offset, sort, order, prefix: prefix || 'all'
       });
-      
-      return szobak.map(szoba => szoba.toJSON ? szoba.toJSON() : szoba);
+
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        const where = {};
+        if (prefix) {
+          where.szoba_szama = {
+            [Op.startsWith]: prefix
+          };
+        }
+
+        // OPTIMALIZÁLVA: Egyetlen lekérdezés eager loading-gal (N+1 probléma megoldva)
+        const szobak = await this.db.Szoba.findAll({
+          where,
+          order: [[sort, order]],
+          limit,
+          offset,
+          include: [{
+            model: this.db.SzobaBekoltozes,
+            as: 'bekoltozesek',
+            where: { kikoltozes_datum: null },
+            required: false,
+            include: [{
+              model: this.db.Diak,
+              as: 'diak'
+            }]
+          }]
+        });
+        
+        return szobak.map(szoba => szoba.toJSON ? szoba.toJSON() : szoba);
+      }, cacheService.listsTTL);
     } catch (error) {
       throw new Error(`Hiba a szobák listázásakor: ${error.message}`);
     }
@@ -87,7 +102,12 @@ class SzobaService {
    */
   async updateSzoba(szobaId, updateData) {
     try {
-      return await this.SzobaRepository.updateSzoba(szobaId, updateData);
+      const result = await this.SzobaRepository.updateSzoba(szobaId, updateData);
+      // Invalidate room caches when a room is updated
+      cacheService.invalidateRoomCache();
+      // Also invalidate specific room cache
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_ROOM, { id: szobaId }));
+      return result;
     } catch (error) {
       throw new Error(`Hiba a szoba frissítésekor: ${error.message}`);
     }
@@ -100,7 +120,12 @@ class SzobaService {
    */
   async deleteSzoba(szobaId) {
     try {
-      return await this.SzobaRepository.deleteSzoba(szobaId);
+      const result = await this.SzobaRepository.deleteSzoba(szobaId);
+      // Invalidate room caches when a room is deleted
+      cacheService.invalidateRoomCache();
+      // Also invalidate specific room cache
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_ROOM, { id: szobaId }));
+      return result;
     } catch (error) {
       throw new Error(`Hiba a szoba törlésekor: ${error.message}`);
     }
@@ -113,6 +138,7 @@ class SzobaService {
    */
   async checkRoomAvailability(szobaId) {
     try {
+      // Don't cache availability checks - they need to be real-time
       return await this.SzobaRepository.checkRoomAvailability(szobaId);
     } catch (error) {
       throw new Error(`Hiba a szoba elérhetőségének ellenőrzésében: ${error.message}`);
@@ -126,7 +152,11 @@ class SzobaService {
    */
   async getStudentsInRoom(szobaId) {
     try {
-      return await this.SzobaRepository.getStudentsInRoom(szobaId);
+      // Cache students in room with shorter TTL due to frequent changes
+      const cacheKey = cacheService.generateKey('rooms:students', { id: szobaId });
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        return await this.SzobaRepository.getStudentsInRoom(szobaId);
+      }, cacheService.defaultTTL);
     } catch (error) {
       throw new Error(`Hiba a szoba diákjainak lekérésében: ${error.message}`);
     }
@@ -138,49 +168,56 @@ class SzobaService {
    */
   async getRoomStatistics() {
     try {
-      const { sequelize } = this.db;
+      // Cache statistics with shorter TTL as they change frequently
+      return await cacheService.getOrCompute(
+        cacheService.keyPatterns.ROOM_STATISTICS,
+        async () => {
+          const { sequelize } = this.db;
 
-      // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
-      const occupancyData = await this.db.SzobaBekoltozes.findAll({
-        attributes: [
-          'szoba_id',
-          [sequelize.fn('COUNT', sequelize.col('bekoltozes_id')), 'occupancy']
-        ],
-        where: {
-          kikoltozes_datum: null
+          // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
+          const occupancyData = await this.db.SzobaBekoltozes.findAll({
+            attributes: [
+              'szoba_id',
+              [sequelize.fn('COUNT', sequelize.col('bekoltozes_id')), 'occupancy']
+            ],
+            where: {
+              kikoltozes_datum: null
+            },
+            group: ['szoba_id'],
+            raw: true
+          });
+
+          // Szobák lekérdezése
+          const allRooms = await this.db.Szoba.findAll({
+            order: [['szoba_id', 'ASC']]
+          });
+
+          // Occupancy adatok map-elése gyors kereséshez
+          const occupancyMap = new Map();
+          occupancyData.forEach(item => {
+            occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
+          });
+
+          // Statisztikák összeállítása
+          const roomStatistics = allRooms.map(szoba => {
+            const szobaData = szoba.toJSON ? szoba.toJSON() : szoba;
+            const occupancy = occupancyMap.get(szobaData.szoba_id) || 0;
+            
+            return {
+              szoba_id: szobaData.szoba_id,
+              szoba_szama: szobaData.szoba_szama,
+              osszes_hely: szobaData.osszes_hely,
+              aktualis_szam: occupancy,
+              kihasznaltseg: szobaData.osszes_hely > 0 
+                ? ((occupancy / szobaData.osszes_hely) * 100).toFixed(1) + '%'
+                : '0.0%'
+            };
+          });
+
+          return roomStatistics;
         },
-        group: ['szoba_id'],
-        raw: true
-      });
-
-      // Szobák lekérdezése
-      const allRooms = await this.db.Szoba.findAll({
-        order: [['szoba_id', 'ASC']]
-      });
-
-      // Occupancy adatok map-elése gyors kereséshez
-      const occupancyMap = new Map();
-      occupancyData.forEach(item => {
-        occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
-      });
-
-      // Statisztikák összeállítása
-      const roomStatistics = allRooms.map(szoba => {
-        const szobaData = szoba.toJSON ? szoba.toJSON() : szoba;
-        const occupancy = occupancyMap.get(szobaData.szoba_id) || 0;
-        
-        return {
-          szoba_id: szobaData.szoba_id,
-          szoba_szama: szobaData.szoba_szama,
-          osszes_hely: szobaData.osszes_hely,
-          aktualis_szam: occupancy,
-          kihasznaltseg: szobaData.osszes_hely > 0 
-            ? ((occupancy / szobaData.osszes_hely) * 100).toFixed(1) + '%'
-            : '0.0%'
-        };
-      });
-
-      return roomStatistics;
+        cacheService.statisticsTTL
+      );
     } catch (error) {
       throw new Error(`Hiba a szoba statisztikák lekérdezésekor: ${error.message}`);
     }
@@ -198,7 +235,16 @@ class SzobaService {
    */
   async getAvailableRooms(options = {}) {
     try {
-      return await this.SzobaRepository.getAvailableRooms(options);
+      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
+
+      // Generate cache key based on query parameters
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.ROOMS_AVAILABLE, {
+        limit, offset, sort, order, prefix: prefix || 'all'
+      });
+
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        return await this.SzobaRepository.getAvailableRooms(options);
+      }, cacheService.defaultTTL);
     } catch (error) {
       throw new Error(`Hiba az elérhető szobák listázásakor: ${error.message}`);
     }
@@ -214,7 +260,11 @@ class SzobaService {
    */
   async createBekoltozes(bekoltozesData) {
     try {
-      return await this.SzobaRepository.createBekoltozes(bekoltozesData);
+      const result = await this.SzobaRepository.createBekoltozes(bekoltozesData);
+      // Invalidate room and statistics caches when occupancy changes
+      cacheService.invalidateRoomCache();
+      cacheService.invalidateStatisticsCache();
+      return result;
     } catch (error) {
       throw new Error(`Hiba a beköltözés létrehozásakor: ${error.message}`);
     }
@@ -227,48 +277,53 @@ class SzobaService {
    */
   async getRoomOccupancy(szobaId) {
     try {
-      const szoba = await this.SzobaRepository.getSzobaById(szobaId);
-      if (!szoba) {
-        throw new Error('Szoba nem található');
-      }
-
-      const currentOccupancy = await this.db.SzobaBekoltozes.count({
-        where: {
-          szoba_id: szobaId,
-          kikoltozes_datum: null
+      // Cache occupancy data with short TTL
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.ROOM_OCCUPANCY, { id: szobaId });
+      
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        const szoba = await this.SzobaRepository.getSzobaById(szobaId);
+        if (!szoba) {
+          throw new Error('Szoba nem található');
         }
-      });
 
-      // Diákok lekérdezése beköltözés dátumával
-      const students = await this.db.SzobaBekoltozes.findAll({
-        where: {
-          szoba_id: szobaId,
-          kikoltozes_datum: null
-        },
-        include: [{
-          model: this.db.Diak,
-          as: 'diak'
-        }]
-      });
+        const currentOccupancy = await this.db.SzobaBekoltozes.count({
+          where: {
+            szoba_id: szobaId,
+            kikoltozes_datum: null
+          }
+        });
 
-      // Diákok formázása a válaszhoz
-      const formattedStudents = students.map(bekoltozes => ({
-        diak_id: bekoltozes.diak.diak_id,
-        nev: bekoltozes.diak.nev,
-        email: bekoltozes.diak.email,
-        telefon: bekoltozes.diak.telefonszam,
-        bekoltozes_datum: bekoltozes.bekoltozes_datum,
-        aktiv: true  // Aktív beköltözés, ezért a diák aktív
-      }));
+        // Diákok lekérdezése beköltözés dátumával
+        const students = await this.db.SzobaBekoltozes.findAll({
+          where: {
+            szoba_id: szobaId,
+            kikoltozes_datum: null
+          },
+          include: [{
+            model: this.db.Diak,
+            as: 'diak'
+          }]
+        });
 
-      return {
-        szobaszam: szoba.szoba_szama,
-        maxLakokSzama: szoba.osszes_hely,
-        currentOccupancy: currentOccupancy,
-        available: currentOccupancy < szoba.osszes_hely,
-        availableCount: szoba.osszes_hely - currentOccupancy,
-        students: formattedStudents
-      };
+        // Diákok formázása a válaszhoz
+        const formattedStudents = students.map(bekoltozes => ({
+          diak_id: bekoltozes.diak.diak_id,
+          nev: bekoltozes.diak.nev,
+          email: bekoltozes.diak.email,
+          telefon: bekoltozes.diak.telefonszam,
+          bekoltozes_datum: bekoltozes.bekoltozes_datum,
+          aktiv: true  // Aktív beköltözés, ezért a diák aktív
+        }));
+
+        return {
+          szobaszam: szoba.szoba_szama,
+          maxLakokSzama: szoba.osszes_hely,
+          currentOccupancy: currentOccupancy,
+          available: currentOccupancy < szoba.osszes_hely,
+          availableCount: szoba.osszes_hely - currentOccupancy,
+          students: formattedStudents
+        };
+      }, cacheService.statisticsTTL);
     } catch (error) {
       throw new Error(`Hiba a szoba elfoglaltságának lekérdezésekor: ${error.message}`);
     }
@@ -284,7 +339,11 @@ class SzobaService {
    */
   async createBulkBekoltozes(bulkData) {
     try {
-      return await this.SzobaRepository.createBulkBekoltozes(bulkData);
+      const result = await this.SzobaRepository.createBulkBekoltozes(bulkData);
+      // Invalidate room and statistics caches when occupancy changes
+      cacheService.invalidateRoomCache();
+      cacheService.invalidateStatisticsCache();
+      return result;
     } catch (error) {
       throw new Error(`Hiba a tömeges beköltözés létrehozásakor: ${error.message}`);
     }
@@ -301,6 +360,7 @@ class SzobaService {
    */
   async getBekoltozesekWithFilters(filters = {}) {
     try {
+      // Don't cache filtered queries as they can be highly variable
       return await this.SzobaRepository.getBekoltozesekWithFilters(filters);
     } catch (error) {
       throw new Error(`Hiba a beköltözések lekérdezésekor: ${error.message}`);

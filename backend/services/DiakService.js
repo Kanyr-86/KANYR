@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const cacheService = require('./CacheService');
 
 class DiakService {
   constructor(db, options = {}) {
@@ -13,36 +14,55 @@ class DiakService {
 
   /**
    * Diák lekérése minden kapcsolódó adattal
+   * OPTIMALIZÁLVA: N+1 query probléma elkerülése JOIN-okkal
    * @param {number} id - diák ID
    * @returns {Promise<Object>} - teljes diák profil
    */
   async getStudentWithFullHistory(id) {
     try {
-      return await this.Diak.findByPk(id, {
-        include: [
-          {
-            model: this.Szulo,
-            as: 'szulo',
-            include: [{
+      // Cache student profiles
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.SINGLE_STUDENT, { id });
+      
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        // OPTIMALIZÁLVA: subQuery: false és separate: false használata JOIN-ok kényszerítéséhez
+        // Ez egyetlen SQL lekérdezést eredményez az N+1 különálló lekérdezés helyett
+        return await this.Diak.findByPk(id, {
+          subQuery: false, // Megakadályozza a Sequelize-t, hogy al-lekérdezéseket használjon
+          include: [
+            {
+              model: this.Szulo,
+              as: 'szulo',
+              required: false, // LEFT JOIN - diák lehet szülő nélkül
+              separate: false, // JOIN használata külön lekérdezés helyett
+              include: [{
+                model: this.Lakcim,
+                as: 'lakcim',
+                required: false,
+                separate: false
+              }]
+            },
+            {
               model: this.Lakcim,
-              as: 'lakcim'
-            }]
-          },
-          {
-            model: this.Lakcim,
-            as: 'lakcim'
-          },
-          {
-            model: this.SzobaBekoltozes,
-            as: 'bekoltozesek',
-            include: [{
-              model: this.Szoba,
-              as: 'szoba'
-            }],
-            order: [['bekoltozes_datum', 'DESC']]
-          }
-        ]
-      });
+              as: 'lakcim',
+              required: false,
+              separate: false
+            },
+            {
+              model: this.SzobaBekoltozes,
+              as: 'bekoltozesek',
+              required: false,
+              separate: false, // JOIN használata a beköltözésekhez is
+              include: [{
+                model: this.Szoba,
+                as: 'szoba',
+                required: false,
+                separate: false
+              }],
+              order: [['bekoltozes_datum', 'DESC']]
+            }
+          ]
+        });
+      }, cacheService.defaultTTL);
     } catch (error) {
       throw new Error(`Hiba a diák teljes profiljának lekérésében: ${error.message}`);
     }
@@ -111,6 +131,11 @@ class DiakService {
 
       await transaction.commit();
 
+      // Invalidate caches after successful enrollment
+      cacheService.invalidateStudentCache();
+      cacheService.invalidateRoomCache();
+      cacheService.invalidateStatisticsCache();
+
       // Teljes profil visszaadása
       return await this.getStudentWithFullHistory(diak.diak_id);
     } catch (error) {
@@ -165,6 +190,11 @@ class DiakService {
 
       await transaction.commit();
 
+      // Invalidate caches after transfer
+      cacheService.invalidateStudentCache();
+      cacheService.invalidateRoomCache();
+      cacheService.invalidateStatisticsCache();
+
       return await this.getStudentWithFullHistory(diak_id);
     } catch (error) {
       await transaction.rollback();
@@ -198,6 +228,11 @@ class DiakService {
       }, { transaction });
 
       await transaction.commit();
+
+      // Invalidate caches after move out
+      cacheService.invalidateStudentCache();
+      cacheService.invalidateRoomCache();
+      cacheService.invalidateStatisticsCache();
 
       return await this.getStudentWithFullHistory(diak_id);
     } catch (error) {
@@ -249,20 +284,24 @@ class DiakService {
    */
   async getStudentsInRoom(szoba_id) {
     try {
-      return await this.SzobaBekoltozes.findAll({
-        where: {
-          szoba_id,
-          kikoltozes_datum: null
-        },
-        include: [{
-          model: this.Diak,
-          as: 'diak',
+      // Cache students in room
+      const cacheKey = cacheService.generateKey('students:in_room', { szoba_id });
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        return await this.SzobaBekoltozes.findAll({
+          where: {
+            szoba_id,
+            kikoltozes_datum: null
+          },
           include: [{
-            model: this.Szulo,
-            as: 'szulo'
+            model: this.Diak,
+            as: 'diak',
+            include: [{
+              model: this.Szulo,
+              as: 'szulo'
+            }]
           }]
-        }]
-      });
+        });
+      }, cacheService.defaultTTL);
     } catch (error) {
       throw new Error(`Hiba a szoba diákjainak lekérésében: ${error.message}`);
     }
@@ -274,101 +313,108 @@ class DiakService {
    */
   async getDetailedStatistics() {
     try {
-      const { sequelize } = this.db;
+      // Cache statistics with shorter TTL
+      return await cacheService.getOrCompute(
+        cacheService.keyPatterns.STUDENTS_STATISTICS,
+        async () => {
+          const { sequelize } = this.db;
 
-      // OPTIMALIZÁLVA: Párhuzamos lekérdezések Promise.all-lal
-      const [totalStudents, activeStudents, totalRooms, allRooms, occupancyData, latestMoveInRecord, latestMoveOutRecord] = await Promise.all([
-        // Összes diák
-        this.Diak.count(),
-        
-        // Aktív diákok
-        this.Diak.count({
-          include: [{
-            model: this.SzobaBekoltozes,
-            as: 'bekoltozesek',
-            where: { kikoltozes_datum: null },
-            required: true
-          }]
-        }),
+          // OPTIMALIZÁLVA: Párhuzamos lekérdezések Promise.all-lal
+          const [totalStudents, activeStudents, totalRooms, allRooms, occupancyData, latestMoveInRecord, latestMoveOutRecord] = await Promise.all([
+            // Összes diák
+            this.Diak.count(),
+            
+            // Aktív diákok
+            this.Diak.count({
+              include: [{
+                model: this.SzobaBekoltozes,
+                as: 'bekoltozesek',
+                where: { kikoltozes_datum: null },
+                required: true
+              }]
+            }),
 
-        // Szobák száma
-        this.Szoba.count(),
+            // Szobák száma
+            this.Szoba.count(),
 
-        // Összes szoba kapacitás
-        this.Szoba.findAll({ attributes: ['szoba_id', 'szoba_szama', 'osszes_hely'] }),
+            // Összes szoba kapacitás
+            this.Szoba.findAll({ attributes: ['szoba_id', 'szoba_szama', 'osszes_hely'] }),
 
-        // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
-        this.SzobaBekoltozes.findAll({
-          attributes: [
-            'szoba_id',
-            [sequelize.fn('COUNT', sequelize.col('bekoltozes_id')), 'occupancy']
-          ],
-          where: { kikoltozes_datum: null },
-          group: ['szoba_id'],
-          raw: true
-        }),
+            // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés (N+1 probléma megoldva)
+            this.SzobaBekoltozes.findAll({
+              attributes: [
+                'szoba_id',
+                [sequelize.fn('COUNT', sequelize.col('bekoltozes_id')), 'occupancy']
+              ],
+              where: { kikoltozes_datum: null },
+              group: ['szoba_id'],
+              raw: true
+            }),
 
-        // Legutóbbi beköltözés
-        this.SzobaBekoltozes.findOne({
-          order: [['bekoltozes_datum', 'DESC']]
-        }),
+            // Legutóbbi beköltözés
+            this.SzobaBekoltozes.findOne({
+              order: [['bekoltozes_datum', 'DESC']]
+            }),
 
-        // Legutóbbi kiköltözés
-        this.SzobaBekoltozes.findOne({
-          where: { kikoltozes_datum: { [Op.ne]: null } },
-          order: [['kikoltozes_datum', 'DESC']]
-        })
-      ]);
+            // Legutóbbi kiköltözés
+            this.SzobaBekoltozes.findOne({
+              where: { kikoltozes_datum: { [Op.ne]: null } },
+              order: [['kikoltozes_datum', 'DESC']]
+            })
+          ]);
 
-      // Occupancy adatok map-elése gyors kereséshez
-      const occupancyMap = new Map();
-      occupancyData.forEach(item => {
-        occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
-      });
+          // Occupancy adatok map-elése gyors kereséshez
+          const occupancyMap = new Map();
+          occupancyData.forEach(item => {
+            occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
+          });
 
-      // Statisztikák kiszámítása
-      let totalCapacity = 0;
-      let totalOccupied = 0;
-      let mostOccupiedRoom = null;
-      let maxOccupancyPercentage = -1;
+          // Statisztikák kiszámítása
+          let totalCapacity = 0;
+          let totalOccupied = 0;
+          let mostOccupiedRoom = null;
+          let maxOccupancyPercentage = -1;
 
-      for (const szoba of allRooms) {
-        totalCapacity += szoba.osszes_hely;
-        const occupancy = occupancyMap.get(szoba.szoba_id) || 0;
-        totalOccupied += occupancy;
+          for (const szoba of allRooms) {
+            totalCapacity += szoba.osszes_hely;
+            const occupancy = occupancyMap.get(szoba.szoba_id) || 0;
+            totalOccupied += occupancy;
 
-        // Legmagasabb foglaltságú szoba meghatározása
-        const occupancyPercentage = szoba.osszes_hely > 0 ? (occupancy / szoba.osszes_hely) * 100 : 0;
-        if (occupancyPercentage > maxOccupancyPercentage) {
-          maxOccupancyPercentage = occupancyPercentage;
-          mostOccupiedRoom = szoba.szoba_szama;
-        }
-      }
+            // Legmagasabb foglaltságú szoba meghatározása
+            const occupancyPercentage = szoba.osszes_hely > 0 ? (occupancy / szoba.osszes_hely) * 100 : 0;
+            if (occupancyPercentage > maxOccupancyPercentage) {
+              maxOccupancyPercentage = occupancyPercentage;
+              mostOccupiedRoom = szoba.szoba_szama;
+            }
+          }
 
-      // Szabad helyek száma
-      const availableSpaces = totalCapacity - totalOccupied;
+          // Szabad helyek száma
+          const availableSpaces = totalCapacity - totalOccupied;
 
-      // Átlagos foglaltsági ráta százalékban
-      const averageOccupancy = totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
+          // Átlagos foglaltsági ráta százalékban
+          const averageOccupancy = totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
 
-      const latestMoveIn = latestMoveInRecord 
-        ? new Date(latestMoveInRecord.bekoltozes_datum).toLocaleDateString('hu-HU')
-        : 'N/A';
-      
-      const latestMoveOut = latestMoveOutRecord 
-        ? new Date(latestMoveOutRecord.kikoltozes_datum).toLocaleDateString('hu-HU')
-        : 'N/A';
+          const latestMoveIn = latestMoveInRecord 
+            ? new Date(latestMoveInRecord.bekoltozes_datum).toLocaleDateString('hu-HU')
+            : 'N/A';
+          
+          const latestMoveOut = latestMoveOutRecord 
+            ? new Date(latestMoveOutRecord.kikoltozes_datum).toLocaleDateString('hu-HU')
+            : 'N/A';
 
-      return {
-        totalStudents,
-        activeStudents,
-        totalRooms,
-        availableSpaces,
-        averageOccupancy,
-        mostOccupiedRoom: mostOccupiedRoom || 'N/A',
-        latestMoveIn,
-        latestMoveOut
-      };
+          return {
+            totalStudents,
+            activeStudents,
+            totalRooms,
+            availableSpaces,
+            averageOccupancy,
+            mostOccupiedRoom: mostOccupiedRoom || 'N/A',
+            latestMoveIn,
+            latestMoveOut
+          };
+        },
+        cacheService.statisticsTTL
+      );
     } catch (error) {
       throw new Error(`Hiba a részletes statisztikák lekérésében: ${error.message}`);
     }
@@ -389,60 +435,72 @@ class DiakService {
         sort = 'nev', 
         order = 'ASC' 
       } = paginationOptions;
-      
-      const queryOptions = {
-        include: [
-          {
-            model: this.Szulo,
-            as: 'szulo'
-          },
-          {
-            model: this.SzobaBekoltozes,
-            as: 'bekoltozesek',
-            where: aktiv === true ? { kikoltozes_datum: null } : undefined,
-            required: false
-          }
-        ],
-        order: [[sort, order]],
-        limit,
-        offset
-      };
 
-      const whereConditions = {};
-
-      if (nev) {
-        whereConditions.nev = { [Op.like]: `%${nev}%` };
-      }
-
-      if (email) {
-        whereConditions.email = { [Op.like]: `%${email}%` };
-      }
-
-      if (kapcsolat_tipusa) {
-        whereConditions.kapcsolat_tipusa = kapcsolat_tipusa;
-      }
-
-      queryOptions.where = whereConditions;
-
-      // Get total count for pagination metadata
-      const totalCount = await this.Diak.count({
-        where: whereConditions,
-        include: [
-          {
-            model: this.SzobaBekoltozes,
-            as: 'bekoltozesek',
-            where: aktiv === true ? { kikoltozes_datum: null } : undefined,
-            required: false
-          }
-        ]
+      // Generate cache key for search
+      const cacheKey = cacheService.generateKey(cacheService.keyPatterns.STUDENTS_LIST, {
+        nev: nev || 'all',
+        email: email || 'all',
+        szoba_szama: szoba_szama || 'all',
+        kapcsolat_tipusa: kapcsolat_tipusa || 'all',
+        aktiv: aktiv !== undefined ? aktiv : 'all',
+        limit, offset, sort, order
       });
+      
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        const queryOptions = {
+          include: [
+            {
+              model: this.Szulo,
+              as: 'szulo'
+            },
+            {
+              model: this.SzobaBekoltozes,
+              as: 'bekoltozesek',
+              where: aktiv === true ? { kikoltozes_datum: null } : undefined,
+              required: false
+            }
+          ],
+          order: [[sort, order]],
+          limit,
+          offset
+        };
 
-      const students = await this.Diak.findAll(queryOptions);
+        const whereConditions = {};
 
-      return {
-        rows: students,
-        count: totalCount
-      };
+        if (nev) {
+          whereConditions.nev = { [Op.like]: `%${nev}%` };
+        }
+
+        if (email) {
+          whereConditions.email = { [Op.like]: `%${email}%` };
+        }
+
+        if (kapcsolat_tipusa) {
+          whereConditions.kapcsolat_tipusa = kapcsolat_tipusa;
+        }
+
+        queryOptions.where = whereConditions;
+
+        // Get total count for pagination metadata
+        const totalCount = await this.Diak.count({
+          where: whereConditions,
+          include: [
+            {
+              model: this.SzobaBekoltozes,
+              as: 'bekoltozesek',
+              where: aktiv === true ? { kikoltozes_datum: null } : undefined,
+              required: false
+            }
+          ]
+        });
+
+        const students = await this.Diak.findAll(queryOptions);
+
+        return {
+          rows: students,
+          count: totalCount
+        };
+      }, cacheService.listsTTL);
     } catch (error) {
       throw new Error(`Hiba a diákok keresése során: ${error.message}`);
     }
@@ -488,55 +546,60 @@ class DiakService {
    */
   async generateStudentReport(diak_id) {
     try {
-      const student = await this.getStudentWithFullHistory(diak_id);
-      if (!student) {
-        throw new Error('A diák nem található!');
-      }
-
-      const currentBekoltozes = student.bekoltozesek.find(b => !b.kikoltozes_datum);
-      const totalMoveIns = student.bekoltozesek.length;
+      // Cache reports with longer TTL as they are less likely to change frequently
+      const cacheKey = cacheService.generateKey('students:report', { id: diak_id });
       
-      let totalDaysInDormitory = 0;
-      student.bekoltozesek.forEach(bekoltozes => {
-        if (bekoltozes.kikoltozes_datum) {
-          const endDate = new Date(bekoltozes.kikoltozes_datum);
-          const startDate = new Date(bekoltozes.bekoltozes_datum);
-          const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-          totalDaysInDormitory += daysDiff;
+      return await cacheService.getOrCompute(cacheKey, async () => {
+        const student = await this.getStudentWithFullHistory(diak_id);
+        if (!student) {
+          throw new Error('A diák nem található!');
         }
-      });
 
-      return {
-        diak: {
-          id: student.diak_id,
-          név: student.nev,
-          email: student.email,
-          telefon: student.telefonszam,
-          születési_dátum: student.szuletesi_datum
-        },
-        kapcsolattarto: {
-          név: student.szulo.nev,
-          email: student.szulo.email,
-          telefon: student.szulo.telefonszam,
-          kapcsolat_típusa: student.kapcsolat_tipusa
-        },
-        aktuális_elhelyezés: currentBekoltozes ? {
-          szoba: currentBekoltozes.szoba.szoba_szama,
-          beköltözés_dátuma: currentBekoltozes.bekoltozes_datum,
-          összes_hely: currentBekoltozes.szoba.osszes_hely
-        } : null,
-        statisztikák: {
-          összes_beköltözés: totalMoveIns,
-          összes_nap_a_kollégiumban: totalDaysInDormitory,
-          jelenleg_kollégiumban: !!currentBekoltozes
-        },
-        előzmények: student.bekoltozesek.map(bekoltozes => ({
-          szoba: bekoltozes.szoba.szoba_szama,
-          beköltözés: bekoltozes.bekoltozes_datum,
-          kiköltözés: bekoltozes.kikoltozes_datum || 'Jelenleg is lakik'
-        })),
-        jelentés_dátuma: new Date().toISOString()
-      };
+        const currentBekoltozes = student.bekoltozesek.find(b => !b.kikoltozes_datum);
+        const totalMoveIns = student.bekoltozesek.length;
+        
+        let totalDaysInDormitory = 0;
+        student.bekoltozesek.forEach(bekoltozes => {
+          if (bekoltozes.kikoltozes_datum) {
+            const endDate = new Date(bekoltozes.kikoltozes_datum);
+            const startDate = new Date(bekoltozes.bekoltozes_datum);
+            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            totalDaysInDormitory += daysDiff;
+          }
+        });
+
+        return {
+          diak: {
+            id: student.diak_id,
+            név: student.nev,
+            email: student.email,
+            telefon: student.telefonszam,
+            születési_dátum: student.szuletesi_datum
+          },
+          kapcsolattarto: {
+            név: student.szulo.nev,
+            email: student.szulo.email,
+            telefon: student.szulo.telefonszam,
+            kapcsolat_típusa: student.kapcsolat_tipusa
+          },
+          aktuális_elhelyezés: currentBekoltozes ? {
+            szoba: currentBekoltozes.szoba.szoba_szama,
+            beköltözés_dátuma: currentBekoltozes.bekoltozes_datum,
+            összes_hely: currentBekoltozes.szoba.osszes_hely
+          } : null,
+          statisztikák: {
+            összes_beköltözés: totalMoveIns,
+            összes_nap_a_kollégiumban: totalDaysInDormitory,
+            jelenleg_kollégiumban: !!currentBekoltozes
+          },
+          előzmények: student.bekoltozesek.map(bekoltozes => ({
+            szoba: bekoltozes.szoba.szoba_szama,
+            beköltözés: bekoltozes.bekoltozes_datum,
+            kiköltözés: bekoltozes.kikoltozes_datum || 'Jelenleg is lakik'
+          })),
+          jelentés_dátuma: new Date().toISOString()
+        };
+      }, cacheService.listsTTL);
     } catch (error) {
       throw new Error(`Hiba a diák jelentés generálásában: ${error.message}`);
     }
@@ -630,6 +693,11 @@ class DiakService {
       await diak.update(updates, { transaction });
       
       await transaction.commit();
+
+      // Invalidate caches after update
+      cacheService.invalidateStudentCache();
+      cacheService.invalidateParentCache();
+      cacheService.delete(cacheService.generateKey(cacheService.keyPatterns.SINGLE_STUDENT, { id }));
 
       return await this.getStudentWithFullHistory(id);
     } catch (error) {

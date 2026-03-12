@@ -1,4 +1,5 @@
 const LakcimRepository = require('../repositories/LakcimRepository');
+const cacheService = require('./CacheService');
 
 class LakcimService {
   constructor(db) {
@@ -11,7 +12,16 @@ class LakcimService {
    * @returns {Promise<Array>} Array of addresses
    */
   async getAllLakcims(options = {}) {
-    return this.lakcimRepository.findAll(options);
+    // Generate cache key based on options
+    const cacheKey = cacheService.generateKey('addresses:list', {
+      limit: options.limit || 'all',
+      offset: options.offset || 0,
+      sort: options.sort || 'default'
+    });
+
+    return await cacheService.getOrCompute(cacheKey, async () => {
+      return this.lakcimRepository.findAll(options);
+    }, cacheService.listsTTL);
   }
 
   /**
@@ -21,7 +31,15 @@ class LakcimService {
    * @returns {Promise<Object|null>} Address object or null
    */
   async getLakcimById(id, includeRelations = true) {
-    return this.lakcimRepository.findById(id, includeRelations);
+    // Cache individual address lookups
+    const cacheKey = cacheService.generateKey('addresses:single', { 
+      id, 
+      include: includeRelations 
+    });
+
+    return await cacheService.getOrCompute(cacheKey, async () => {
+      return this.lakcimRepository.findById(id, includeRelations);
+    }, cacheService.defaultTTL);
   }
 
   /**
@@ -30,7 +48,10 @@ class LakcimService {
    * @returns {Promise<Object>} Created address
    */
   async createLakcim(lakcimData) {
-    return this.lakcimRepository.create(lakcimData);
+    const result = await this.lakcimRepository.create(lakcimData);
+    // Invalidate address list caches
+    cacheService.invalidatePattern('addresses:');
+    return result;
   }
 
   /**
@@ -40,7 +61,10 @@ class LakcimService {
    * @returns {Promise<Object>} Updated address
    */
   async updateLakcim(id, updates) {
-    return this.lakcimRepository.update(id, updates);
+    const result = await this.lakcimRepository.update(id, updates);
+    // Invalidate address caches
+    cacheService.invalidatePattern('addresses:');
+    return result;
   }
 
   /**
@@ -49,7 +73,9 @@ class LakcimService {
    * @returns {Promise<void>}
    */
   async deleteLakcim(id) {
-    return this.lakcimRepository.delete(id);
+    await this.lakcimRepository.delete(id);
+    // Invalidate address caches
+    cacheService.invalidatePattern('addresses:');
   }
 
   /**
@@ -58,7 +84,12 @@ class LakcimService {
    * @returns {Promise<Array>} Array of addresses
    */
   async getLakcimsByCity(varos) {
-    return this.lakcimRepository.findByCity(varos);
+    // Cache city-based queries
+    const cacheKey = cacheService.generateKey('addresses:by_city', { varos });
+
+    return await cacheService.getOrCompute(cacheKey, async () => {
+      return this.lakcimRepository.findByCity(varos);
+    }, cacheService.defaultTTL);
   }
 }
 

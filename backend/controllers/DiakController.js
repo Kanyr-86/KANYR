@@ -33,15 +33,16 @@ class DiakController {
       includeRelations: includeRelations !== 'false'
     };
 
-    const diaks = await this.diakService.repository.findAll(options);
+    const result = await this.diakService.repository.findAll(options);
     
     res.json({
       success: true,
-      data: diaks,
+      data: result.rows,
       pagination: {
         limit: options.limit,
         offset: options.offset,
-        total: diaks.length
+        total: result.count,
+        hasMore: options.offset + result.rows.length < result.count
       }
     });
   });
