@@ -5,6 +5,7 @@ const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
 const TokenBlacklistService = require('../services/TokenBlacklistService');
 const { authenticate } = require('../middleware/authMiddleware');
 const { csrfProtectionMiddleware, getCsrfToken } = require('../middleware/csrfMiddleware');
+const { ValidationError, UnauthorizedError } = require('../utils/AppError');
 
 const router = express.Router();
 
@@ -45,15 +46,16 @@ const loginValidationRules = [
 router.post(
   '/login',
   loginValidationRules,
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { email, password } = req.body;
@@ -66,17 +68,7 @@ router.post(
         message: 'Sikeres bejelentkezés'
       });
     } catch (error) {
-      if (error.message === 'Érvénytelen email vagy jelszó') {
-        res.status(401).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 );
@@ -88,7 +80,7 @@ router.post(
 router.post(
   '/logout',
   authenticate,
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       // Token kinyerése a header-ből
       const authHeader = req.headers['authorization'];

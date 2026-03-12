@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const SzuloRepository = require('../repositories/SzuloRepository');
+const { NotFoundError, ValidationError, ConflictError } = require('../utils/AppError');
 
 class SzuloController {
   constructor(db) {
@@ -11,7 +12,7 @@ class SzuloController {
    * GET /api/szulos
    * Összes szülő lekérése
    */
-  async getAllSzulos(req, res) {
+  async getAllSzulos(req, res, next) {
     try {
       const {
         limit = 50,
@@ -41,10 +42,7 @@ class SzuloController {
         }
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -52,25 +50,19 @@ class SzuloController {
    * GET /api/szulos/:id
    * Egy szülő lekérése ID alapján
    */
-  async getSzuloById(req, res) {
+  async getSzuloById(req, res, next) {
     try {
       const { id } = req.params;
       const { includeRelations = 'true' } = req.query;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szülő ID'
-        });
+        throw new ValidationError('Érvénytelen szülő ID');
       }
 
       const szulo = await this.szuloRepository.findById(parseInt(id), includeRelations !== 'false');
 
       if (!szulo) {
-        return res.status(404).json({
-          success: false,
-          error: 'A szülő nem található'
-        });
+        throw new NotFoundError('Szülő');
       }
 
       res.json({
@@ -78,10 +70,7 @@ class SzuloController {
         data: szulo
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -89,15 +78,16 @@ class SzuloController {
    * POST /api/szulos
    * Új szülő létrehozása
    */
-  async createSzulo(req, res) {
+  async createSzulo(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const szuloData = req.body;
@@ -109,10 +99,7 @@ class SzuloController {
         message: 'Szülő sikeresen létrehozva'
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -120,25 +107,23 @@ class SzuloController {
    * PUT /api/szulos/:id
    * Szülő frissítése
    */
-  async updateSzulo(req, res) {
+  async updateSzulo(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { id } = req.params;
       const updates = req.body;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szülő ID'
-        });
+        throw new ValidationError('Érvénytelen szülő ID');
       }
 
       const szulo = await this.szuloRepository.update(parseInt(id), updates);
@@ -149,17 +134,7 @@ class SzuloController {
         message: 'Szülő sikeresen frissítve'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -167,15 +142,12 @@ class SzuloController {
    * DELETE /api/szulos/:id
    * Szülő törlése
    */
-  async deleteSzulo(req, res) {
+  async deleteSzulo(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szülő ID'
-        });
+        throw new ValidationError('Érvénytelen szülő ID');
       }
 
       await this.szuloRepository.delete(parseInt(id));
@@ -185,22 +157,7 @@ class SzuloController {
         message: 'Szülő sikeresen törölve'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else if (error.message.includes('kapcsolódó diákjai')) {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 }

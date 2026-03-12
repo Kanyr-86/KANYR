@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
+const { ValidationError, NotFoundError, ConflictError, ForbiddenError } = require('../utils/AppError');
 
 class FelhasznaloController {
   constructor(db) {
@@ -13,15 +14,16 @@ class FelhasznaloController {
    * POST /api/felhasznalos
    * Create a new user
    */
-  async createUser(req, res) {
+  async createUser(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const userData = req.body;
@@ -33,17 +35,7 @@ class FelhasznaloController {
         message: 'Felhasználó sikeresen létrehozva'
       });
     } catch (error) {
-      if (error.message.includes('már foglalt')) {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -51,7 +43,7 @@ class FelhasznaloController {
    * GET /api/felhasznalos
    * Get all users (admin only)
    */
-  async getAllUsers(req, res) {
+  async getAllUsers(req, res, next) {
     try {
       const { limit = 50, offset = 0, sort = 'username', order = 'ASC' } = req.query;
 
@@ -74,10 +66,7 @@ class FelhasznaloController {
         }
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -85,15 +74,12 @@ class FelhasznaloController {
    * GET /api/felhasznalos/:id
    * Get user by ID
    */
-  async getUserById(req, res) {
+  async getUserById(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       const user = await this.felhasznaloService.getUserById(parseInt(id));
@@ -103,17 +89,7 @@ class FelhasznaloController {
         data: user
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -121,25 +97,23 @@ class FelhasznaloController {
    * PUT /api/felhasznalos/:id
    * Update user
    */
-  async updateUser(req, res) {
+  async updateUser(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { id } = req.params;
       const updates = req.body;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       const user = await this.felhasznaloService.updateUser(parseInt(id), updates);
@@ -150,17 +124,7 @@ class FelhasznaloController {
         message: 'Felhasználó sikeresen frissítve'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -168,15 +132,12 @@ class FelhasznaloController {
    * DELETE /api/felhasznalos/:id
    * Delete user
    */
-  async deleteUser(req, res) {
+  async deleteUser(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       await this.felhasznaloService.deleteUser(parseInt(id));
@@ -186,17 +147,7 @@ class FelhasznaloController {
         message: 'Felhasználó sikeresen törölve'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -204,15 +155,16 @@ class FelhasznaloController {
    * POST /api/felhasznalos/admin
    * Create admin user (admin only)
    */
-  async createAdminUser(req, res) {
+  async createAdminUser(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const userData = req.body;
@@ -224,17 +176,7 @@ class FelhasznaloController {
         message: 'Admin felhasználó sikeresen létrehozva'
       });
     } catch (error) {
-      if (error.message.includes('már foglalt')) {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -242,32 +184,27 @@ class FelhasznaloController {
    * POST /api/felhasznalos/:id/password
    * Update user password - invalidates all existing tokens
    */
-  async updatePassword(req, res) {
+  async updatePassword(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { id } = req.params;
       const { newPassword, revokeTokens } = req.body;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       if (!newPassword || newPassword.length < 8) {
-        return res.status(400).json({
-          success: false,
-          error: 'A jelszónak minimum 8 karakter hosszúnak kell lennie'
-        });
+        throw new ValidationError('A jelszónak minimum 8 karakter hosszúnak kell lennie');
       }
 
       // Parse user ID
@@ -291,17 +228,7 @@ class FelhasznaloController {
         isSelfChange
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -309,15 +236,12 @@ class FelhasznaloController {
    * POST /api/felhasznalos/:id/reset-password
    * Reset user password (admin only) - invalidates all existing tokens
    */
-  async resetPassword(req, res) {
+  async resetPassword(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       const { user, newPassword } = await this.felhasznaloService.resetPassword(parseInt(id));
@@ -334,17 +258,7 @@ class FelhasznaloController {
         requireRelogin: true
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -352,23 +266,17 @@ class FelhasznaloController {
    * POST /api/felhasznalos/:id/make-admin
    * Make user admin (admin only) - invalidates all existing tokens
    */
-  async makeAdmin(req, res) {
+  async makeAdmin(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       // Prevent changing own admin status
       if (req.user && req.user.userId === parseInt(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Nem változtathatja meg saját admin jogosultságát'
-        });
+        throw new ForbiddenError('Nem változtathatja meg saját admin jogosultságát');
       }
 
       const user = await this.felhasznaloService.updateUserRole(parseInt(id), true);
@@ -380,17 +288,7 @@ class FelhasznaloController {
         requireRelogin: true
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -398,23 +296,17 @@ class FelhasznaloController {
    * POST /api/felhasznalos/:id/remove-admin
    * Remove admin rights from user (admin only) - invalidates all existing tokens
    */
-  async removeAdmin(req, res) {
+  async removeAdmin(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       // Prevent changing own admin status
       if (req.user && req.user.userId === parseInt(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Nem változtathatja meg saját admin jogosultságát'
-        });
+        throw new ForbiddenError('Nem változtathatja meg saját admin jogosultságát');
       }
 
       const user = await this.felhasznaloService.updateUserRole(parseInt(id), false);
@@ -426,17 +318,7 @@ class FelhasznaloController {
         requireRelogin: true
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -444,24 +326,18 @@ class FelhasznaloController {
    * POST /api/felhasznalos/:id/force-logout
    * Force logout user (admin only)
    */
-  async forceLogout(req, res) {
+  async forceLogout(req, res, next) {
     try {
       const { id } = req.params;
       const { reason } = req.body;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen felhasználó ID'
-        });
+        throw new ValidationError('Érvénytelen felhasználó ID');
       }
 
       // Prevent self-logout
       if (req.user && req.user.userId === parseInt(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Nem jelentkeztetheti ki saját magát'
-        });
+        throw new ForbiddenError('Nem jelentkeztetheti ki saját magát');
       }
 
       const user = await this.felhasznaloService.forceLogout(parseInt(id), reason || 'admin_action');
@@ -472,17 +348,7 @@ class FelhasznaloController {
         message: 'Felhasználó sikeresen kijelentkeztetve az összes eszközről.'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 }

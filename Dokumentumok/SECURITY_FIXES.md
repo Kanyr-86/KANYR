@@ -1,3 +1,179 @@
+# JWT Payload Encryption Security Fix
+
+## Date
+2026-03-12
+
+## Problem
+JWT tokens contained sensitive user information (userId, username, email, admin status) in plaintext within the payload. While JWTs are signed to prevent tampering, the payload is only base64-encoded (not encrypted), meaning anyone with access to the token can decode and read its contents.
+
+### Example of the Security Issue
+```javascript
+// JWT payload was visible to anyone:
+{
+  "userId": 123,
+  "username": "john_doe",
+  "email": "john@example.com",
+  "admin": true,
+  "tokenVersion": 1,
+  "iat": 1709827200
+}
+```
+
+If a JWT token was intercepted or leaked, an attacker could:
+- Identify user accounts and their privilege levels
+- Gather email addresses for targeted attacks
+- Determine which users have administrative access
+- Use this information for social engineering attacks
+
+## Solution Overview
+Implemented AES-256-GCM encryption for JWT payload data. The sensitive user data is now encrypted before being included in the JWT token. The JWT payload now only contains:
+- `data`: Encrypted sensitive information (userId, username, email, admin, tokenVersion)
+- `iat`: Issued at timestamp (not sensitive, used for token age validation)
+
+### Encrypted Token Structure
+```javascript
+// New encrypted JWT payload:
+{
+  "data": "base64(iv):base64(authTag):base64(ciphertext)",
+  "iat": 1709827200
+}
+```
+
+The `data` field contains:
+- **IV (Initialization Vector)**: 16 bytes, unique per encryption
+- **Auth Tag**: 16 bytes, provides authentication (GCM mode)
+- **Ciphertext**: The encrypted JSON payload
+
+## Implementation Details
+
+### Encryption Algorithm: AES-256-GCM
+- **Algorithm**: AES-256-GCM (Galois/Counter Mode)
+- **Key Size**: 256 bits (32 bytes)
+- **IV Size**: 128 bits (16 bytes)
+- **Auth Tag**: 128 bits (16 bytes)
+- **Features**:
+  - Confidentiality: Data is encrypted
+  - Authenticity: Auth tag prevents tampering
+  - Integrity: Any modification invalidates the token
+
+### Files Modified
+
+#### `backend/utils/authUtils.js`
+**Added Functions:**
+- `encryptPayload(data)` - Encrypts sensitive payload using AES-256-GCM
+- `decryptPayload(encryptedData)` - Decrypts payload and returns original data
+
+**Modified Functions:**
+- `generateTokenWithVersion(user)` - Now encrypts sensitive data before signing
+  - Encrypts: userId, username, email, admin, tokenVersion
+  - Stores in `data` field of JWT payload
+  - Keeps `iat` in plaintext for JWT validation
+
+- `verifyToken(token)` - Now decrypts payload after signature verification
+  - Verifies JWT signature first
+  - If `data` field exists (encrypted format), decrypts it
+  - Returns merged decrypted data + timestamps
+  - Maintains backward compatibility with legacy non-encrypted tokens
+
+**Environment Variables:**
+- `JWT_ENCRYPTION_KEY` - Must be exactly 64 hexadecimal characters (32 bytes)
+- Generate with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+
+#### `backend/.env.example`
+Added documentation and placeholder for `JWT_ENCRYPTION_KEY` with instructions for generating a secure key.
+
+#### `backend/.env`
+Added `JWT_ENCRYPTION_KEY` for development environment.
+
+## Security Benefits
+
+### Before (Vulnerable)
+```bash
+# Anyone can decode the JWT payload
+echo "eyJhbGciOiJIUzI1NiIs..." | base64 -d
+# Result: {"userId":123,"username":"john","email":"john@example.com","admin":true,...}
+```
+
+### After (Secure)
+```bash
+# Decoding only shows encrypted data
+echo "eyJhbGciOiJIUzI1NiIs..." | base64 -d
+# Result: {"data":"a1b2c3...x9y0z","iat":1709827200}
+# Without the encryption key, the data is unreadable
+```
+
+## Backward Compatibility
+
+The implementation includes backward compatibility for legacy tokens:
+- `verifyToken()` checks if the payload contains a `data` field
+- If `data` exists: decrypts the encrypted payload
+- If no `data` field: treats it as a legacy token and returns it directly
+- Legacy tokens will naturally expire and be replaced by encrypted ones
+
+## Configuration Requirements
+
+### Required Environment Variable
+```bash
+# 64 hexadecimal characters (32 bytes)
+JWT_ENCRYPTION_KEY=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+```
+
+### Generation Command
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+## Testing Recommendations
+
+### 1. Token Generation and Verification
+```javascript
+// Test that tokens are generated with encrypted payload
+const token = generateTokenWithVersion(user);
+const decoded = jwt.decode(token);
+console.log(decoded.data); // Should be encrypted string, not plain object
+
+// Test that verification decrypts correctly
+const verified = verifyToken(token);
+console.log(verified.userId); // Should be original userId
+console.log(verified.email);  // Should be original email
+```
+
+### 2. Security Verification
+```bash
+# 1. Login and get a token
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@kanyr.hu","password":"Admin@123456"}'
+
+# 2. Copy the token and decode it (should show encrypted data)
+echo "<token>" | cut -d'.' -f2 | base64 -d 2>/dev/null
+
+# 3. Verify it doesn't contain plaintext sensitive data
+# Should NOT see: userId, username, email, admin fields in plaintext
+```
+
+### 3. Backward Compatibility
+- Test with existing (legacy) tokens - should still work
+- Verify new tokens have encrypted format
+- Ensure both types work during transition period
+
+### 4. Edge Cases
+- Test with various user data (special characters, unicode, etc.)
+- Test token expiration still works correctly
+- Test that tampering with encrypted data fails verification
+
+## Deployment Checklist
+
+- [ ] Generate production `JWT_ENCRYPTION_KEY` (64 hex characters)
+- [ ] Add `JWT_ENCRYPTION_KEY` to production environment variables
+- [ ] Ensure `JWT_SECRET` is also properly set (different from encryption key)
+- [ ] Test login/logout flow in staging environment
+- [ ] Verify existing tokens still work (backward compatibility)
+- [ ] Monitor logs for any decryption errors
+- [ ] Update deployment documentation
+
+---
+
 # Security Fixes - Resource Ownership Verification
 
 ## Problem

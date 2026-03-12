@@ -1,0 +1,3 @@
+{"environment":"development","error":"Cannot read properties of undefined (reading 'Op')","level":"error","message":"Error cleaning up expired tokens","service":"kanyr-backend","timestamp":"2026-03-12 08:29:17.810"}
+{"environment":"development","error":"Hiba a lejárt tokenek törlése közben: Cannot read properties of undefined (reading 'Op')","level":"error","message":"Error cleaning up expired tokens","service":"kanyr-backend","timestamp":"2026-03-12 08:29:17.817"}
+{"environment":"development","error":"Hiba a lejárt tokenek törlése közben: Cannot read properties of undefined (reading 'Op')","level":"error","message":"Error during token cleanup","service":"kanyr-backend","timestamp":"2026-03-12 08:29:17.818"}

@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const LakcimRepository = require('../repositories/LakcimRepository');
+const { NotFoundError, ValidationError } = require('../utils/AppError');
 
 class LakcimController {
   constructor(db) {
@@ -11,7 +12,7 @@ class LakcimController {
    * GET /api/lakcims
    * Összes lakcím lekérése
    */
-  async getAllLakcims(req, res) {
+  async getAllLakcims(req, res, next) {
     try {
       const {
         limit = 50,
@@ -41,10 +42,7 @@ class LakcimController {
         }
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -52,25 +50,19 @@ class LakcimController {
    * GET /api/lakcims/:id
    * Egy lakcím lekérése ID alapján
    */
-  async getLakcimById(req, res) {
+  async getLakcimById(req, res, next) {
     try {
       const { id } = req.params;
       const { includeRelations = 'true' } = req.query;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen lakcím ID'
-        });
+        throw new ValidationError('Érvénytelen lakcím ID');
       }
 
       const lakcim = await this.lakcimRepository.findById(parseInt(id), includeRelations !== 'false');
 
       if (!lakcim) {
-        return res.status(404).json({
-          success: false,
-          error: 'A lakcím nem található'
-        });
+        throw new NotFoundError('Lakcím');
       }
 
       res.json({
@@ -78,10 +70,7 @@ class LakcimController {
         data: lakcim
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -89,15 +78,16 @@ class LakcimController {
    * POST /api/lakcims
    * Új lakcím létrehozása
    */
-  async createLakcim(req, res) {
+  async createLakcim(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const lakcimData = req.body;
@@ -109,10 +99,7 @@ class LakcimController {
         message: 'Lakcím sikeresen létrehozva'
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -120,25 +107,23 @@ class LakcimController {
    * PUT /api/lakcims/:id
    * Lakcím frissítése
    */
-  async updateLakcim(req, res) {
+  async updateLakcim(req, res, next) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { id } = req.params;
       const updates = req.body;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen lakcím ID'
-        });
+        throw new ValidationError('Érvénytelen lakcím ID');
       }
 
       const lakcim = await this.lakcimRepository.update(parseInt(id), updates);
@@ -149,17 +134,7 @@ class LakcimController {
         message: 'Lakcím sikeresen frissítve'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -167,15 +142,12 @@ class LakcimController {
    * DELETE /api/lakcims/:id
    * Lakcím törlése
    */
-  async deleteLakcim(req, res) {
+  async deleteLakcim(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen lakcím ID'
-        });
+        throw new ValidationError('Érvénytelen lakcím ID');
       }
 
       await this.lakcimRepository.delete(parseInt(id));
@@ -185,22 +157,7 @@ class LakcimController {
         message: 'Lakcím sikeresen törölve'
       });
     } catch (error) {
-      if (error.message.includes('nem található')) {
-        res.status(404).json({
-          success: false,
-          error: error.message
-        });
-      } else if (error.message.includes('kapcsolódó diákjai vagy szülei')) {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -208,15 +165,12 @@ class LakcimController {
    * GET /api/lakcims/city/:varos
    * Lakcímek keresése város alapján
    */
-  async getLakcimsByCity(req, res) {
+  async getLakcimsByCity(req, res, next) {
     try {
       const { varos } = req.params;
 
       if (!varos) {
-        return res.status(400).json({
-          success: false,
-          error: 'Város paraméter kötelező'
-        });
+        throw new ValidationError('Város paraméter kötelező');
       }
 
       const lakcims = await this.lakcimRepository.findByCity(varos);
@@ -227,10 +181,7 @@ class LakcimController {
         count: lakcims.length
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 }

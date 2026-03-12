@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const { NotFoundError, ValidationError } = require('../utils/AppError');
 
 class SzobaController {
   constructor(db) {
@@ -9,17 +10,19 @@ class SzobaController {
    * Új szoba létrehozása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async createSzoba(req, res) {
+  async createSzoba(req, res, next) {
     try {
       // Validációs hibák ellenőrzése
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { szoba_szama, osszes_hely } = req.body;
@@ -35,10 +38,7 @@ class SzobaController {
         data: newSzoba
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -46,25 +46,20 @@ class SzobaController {
    * Szoba lekérdezése ID alapján
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getSzobaById(req, res) {
+  async getSzobaById(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szoba ID'
-        });
+        throw new ValidationError('Érvénytelen szoba ID');
       }
 
       const szoba = await this.SzobaService.getSzobaById(parseInt(id));
 
       if (!szoba) {
-        return res.status(404).json({
-          success: false,
-          error: 'Szoba nem található'
-        });
+        throw new NotFoundError('Szoba');
       }
 
       res.json({
@@ -72,10 +67,7 @@ class SzobaController {
         data: szoba
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -83,8 +75,9 @@ class SzobaController {
    * Szobák listázása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getAllSzobas(req, res) {
+  async getAllSzobas(req, res, next) {
     try {
       const { limit, offset, sort, order, prefix } = req.query;
 
@@ -103,10 +96,7 @@ class SzobaController {
         data: szobas
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -114,27 +104,26 @@ class SzobaController {
    * Szoba frissítése
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async updateSzoba(req, res) {
+  async updateSzoba(req, res, next) {
     try {
       // Validációs hibák ellenőrzése
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { id } = req.params;
       const updateData = req.body;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szoba ID'
-        });
+        throw new ValidationError('Érvénytelen szoba ID');
       }
 
       const updatedSzoba = await this.SzobaService.updateSzoba(parseInt(id), updateData);
@@ -145,10 +134,7 @@ class SzobaController {
         data: updatedSzoba
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -156,37 +142,24 @@ class SzobaController {
    * Szoba törlése
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async deleteSzoba(req, res) {
+  async deleteSzoba(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szoba ID'
-        });
+        throw new ValidationError('Érvénytelen szoba ID');
       }
 
-      const result = await this.SzobaService.deleteSzoba(parseInt(id));
+      await this.SzobaService.deleteSzoba(parseInt(id));
 
       res.json({
         success: true,
-        message: 'Szoba sikeresen törölve',
-        data: result
+        message: 'Szoba sikeresen törölve'
       });
     } catch (error) {
-      if (error.message.includes('szobában')) {
-        res.status(400).json({
-          success: false,
-          error: error.message
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: error.message
-        });
-      }
+      next(error);
     }
   }
 
@@ -194,16 +167,14 @@ class SzobaController {
    * Szobában tartózkodó diákok listázása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getStudentsInRoom(req, res) {
+  async getStudentsInRoom(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szoba ID'
-        });
+        throw new ValidationError('Érvénytelen szoba ID');
       }
 
       const students = await this.SzobaService.getStudentsInRoom(parseInt(id));
@@ -213,10 +184,7 @@ class SzobaController {
         data: students
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -224,8 +192,9 @@ class SzobaController {
    * Szoba statisztikák lekérdezése
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getRoomStatistics(req, res) {
+  async getRoomStatistics(req, res, next) {
     try {
       const statistics = await this.SzobaService.getRoomStatistics();
 
@@ -234,10 +203,7 @@ class SzobaController {
         data: statistics
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -245,8 +211,9 @@ class SzobaController {
    * Elérhető szobák listázása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getAvailableRooms(req, res) {
+  async getAvailableRooms(req, res, next) {
     try {
       const { limit, offset, sort, order, prefix } = req.query;
 
@@ -265,10 +232,7 @@ class SzobaController {
         data: availableRooms
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -276,17 +240,19 @@ class SzobaController {
    * Új beköltözés létrehozása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async createBekoltozes(req, res) {
+  async createBekoltozes(req, res, next) {
     try {
       // Validációs hibák ellenőrzése
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { diak_id, szoba_id, bekoltozes_datum } = req.body;
@@ -303,10 +269,7 @@ class SzobaController {
         data: newBekoltozes
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -314,16 +277,14 @@ class SzobaController {
    * Szoba elfoglaltságának lekérdezése
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getRoomOccupancy(req, res) {
+  async getRoomOccupancy(req, res, next) {
     try {
       const { id } = req.params;
 
       if (!id || isNaN(id)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen szoba ID'
-        });
+        throw new ValidationError('Érvénytelen szoba ID');
       }
 
       const occupancy = await this.SzobaService.getRoomOccupancy(parseInt(id));
@@ -333,10 +294,7 @@ class SzobaController {
         data: occupancy
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -344,17 +302,19 @@ class SzobaController {
    * Tömeges beköltözés létrehozása
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async createBulkBekoltozes(req, res) {
+  async createBulkBekoltozes(req, res, next) {
     try {
       // Validációs hibák ellenőrzése
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Validációs hiba',
-          details: errors.array()
-        });
+        const error = new ValidationError('Validációs hiba');
+        error.details = errors.array().map(err => ({
+          field: err.path,
+          message: err.msg
+        }));
+        throw error;
       }
 
       const { szoba_id, bekoltozes_datum, diak_ids } = req.body;
@@ -371,10 +331,7 @@ class SzobaController {
         data: result
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 
@@ -382,8 +339,9 @@ class SzobaController {
    * Beköltözések lekérdezése szűréssel
    * @param {Object} req - Express request objektum
    * @param {Object} res - Express response objektum
+   * @param {Function} next - Express next függvény
    */
-  async getBekoltozesekWithFilters(req, res) {
+  async getBekoltozesekWithFilters(req, res, next) {
     try {
       const { diakNev, szobaId, datumFrom, datumTo } = req.query;
 
@@ -400,10 +358,7 @@ class SzobaController {
         data: bekoltozesek
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message
-      });
+      next(error);
     }
   }
 }

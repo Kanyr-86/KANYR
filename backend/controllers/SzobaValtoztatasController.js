@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
+const { NotFoundError, ValidationError, ConflictError, ForbiddenError } = require('../utils/AppError');
 
 class SzobaValtoztatasController {
   constructor(db) {
@@ -7,17 +8,14 @@ class SzobaValtoztatasController {
   }
 
   // Diák szobájának és szobatársainak lekérése
-  async getCurrentRoom(req, res) {
+  async getCurrentRoom(req, res, next) {
     try {
       const userId = req.user.userId; // Felhasznalo.user_id
       
       // Először lekérjük a felhasználóhoz tartozó diák ID-t
       const felhasznalo = await this.db.Felhasznalo.findByPk(userId);
       if (!felhasznalo || !felhasznalo.diak_id) {
-        return res.status(404).json({
-          success: false,
-          error: 'A felhasználóhoz nem tartozik diák'
-        });
+        throw new NotFoundError('A felhasználóhoz nem tartozik diák');
       }
       
       const diakId = felhasznalo.diak_id;
@@ -39,19 +37,13 @@ class SzobaValtoztatasController {
       });
 
       if (!diak) {
-        return res.status(404).json({
-          success: false,
-          error: 'Diák nem található'
-        });
+        throw new NotFoundError('Diák');
       }
 
       // Ellenőrizzük, hogy van-e aktív beköltözése
       const aktivalisBekoltozes = diak.bekoltozesek[0];
       if (!aktivalisBekoltozes) {
-        return res.status(404).json({
-          success: false,
-          error: 'A diáknak nincs aktív szobája'
-        });
+        throw new NotFoundError('A diáknak nincs aktív szobája');
       }
 
       const aktualisSzoba = aktivalisBekoltozes.szoba;
@@ -92,26 +84,19 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      logger.error('Hiba a szoba lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt a szoba adatainak lekérésekor'
-      });
+      next(error);
     }
   }
 
   // Szobaváltási kérelem benyújtása
-  async requestRoomChange(req, res) {
+  async requestRoomChange(req, res, next) {
     try {
       const userId = req.user.userId; // Felhasznalo.user_id
       
       // Először lekérjük a felhasználóhoz tartozó diák ID-t
       const felhasznalo = await this.db.Felhasznalo.findByPk(userId);
       if (!felhasznalo || !felhasznalo.diak_id) {
-        return res.status(404).json({
-          success: false,
-          error: 'A felhasználóhoz nem tartozik diák'
-        });
+        throw new NotFoundError('A felhasználóhoz nem tartozik diák');
       }
       
       const diakId = felhasznalo.diak_id;
@@ -134,19 +119,13 @@ class SzobaValtoztatasController {
       });
 
       if (!diak) {
-        return res.status(404).json({
-          success: false,
-          error: 'Diák nem található'
-        });
+        throw new NotFoundError('Diák');
       }
 
       // Ellenőrizzük, hogy van-e aktív beköltözése
       const aktivalisBekoltozes = diak.bekoltozesek[0];
       if (!aktivalisBekoltozes) {
-        return res.status(400).json({
-          success: false,
-          error: 'A diák jelenleg nincs szobában'
-        });
+        throw new ValidationError('A diák jelenleg nincs szobában');
       }
 
       const aktualisSzoba = aktivalisBekoltozes.szoba;
@@ -154,18 +133,12 @@ class SzobaValtoztatasController {
       // Ellenőrizzük, hogy a kívánt szoba létezik-e
       const kivantSzoba = await this.db.Szoba.findByPk(kivant_szoba_id);
       if (!kivantSzoba) {
-        return res.status(404).json({
-          success: false,
-          error: 'A kívánt szoba nem található'
-        });
+        throw new NotFoundError('A kívánt szoba');
       }
 
       // Ellenőrizzük, hogy a diák nem próbál-e ugyanabba a szobába költözni
       if (kivantSzoba.szoba_id === aktualisSzoba.szoba_id) {
-        return res.status(400).json({
-          success: false,
-          error: 'A diák már ebben a szobában lakik'
-        });
+        throw new ValidationError('A diák már ebben a szobában lakik');
       }
 
       // Ellenőrizzük a szobaváltási korlátot (3 alkalom félévenként)
@@ -183,10 +156,7 @@ class SzobaValtoztatasController {
       });
 
       if (existingRequests >= 3) {
-        return res.status(400).json({
-          success: false,
-          error: 'A diák elérte a félévi szobaváltási korlátot (3 alkalom)'
-        });
+        throw new ConflictError('A diák elérte a félévi szobaváltási korlátot (3 alkalom)');
       }
 
       // Új szobaváltási kérelem létrehozása
@@ -209,16 +179,12 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      logger.error('Hiba a szobaváltási kérelem benyújtásakor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt a szobaváltási kérelem benyújtásakor'
-      });
+      next(error);
     }
   }
 
   // Szobaváltási kérelmek listázása (titkár számára)
-  async getRoomChangeRequests(req, res) {
+  async getRoomChangeRequests(req, res, next) {
     try {
       const { status } = req.query;
       
@@ -254,40 +220,27 @@ class SzobaValtoztatasController {
         data: kerelemek
       });
     } catch (error) {
-      logger.error('Hiba a szobaváltási kérelmek lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt a szobaváltási kérelmek lekérésekor'
-      });
+      next(error);
     }
   }
 
   // Szobaváltási kérelem jóváhagyása vagy elutasítása (titkár számára)
-  async updateRoomChangeRequest(req, res) {
+  async updateRoomChangeRequest(req, res, next) {
     try {
       const { id } = req.params;
       const { statusz } = req.body;
 
       if (!['approved', 'denied'].includes(statusz)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Érvénytelen státusz: csak "approved" vagy "denied" lehet'
-        });
+        throw new ValidationError('Érvénytelen státusz: csak "approved" vagy "denied" lehet');
       }
 
       const kerelem = await this.db.SzobaValtoztatas.findByPk(id);
       if (!kerelem) {
-        return res.status(404).json({
-          success: false,
-          error: 'Szobaváltási kérelem nem található'
-        });
+        throw new NotFoundError('Szobaváltási kérelem');
       }
 
       if (kerelem.statusz !== 'pending') {
-        return res.status(400).json({
-          success: false,
-          error: `A kérelem már ${kerelem.statusz} státuszban van, nem módosítható`
-        });
+        throw new ConflictError(`A kérelem már ${kerelem.statusz} státuszban van, nem módosítható`);
       }
 
       // Ha jóváhagyják, akkor ténylegesen át kell költöztetni a diákot
@@ -317,7 +270,7 @@ class SzobaValtoztatasController {
             lock: transaction.LOCK.UPDATE
           });
           if (!kivantSzoba) {
-            throw new Error('A kívánt szoba nem található');
+            throw new NotFoundError('A kívánt szoba');
           }
 
           const currentOccupancy = await this.db.SzobaBekoltozes.count({
@@ -329,7 +282,7 @@ class SzobaValtoztatasController {
           });
 
           if (currentOccupancy >= kivantSzoba.osszes_hely) {
-            throw new Error('A kívánt szoba időközben megtelt, a kérelem nem hajtható végre');
+            throw new ConflictError('A kívánt szoba időközben megtelt, a kérelem nem hajtható végre');
           }
 
           // 3. Új beköltözés létrehozása a kívánt szobába
@@ -374,26 +327,19 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      logger.error('Hiba a szobaváltási kérelem frissítésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: error.message || 'Hiba történt a szobaváltási kérelem frissítésekor'
-      });
+      next(error);
     }
   }
 
   // Diák szobaváltási történetének lekérése
-  async getRoomChangeHistory(req, res) {
+  async getRoomChangeHistory(req, res, next) {
     try {
       const userId = req.user.userId; // Felhasznalo.user_id
       
       // Először lekérjük a felhasználóhoz tartozó diák ID-t
       const felhasznalo = await this.db.Felhasznalo.findByPk(userId);
       if (!felhasznalo || !felhasznalo.diak_id) {
-        return res.status(404).json({
-          success: false,
-          error: 'A felhasználóhoz nem tartozik diák'
-        });
+        throw new NotFoundError('A felhasználóhoz nem tartozik diák');
       }
       
       const diakId = felhasznalo.diak_id;
@@ -422,26 +368,19 @@ class SzobaValtoztatasController {
         data: tortenet
       });
     } catch (error) {
-      logger.error('Hiba a szobaváltási történet lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt a szobaváltási történet lekérésekor'
-      });
+      next(error);
     }
   }
 
   // Diák értesítéseinek lekérése
-  async getNotifications(req, res) {
+  async getNotifications(req, res, next) {
     try {
       const userId = req.user.userId; // Felhasznalo.user_id
       
       // Először lekérjük a felhasználóhoz tartozó diák ID-t
       const felhasznalo = await this.db.Felhasznalo.findByPk(userId);
       if (!felhasznalo || !felhasznalo.diak_id) {
-        return res.status(404).json({
-          success: false,
-          error: 'A felhasználóhoz nem tartozik diák'
-        });
+        throw new NotFoundError('A felhasználóhoz nem tartozik diák');
       }
       
       const diakId = felhasznalo.diak_id;
@@ -458,16 +397,12 @@ class SzobaValtoztatasController {
         data: notifications
       });
     } catch (error) {
-      logger.error('Hiba az értesítések lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt az értesítések lekérésekor'
-      });
+      next(error);
     }
   }
 
   // Diák értesítésének megjelölése olvasottnak
-  async markNotificationAsRead(req, res) {
+  async markNotificationAsRead(req, res, next) {
     try {
       const { id } = req.params;
       const userId = req.user.userId;
@@ -475,26 +410,17 @@ class SzobaValtoztatasController {
       // Felhasználóhoz tartozó diák ID lekérése
       const felhasznalo = await this.db.Felhasznalo.findByPk(userId);
       if (!felhasznalo || !felhasznalo.diak_id) {
-        return res.status(403).json({
-          success: false,
-          error: 'A felhasználóhoz nem tartozik diák'
-        });
+        throw new ForbiddenError('A felhasználóhoz nem tartozik diák');
       }
 
       const notification = await this.db.Notification.findByPk(id);
       if (!notification) {
-        return res.status(404).json({
-          success: false,
-          error: 'Értesítés nem található'
-        });
+        throw new NotFoundError('Értesítés');
       }
 
       // Tulajdonjog ellenőrzése
       if (notification.diak_id !== felhasznalo.diak_id) {
-        return res.status(403).json({
-          success: false,
-          error: 'Nincs jogosultsága az értesítés olvasásához'
-        });
+        throw new ForbiddenError('Nincs jogosultsága az értesítés elolvasásához');
       }
 
       notification.elolvasva = true;
@@ -509,16 +435,12 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      logger.error('Hiba az értesítés olvasottnak jelölésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt az értesítés olvasottnak jelölésekor'
-      });
+      next(error);
     }
   }
 
   // Admin értesítéseinek lekérése
-  async getAdminNotifications(req, res) {
+  async getAdminNotifications(req, res, next) {
     try {
       const notifications = await this.db.Notification.findAll({
         include: [
@@ -552,25 +474,18 @@ class SzobaValtoztatasController {
         data: notifications
       });
     } catch (error) {
-      logger.error('Hiba az admin értesítések lekérésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt az admin értesítések lekérésekor'
-      });
+      next(error);
     }
   }
 
   // Admin értesítésének megjelölése olvasottnak
-  async markNotificationAsReadByAdmin(req, res) {
+  async markNotificationAsReadByAdmin(req, res, next) {
     try {
       const { id } = req.params;
 
       const notification = await this.db.Notification.findByPk(id);
       if (!notification) {
-        return res.status(404).json({
-          success: false,
-          error: 'Értesítés nem található'
-        });
+        throw new NotFoundError('Értesítés');
       }
 
       notification.elolvasva = true;
@@ -585,11 +500,7 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      logger.error('Hiba az admin értesítés olvasottnak jelölésekor', { error: error.message, stack: error.stack, userId: req.user?.userId });
-      res.status(500).json({
-        success: false,
-        error: 'Hiba történt az admin értesítés olvasottnak jelölésekor'
-      });
+      next(error);
     }
   }
 }
