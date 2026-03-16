@@ -45,7 +45,14 @@ router.get('/students/room', authenticate, (req, res) => {
 });
 
 // Szobaváltási kérelem benyújtása - minden bejelentkezett felhasználó (diák)
-router.post('/students/room-change', authenticate, validateRoomChangeRequest, (req, res) => {
+router.post('/students/room-change', authenticate, (req, res, next) => {
+  // Apply write limiter to room change requests
+  const writeLimiter = req.app.locals.limiters?.write;
+  if (writeLimiter) {
+    return writeLimiter(req, res, next);
+  }
+  next();
+}, validateRoomChangeRequest, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.requestRoomChange(req, res);
 });
@@ -57,7 +64,14 @@ router.get('/students/room-change-requests', authenticate, isAdmin, validateStat
 });
 
 // Szobaváltási kérelem jóváhagyása vagy elutasítása - csak titkár
-router.put('/students/room-change-requests/:id', authenticate, isAdmin, validateId, validateUpdateRequest, (req, res) => {
+router.put('/students/room-change-requests/:id', authenticate, isAdmin, (req, res, next) => {
+  // Apply write limiter to room change approval operations
+  const writeLimiter = req.app.locals.limiters?.write;
+  if (writeLimiter) {
+    return writeLimiter(req, res, next);
+  }
+  next();
+}, validateId, validateUpdateRequest, (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateRoomChangeRequest(req, res);
 });

@@ -136,12 +136,27 @@ const writeLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (req, res, next, options) => {
-    res.status(429).json(options.message);
+  handler: (_req, _res, _next, options) => {
+    _res.status(429).json(options.message);
   }
 });
 
-// Rate limiting alkalmazása auth route-okra (legszigorúbb limitek)
+// Olvasási limiter GET kérésekhez (magasabb limit)
+const readLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // Limit each IP to 200 read requests per windowMs
+  message: {
+    error: 'Túl sok lekérdezési kérés érkezett. Kérjük, próbálja újra később.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, _res, _next, options) => {
+    _res.status(429).json(options.message);
+  }
+});
+
+// Rate limiting alkalmazása specifikus végpontokra (legszigorúbb limitek)
 app.use('/api/auth/login', authLimiter);
 
 // Szigorú rate limiting jelszó visszaállítási végpontokhoz - védelem brute force ellen
@@ -152,8 +167,14 @@ app.use('/api/users/:id/make-admin', adminActionLimiter);
 app.use('/api/users/:id/remove-admin', adminActionLimiter);
 app.use('/api/users/:id/force-logout', adminActionLimiter);
 
-// Írási limiter alkalmazása az összes route-ra
-app.use('/api', writeLimiter);
+// Limiterek elérhetővé tétele a route-ok számára
+app.locals.limiters = {
+  auth: authLimiter,
+  passwordReset: passwordResetLimiter,
+  adminAction: adminActionLimiter,
+  write: writeLimiter,
+  read: readLimiter
+};
 
 // Alapértelmezett route
 app.get('/', (_req, res) => {
@@ -214,7 +235,7 @@ const startServer = async () => {
     logger.info('✓ Room change route-ok inicializálva');
 
 // 404 kezelő - csak most regisztráljuk, miután minden route be van állítva
-    app.use((req, res, next) => {
+    app.use((_req, _res, next) => {
       next(new NotFoundError('Endpoint'));
     });
 
