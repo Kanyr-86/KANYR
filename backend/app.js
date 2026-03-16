@@ -12,6 +12,8 @@ const { csrfTokenMiddleware, csrfProtectionMiddleware } = require('./middleware/
 const { NotFoundError } = require('./utils/AppError');
 const logger = require('./utils/logger');
 const TokenBlacklistService = require('./services/TokenBlacklistService');
+const { runMigrations } = require('./run-migrations');
+const { validateMigrationsBeforeStart } = require('./utils/migrationValidator');
 require('dotenv').config();
 
 const app = express();
@@ -210,10 +212,10 @@ const startServer = async () => {
     // Adatbázis kapcsolat tesztelése
     await testConnection();
     
-    // Adatbázis szinkronizálása (táblák létrehozása, ha nem léteznek)
-    // { force: false } = csak akkor hoz létre táblákat, ha még nem léteznek
-    await db.sequelize.sync({ force: false });
-    logger.info('✓ Adatbázis szinkronizálva');
+    // Migrációk állapotának ellenőrzése és futtatása
+    await validateMigrationsBeforeStart();
+    await runMigrations();
+    logger.info('✓ Migrációk sikeresen lefutottak');
     
 // Database available to routes via app.locals
     app.locals.db = db;
@@ -259,8 +261,8 @@ const startServer = async () => {
     logger.info('✓ Room change route-ok inicializálva');
 
 // 404 kezelő - csak most regisztráljuk, miután minden route be van állítva
-    app.use((_req, _res, next) => {
-      next(new NotFoundError('Endpoint'));
+    app.use((_req, _res, _next) => {
+      _next(new NotFoundError('Endpoint'));
     });
 
     // Globális hibakezelő - csak most regisztráljuk, miután minden route be van állítva
