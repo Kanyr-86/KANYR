@@ -2,24 +2,17 @@ import { defineStore } from 'pinia'
 import { authService } from '../services/authService'
 
 export const useAuthStore = defineStore('auth', {
-  state: () => {
-    let user = null
-    try {
-      const userData = localStorage.getItem('user')
-      if (userData) {
-        user = JSON.parse(userData)
-      }
-    } catch (e) {
-      console.error('Error parsing user data from localStorage:', e)
-      localStorage.removeItem('user')
-    }
-    
-    return {
-      token: localStorage.getItem('token'),
-      user: user,
-      isAuthenticated: !!localStorage.getItem('token'),
-      loading: false
-    }
+  state: () => ({
+    token: null,
+    user: null,
+    isAuthenticated: false,
+    loading: false
+  }),
+  
+  persist: {
+    key: 'kanyr-auth',
+    storage: localStorage,
+    paths: ['token', 'user', 'isAuthenticated']
   },
   
   getters: {
@@ -55,7 +48,7 @@ export const useAuthStore = defineStore('auth', {
 
     // Auth állapot inicializálása localStorage-ból
     async initializeAuth() {
-      if (this.isAuthenticated && this.user) {
+      if (this.isAuthenticated && this.token) {
         try {
           // Token érvényességének ellenőrzése
           const response = await authService.getCurrentUser()

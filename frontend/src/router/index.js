@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../store/auth'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -72,22 +71,11 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  // Ellenőrizzük, hogy az auth store elérhető-e (lehet, hogy még nem az inicializálás során)
-  let authStore
-  try {
-    authStore = useAuthStore()
-  } catch (e) {
-    // Ha az auth store nem elérhető, engedélyezzük a navigációt a bejelentkezési oldalra
-    if (to.path === '/login') {
-      next()
-    } else {
-      next('/login')
-    }
-    return
-  }
+  // Auth store importálása - most már biztonságosan használható
+  const authStore = useAuthStore()
   
   // Auth állapot inicializálása, ha szükséges
-  if (!authStore.user && authStore.isAuthenticated) {
+  if (!authStore.user && authStore.isAuthenticated && authStore.token) {
     try {
       await authStore.initializeAuth()
     } catch (e) {
