@@ -3,17 +3,23 @@
  * Strukturált hibakezelést biztosít működési hibák követésével
  */
 
+const { generateRequestId } = require('./errorResponse');
+
 /**
  * Alap AppError osztály, amely kiterjeszti a natív Error-t
  * Minden egyedi hibának ezt az osztályt kell kiterjesztenie
  */
 class AppError extends Error {
-  constructor(message, statusCode) {
+  constructor(message, statusCode, options = {}) {
     super(message);
     
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
     this.isOperational = true;
+    this.requestId = options.requestId || generateRequestId();
+    this.timestamp = options.timestamp || new Date().toISOString();
+    this.userId = options.userId || null;
+    this.details = options.details || null;
     
     // Stack trace rögzítése, a konstruktor kihagyásával
     Error.captureStackTrace(this, this.constructor);

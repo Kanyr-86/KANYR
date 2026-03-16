@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
-const { ValidationError, NotFoundError, ConflictError, ForbiddenError } = require('../utils/AppError');
+const { ValidationError, ForbiddenError } = require('../utils/AppError');
 
 class FelhasznaloController {
   constructor(db) {

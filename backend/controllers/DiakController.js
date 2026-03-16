@@ -551,8 +551,8 @@ class DiakController {
    * GET /api/diaks/:id/notifications
    * Diák értesítéseinek lekérése
    */
-  getStudentNotifications = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  getStudentNotifications = asyncHandler(async (_req, res) => {
+    const { id } = _req.params;
 
     if (!id || isNaN(id)) {
       throw new ValidationError('Érvénytelen diák ID');

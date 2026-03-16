@@ -13,28 +13,9 @@ const {
   NotFoundError, 
   ConflictError 
 } = require('../utils/AppError');
-
-// Általános, biztonságos hibaüzenetek éles környezethez
-// Ezek nem tartalmaznak implementációs részleteket vagy adatbázis-információkat
-const SAFE_ERROR_MESSAGES = {
-  400: 'Érvénytelen kérés',
-  401: 'Hitelesítés szükséges',
-  403: 'Hozzáférés megtagadva',
-  404: 'A keresett erőforrás nem található',
-  409: 'Ütközés történt a kérés feldolgozása során',
-  422: 'A kérés feldolgozása nem sikerült',
-  429: 'Túl sok kérés, próbálja újra később',
-  500: 'Szerverhiba történt, próbálja újra később'
-};
-
-/**
- * Biztonságos hibaüzenet lekérdezése éles környezethez
- * @param {number} statusCode - HTTP státuszkód
- * @returns {string} Biztonságos hibaüzenet
- */
-const getSafeErrorMessage = (statusCode) => {
-  return SAFE_ERROR_MESSAGES[statusCode] || SAFE_ERROR_MESSAGES[500];
-};
+const { 
+  getSafeErrorMessage 
+} = require('../utils/errorResponse');
 
 /**
  * Ellenőrzi, hogy a környezet fejlesztői mód-e
@@ -49,9 +30,9 @@ const isDevelopment = () => {
  * @param {Error} err - Hiba objektum
  * @param {Request} req - Express kérés objektum
  * @param {Response} res - Express válasz objektum
- * @param {Function} next - Express next függvény
+ * @param {Function} _next - Express next függvény
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   // Hiba naplózása a strukturált loggerrel (mindig részletesen naplózunk)
   logger.logError(err, {
     url: req.originalUrl,

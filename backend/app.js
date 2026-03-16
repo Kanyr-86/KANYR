@@ -8,7 +8,7 @@ const db = require('./models');
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
 const { detectSuspiciousActivity, trackSensitiveOperations } = require('./middleware/securityMiddleware');
-const { csrfTokenMiddleware, csrfProtectionMiddleware, getCsrfToken } = require('./middleware/csrfMiddleware');
+const { csrfTokenMiddleware, csrfProtectionMiddleware } = require('./middleware/csrfMiddleware');
 const { NotFoundError } = require('./utils/AppError');
 const logger = require('./utils/logger');
 const TokenBlacklistService = require('./services/TokenBlacklistService');
@@ -54,6 +54,9 @@ app.use(cookieParser()); // Cookie parser - needed for CSRF tokens
 // Kérés naplózó middleware
 app.use(requestLogger);
 
+// Request context middleware - adds request ID and timestamp
+app.use(require('./utils/errorResponse').addRequestContext);
+
 // CSRF token middleware - generates token for all requests
 app.use(csrfTokenMiddleware);
 
@@ -76,7 +79,7 @@ const authLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skipSuccessfulRequests: false, // Count all requests, even successful ones
-  handler: (req, res, next, options) => {
+  handler: (_req, res, _next, options) => {
     res.status(429).json(options.message);
   }
 });
@@ -138,21 +141,6 @@ const writeLimiter = rateLimit({
   }
 });
 
-// Megengedőbb limiter csak olvasási végpontokhoz (GET kérések)
-const readLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limit each IP to 200 read requests per windowMs
-  message: {
-    error: 'Túl sok kérés érkezett. Kérjük, próbálja újra később.',
-    retryAfter: 15 * 60
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res, next, options) => {
-    res.status(429).json(options.message);
-  }
-});
-
 // Rate limiting alkalmazása auth route-okra (legszigorúbb limitek)
 app.use('/api/auth/login', authLimiter);
 
@@ -164,19 +152,11 @@ app.use('/api/users/:id/make-admin', adminActionLimiter);
 app.use('/api/users/:id/remove-admin', adminActionLimiter);
 app.use('/api/users/:id/force-logout', adminActionLimiter);
 
-// Írási limiter alkalmazása az összes route-ra (felül lesz írva az olvasási limiterrel GET kéréseknél)
+// Írási limiter alkalmazása az összes route-ra
 app.use('/api', writeLimiter);
 
-// Olvasási limiter alkalmazása kifejezetten GET kérésekhez (megengedőbb)
-app.use('/api', (req, res, next) => {
-  if (req.method === 'GET') {
-    return readLimiter(req, res, next);
-  }
-  next();
-});
-
 // Alapértelmezett route
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({
     message: 'KANYR - Kollégiumi Adatbázis Nyilvántartó Rendszer API',
     version: '1.0.0',

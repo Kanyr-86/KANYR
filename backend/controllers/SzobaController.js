@@ -341,9 +341,9 @@ class SzobaController {
    * @param {Object} res - Express response objektum
    * @param {Function} next - Express next függvény
    */
-  async getBekoltozesekWithFilters(req, res, next) {
+  async getBekoltozesekWithFilters(_req, res, next) {
     try {
-      const { diakNev, szobaId, datumFrom, datumTo } = req.query;
+      const { diakNev, szobaId, datumFrom, datumTo } = _req.query;
 
       const filters = {};
       if (diakNev) filters.diakNev = diakNev;
