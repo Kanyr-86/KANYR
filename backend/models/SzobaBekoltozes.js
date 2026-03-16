@@ -42,6 +42,16 @@ module.exports = (sequelize) => {
       validate: {
         isDate: {
           msg: 'Érvényes dátumot adjon meg'
+        },
+        isAfterMoveIn: function(value) {
+          if (value && this.bekoltozes_datum) {
+            const moveInDate = new Date(this.bekoltozes_datum);
+            const moveOutDate = new Date(value);
+            
+            if (moveOutDate < moveInDate) {
+              throw new Error('A kiköltözés dátuma nem lehet korábbi, mint a beköltözés dátuma');
+            }
+          }
         }
       }
     },
