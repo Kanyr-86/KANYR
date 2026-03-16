@@ -683,8 +683,8 @@ import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { debounce } from 'lodash-es'
-import { toast } from 'vue3-toastify'
 import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
+import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
 import { RecycleScroller } from 'vue-virtual-scroller'
 
@@ -804,8 +804,7 @@ export default {
         }
       } catch (error) {
         if (isAbortError(error)) return
-        console.error(getErrorMessage('LOAD_ERROR'), error)
-        toast.error(getErrorMessage('LOAD_ERROR'))
+        handleError(error, { context: 'RoomsView/fetchRooms' })
       } finally {
         loading.value = false
       }
@@ -1082,11 +1081,10 @@ export default {
           showCreateModal.value = false
           resetCreateForm()
           fetchRooms()
-          toast.success('Szoba sikeresen felvéve')
+          handleSuccess('Szoba sikeresen felvéve')
         }
       } catch (error) {
-        console.error('Hiba a szoba felvétele közben:', error)
-        toast.error('Hiba történt a szoba felvétele közben')
+        handleError(error, { context: 'RoomsView/createRoom' })
       } finally {
         createLoading.value = false
       }
@@ -1108,11 +1106,10 @@ export default {
         if (response.data.success) {
           showEditModal.value = false
           fetchRooms()
-          toast.success('Szoba adatai sikeresen módosítva')
+          handleSuccess('Szoba adatai sikeresen módosítva')
         }
       } catch (error) {
-        console.error('Hiba a szoba módosítása közben:', error)
-        toast.error('Hiba történt a szoba módosítása közben')
+        handleError(error, { context: 'RoomsView/updateRoom' })
       } finally {
         updateLoading.value = false
       }

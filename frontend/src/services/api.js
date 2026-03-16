@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { getErrorMessage } from '@/i18n'
 import { useToastStore } from '@/store/toast'
+import { dedupeRequest, generateRequestKey } from '@/composables/useRequestDeduplication'
+import { handleError, ErrorCategory } from '@/services/errorHandler'
 
 // ─── CSRF Token kezelés ─────────────────────────────────────────────────────
 
@@ -50,6 +52,9 @@ async function ensureCsrfToken() {
 // Zászló a duplikált átirányítások megelőzéséhez, ha több kérés is 401-et ad vissza
 let isRedirectingToLogin = false
 
+// Enable request deduplication flag
+const ENABLE_DEDUPLICATION = true
+
 function applyAuthInterceptors(instance) {
   // JWT és CSRF token csatolása minden kéréshez
   instance.interceptors.request.use(
@@ -69,12 +74,17 @@ function applyAuthInterceptors(instance) {
         }
       }
       
+      // Generate deduplication key for GET requests (safe to dedupe)
+      if (ENABLE_DEDUPLICATION && config.method?.toLowerCase() === 'get') {
+        config.dedupeKey = generateRequestKey(config)
+      }
+      
       return config
     },
     (error) => Promise.reject(error)
   )
 
-  // Egységes hibakezelés
+  // Response interceptor with standardized error handling
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -88,23 +98,16 @@ function applyAuthInterceptors(instance) {
           if (!isRedirectingToLogin) {
             isRedirectingToLogin = true
 
-            // Show toast notification for token revocation
-            try {
-              const toastStore = useToastStore()
-              // Check if this is a token revocation message
-              if (message && (
-                message.includes('visszavonva') ||
-                message.includes('érvénytelenné vált') ||
-                message.includes('lejárt')
-              )) {
-                toastStore.showToast({
-                  type: 'warning',
-                  message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
-                  duration: 5000
-                })
-              }
-            } catch (e) {
-              // Toast store might not be available during initialization
+            // Check if this is a token revocation message
+            if (message && (
+              message.includes('visszavonva') ||
+              message.includes('érvénytelenné vált') ||
+              message.includes('lejárt')
+            )) {
+              handleError(error, { 
+                context: 'auth',
+                showToast: true 
+              })
             }
 
             localStorage.removeItem('token')
@@ -133,20 +136,50 @@ function applyAuthInterceptors(instance) {
               console.error('Failed to refresh CSRF token:', e)
             }
           } else {
-            console.error(getErrorMessage('ACCESS_DENIED'), message)
+            handleError(error, { 
+              context: 'permission',
+              showToast: true 
+            })
           }
         } else if (status >= 500) {
-          console.error(getErrorMessage('SERVER_ERROR'), message)
+          handleError(error, { 
+            context: 'server',
+            showToast: true 
+          })
+        } else {
+          // Handle other errors with standardized handler
+          handleError(error, { 
+            context: 'api',
+            showToast: true 
+          })
         }
       } else if (error.request) {
-        console.error(getErrorMessage('NETWORK_ERROR'), error.message)
+        // Network errors
+        handleError(error, { 
+          context: 'network',
+          showToast: true 
+        })
       } else {
-        console.error(getErrorMessage('UNEXPECTED_ERROR'), error.message)
+        // Other errors
+        handleError(error, { 
+          context: 'unknown',
+          showToast: true 
+        })
       }
 
       return Promise.reject(error)
     }
   )
+}
+
+// Apply deduplication to axios adapter
+const originalGet = axios.get
+axios.get = function(url, config = {}) {
+  if (ENABLE_DEDUPLICATION) {
+    const dedupeKey = generateRequestKey({ method: 'get', url, ...config })
+    return dedupeRequest(dedupeKey, () => originalGet.call(this, url, config))
+  }
+  return originalGet.call(this, url, config)
 }
 
 // ─── Axios példányok ─────────────────────────────────────────────────────────

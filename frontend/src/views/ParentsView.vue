@@ -559,8 +559,8 @@ import { ref, onMounted, computed, watch, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { useDebounce } from '../composables/useDebounce'
-import { toast } from 'vue3-toastify'
 import { getSuccessMessage, getErrorMessage } from '@/i18n'
+import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
 
 // Lazy load heavy components
@@ -636,8 +636,7 @@ export default {
           console.log('Request was aborted - component unmounted')
           return
         }
-        console.error(getErrorMessage('LOAD_ERROR'), error)
-        toast.error(getErrorMessage('LOAD_ERROR'))
+        handleError(error, { context: 'ParentsView/fetchParents' })
       } finally {
         loading.value = false
       }
@@ -701,8 +700,7 @@ export default {
           toast.success(getSuccessMessage('CREATE_SUCCESS'))
         }
       } catch (error) {
-        console.error(getErrorMessage('CREATE_ERROR'), error)
-        toast.error(getErrorMessage('CREATE_ERROR'))
+        handleError(error, { context: 'ParentsView/createParent' })
       } finally {
         createLoading.value = false
       }
@@ -735,8 +733,7 @@ export default {
           toast.success(getSuccessMessage('UPDATE_SUCCESS'))
         }
       } catch (error) {
-        console.error(getErrorMessage('UPDATE_ERROR'), error)
-        toast.error(getErrorMessage('UPDATE_ERROR'))
+        handleError(error, { context: 'ParentsView/updateParent' })
       } finally {
         updateLoading.value = false
       }
