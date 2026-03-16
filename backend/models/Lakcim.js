@@ -44,15 +44,23 @@ module.exports = (sequelize) => {
           msg: 'Az utca és házszám nem lehet üres'
         }
       }
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'lakcims',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { fields: ['iranyitoszam'] },
-      { fields: ['varos'] }
+      { fields: ['varos'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -70,6 +78,45 @@ module.exports = (sequelize) => {
       as: 'szulos'
     });
   };
+
+  // Audit logging hooks
+  Lakcim.addHook('afterCreate', async (lakcim, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'lakcims',
+        recordId: lakcim.cim_id,
+        req: options.transaction.req,
+        newValues: lakcim.toJSON()
+      });
+    }
+  });
+
+  Lakcim.addHook('afterUpdate', async (lakcim, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'lakcims',
+        recordId: lakcim.cim_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: lakcim.toJSON()
+      });
+    }
+  });
+
+  Lakcim.addHook('afterDestroy', async (lakcim, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'lakcims',
+        recordId: lakcim.cim_id,
+        req: options.transaction.req,
+        oldValues: lakcim.toJSON()
+      });
+    }
+  });
 
   return Lakcim;
 };

@@ -30,14 +30,22 @@ module.exports = (sequelize) => {
           msg: 'A férőhely számnak legalább 1-nek kell lennie'
         }
       }
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'szobas',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
-      { unique: true, fields: ['szoba_szama'] }
+      { unique: true, fields: ['szoba_szama'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -48,7 +56,57 @@ module.exports = (sequelize) => {
       foreignKey: 'szoba_id',
       as: 'bekoltozesek'
     });
+
+    // Egy szobához több szobaváltás is tartozhat (jelenlegi és kívánt szobaként)
+    Szoba.hasMany(models.SzobaValtoztatas, {
+      foreignKey: 'jelenlegi_szoba_id',
+      as: 'jelenlegi_valtoztatasok'
+    });
+
+    Szoba.hasMany(models.SzobaValtoztatas, {
+      foreignKey: 'kivant_szoba_id',
+      as: 'kivant_valtoztatasok'
+    });
   };
+
+  // Audit logging hooks
+  Szoba.addHook('afterCreate', async (szoba, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'szobas',
+        recordId: szoba.szoba_id,
+        req: options.transaction.req,
+        newValues: szoba.toJSON()
+      });
+    }
+  });
+
+  Szoba.addHook('afterUpdate', async (szoba, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'szobas',
+        recordId: szoba.szoba_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: szoba.toJSON()
+      });
+    }
+  });
+
+  Szoba.addHook('afterDestroy', async (szoba, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'szobas',
+        recordId: szoba.szoba_id,
+        req: options.transaction.req,
+        oldValues: szoba.toJSON()
+      });
+    }
+  });
 
   return Szoba;
 };

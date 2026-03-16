@@ -59,19 +59,27 @@ module.exports = (sequelize) => {
         min: 1,
         max: 3
       }
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'szobavaltoztatas',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { fields: ['diak_id'] },
       { fields: ['jelenlegi_szoba_id'] },
       { fields: ['kivant_szoba_id'] },
       { fields: ['statusz'] },
       { fields: ['academic_year'] },
-      { fields: ['statusz', 'academic_year'] }
+      { fields: ['statusz', 'academic_year'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -95,6 +103,45 @@ module.exports = (sequelize) => {
       as: 'kivant_szoba'
     });
   };
+
+  // Audit logging hooks
+  SzobaValtoztatas.addHook('afterCreate', async (valtoztatas, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'szobavaltoztatas',
+        recordId: valtoztatas.valtoztatas_id,
+        req: options.transaction.req,
+        newValues: valtoztatas.toJSON()
+      });
+    }
+  });
+
+  SzobaValtoztatas.addHook('afterUpdate', async (valtoztatas, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'szobavaltoztatas',
+        recordId: valtoztatas.valtoztatas_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: valtoztatas.toJSON()
+      });
+    }
+  });
+
+  SzobaValtoztatas.addHook('afterDestroy', async (valtoztatas, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'szobavaltoztatas',
+        recordId: valtoztatas.valtoztatas_id,
+        req: options.transaction.req,
+        oldValues: valtoztatas.toJSON()
+      });
+    }
+  });
 
   return SzobaValtoztatas;
 };

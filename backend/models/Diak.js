@@ -123,12 +123,19 @@ module.exports = (sequelize) => {
           msg: 'A nem csak "férfi" vagy "nő" lehet'
         }
       }
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'diaks',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { unique: true, fields: ['email'] },
       { fields: ['szulo_id'] },
@@ -136,7 +143,8 @@ module.exports = (sequelize) => {
       { fields: ['nev'] },
       { unique: true, fields: ['szemelyi_igazolvany_szam'] },
       { unique: true, fields: ['taj_szam'] },
-      { unique: true, fields: ['diakigazolvany_szam'] }
+      { unique: true, fields: ['diakigazolvany_szam'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -159,7 +167,52 @@ module.exports = (sequelize) => {
       foreignKey: 'diak_id',
       as: 'bekoltozesek'
     });
+
+    // Egy diákhoz több értesítés is tartozhat
+    Diak.hasMany(models.Notification, {
+      foreignKey: 'diak_id',
+      as: 'notifications'
+    });
   };
+
+  // Audit logging hooks
+  Diak.addHook('afterCreate', async (diak, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'diaks',
+        recordId: diak.diak_id,
+        req: options.transaction.req,
+        newValues: diak.toJSON()
+      });
+    }
+  });
+
+  Diak.addHook('afterUpdate', async (diak, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'diaks',
+        recordId: diak.diak_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: diak.toJSON()
+      });
+    }
+  });
+
+  Diak.addHook('afterDestroy', async (diak, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'diaks',
+        recordId: diak.diak_id,
+        req: options.transaction.req,
+        oldValues: diak.toJSON()
+      });
+    }
+  });
 
   return Diak;
 };
