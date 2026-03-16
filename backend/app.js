@@ -15,6 +15,25 @@ const TokenBlacklistService = require('./services/TokenBlacklistService');
 require('dotenv').config();
 
 const app = express();
+
+// Controller factory function for dependency injection
+const initializeControllers = (db) => {
+  const DiakController = require('./controllers/DiakController');
+  const FelhasznaloController = require('./controllers/FelhasznaloController');
+  const SzobaController = require('./controllers/SzobaController');
+  const SzuloController = require('./controllers/SzuloController');
+  const LakcimController = require('./controllers/LakcimController');
+  const SzobaValtoztatasController = require('./controllers/SzobaValtoztatasController');
+
+  return {
+    diakController: new DiakController(db),
+    felhasznaloController: new FelhasznaloController(db),
+    szobaController: new SzobaController(db),
+    szuloController: new SzuloController(db),
+    lakcimController: new LakcimController(db),
+    szobaValtoztatasController: new SzobaValtoztatasController(db)
+  };
+};
 const PORT = process.env.PORT || 3000;
 
 // CORS konfiguráció - környezeti változókból olvasva
@@ -79,8 +98,8 @@ const authLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skipSuccessfulRequests: false, // Count all requests, even successful ones
-  handler: (_req, res, _next, options) => {
-    res.status(429).json(options.message);
+  handler: (_req, res, _options) => {
+    res.status(429).json(_options.message);
   }
 });
 
@@ -136,8 +155,8 @@ const writeLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req, _res, _next, options) => {
-    _res.status(429).json(options.message);
+  handler: (_req, _res, _options) => {
+    _res.status(429).json(_options.message);
   }
 });
 
@@ -151,8 +170,8 @@ const readLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req, _res, _next, options) => {
-    _res.status(429).json(options.message);
+  handler: (_req, _res, _options) => {
+    _res.status(429).json(_options.message);
   }
 });
 
@@ -196,9 +215,14 @@ const startServer = async () => {
     await db.sequelize.sync({ force: false });
     logger.info('✓ Adatbázis szinkronizálva');
     
-    // Database available to routes via app.locals
+// Database available to routes via app.locals
     app.locals.db = db;
     logger.info('✓ Adatbázis elérhető a route-ok számára');
+
+    // Initialize controllers with dependency injection
+    const controllers = initializeControllers(db);
+    app.locals.controllers = controllers;
+    logger.info('✓ Controllers initialized with dependency injection');
 
     // CSRF protection middleware - validates tokens on state-changing requests
     // Applied before all API routes to intercept state-changing requests

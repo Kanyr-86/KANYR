@@ -1,20 +1,9 @@
 const express = require('express');
 const { body, param, query } = require('express-validator');
-const FelhasznaloController = require('../controllers/FelhasznaloController');
 const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 const { requireOwnProfile } = require('../middleware/ownershipMiddleware');
 
 const router = express.Router();
-
-// Initialize controller with database
-let felhasznaloController = null;
-
-const initializeController = (db) => {
-  if (!felhasznaloController) {
-    felhasznaloController = new FelhasznaloController(db);
-  }
-  return felhasznaloController;
-};
 
   // User validation rules
   const userValidationRules = [
@@ -66,7 +55,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     userValidationRules,
-    (req, res) => initializeController(req.app.locals.db).createUser(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.createUser(req, res)
   );
 
   // Protected routes - saját profil kezelése (minden bejelentkezett felhasználó)
@@ -76,7 +65,7 @@ const initializeController = (db) => {
     authenticate,
     requireOwnProfile(),
     userValidationRules,
-    (req, res) => initializeController(req.app.locals.db).updateUser(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.updateUser(req, res)
   );
 
   // Users can only change their own password, admins can reset any password
@@ -85,7 +74,7 @@ const initializeController = (db) => {
     authenticate,
     requireOwnProfile(),
     passwordValidationRules,
-    (req, res) => initializeController(req.app.locals.db).updatePassword(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.updatePassword(req, res)
   );
 
   // Only admins can delete users
@@ -94,7 +83,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).deleteUser(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.deleteUser(req, res)
   );
 
   // Admin-only routes - felhasználók kezelése (csak főtitkár)
@@ -108,7 +97,7 @@ const initializeController = (db) => {
       query('sort').optional().isString().withMessage('A sort paraméternek szövegnek kell lennie'),
       query('order').optional().isIn(['ASC', 'DESC']).withMessage('Az order paraméternek ASC vagy DESC értéket kell tartalmaznia')
     ],
-    (req, res) => initializeController(req.app.locals.db).getAllUsers(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.getAllUsers(req, res)
   );
 
   router.get(
@@ -116,7 +105,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).getUserById(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.getUserById(req, res)
   );
 
   router.post(
@@ -124,7 +113,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     userValidationRules,
-    (req, res) => initializeController(req.app.locals.db).createAdminUser(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.createAdminUser(req, res)
   );
 
   router.post(
@@ -132,7 +121,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).resetPassword(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.resetPassword(req, res)
   );
 
   router.post(
@@ -140,7 +129,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).makeAdmin(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.makeAdmin(req, res)
   );
 
   router.post(
@@ -148,7 +137,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).removeAdmin(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.removeAdmin(req, res)
   );
 
   router.post(
@@ -156,7 +145,7 @@ const initializeController = (db) => {
     authenticate,
     isAdmin,
     idValidationRule,
-    (req, res) => initializeController(req.app.locals.db).forceLogout(req, res)
+    (req, res) => req.app.locals.controllers.felhasznaloController.forceLogout(req, res)
   );
 
 module.exports = router;

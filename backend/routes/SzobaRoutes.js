@@ -3,12 +3,8 @@ const router = express.Router();
 const { body, param, query } = require('express-validator');
 const { authenticate, isAdmin, canModify } = require('../middleware/authMiddleware');
 
-// Szoba controller inicializálása
-let SzobaController;
-function initController(db) {
-  SzobaController = new (require('../controllers/SzobaController'))(db);
-  return router;
-}
+// Controllers are now injected via app.locals.controllers
+// No need for lazy initialization anymore
 
 // Validációk
 const validateCreateSzoba = [
@@ -111,7 +107,7 @@ router.get(
   '/',
   authenticate,
   validateQueryParams,
-  async (req, res) => SzobaController.getAllSzobas(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getAllSzobas(req, res)
 );
 
 // Elérhető szobák végpont - minden bejelentkezett felhasználó
@@ -119,7 +115,7 @@ router.get(
   '/available',
   authenticate,
   validateQueryParams,
-  async (req, res) => SzobaController.getAvailableRooms(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getAvailableRooms(req, res)
 );
 
 // Statisztika végpont - csak főtitkár
@@ -127,7 +123,7 @@ router.get(
   '/statistics',
   authenticate,
   isAdmin,
-  async (req, res) => SzobaController.getRoomStatistics(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getRoomStatistics(req, res)
 );
 
 // Beköltözések lekérdezése szűréssel - csak főtitkár
@@ -135,7 +131,7 @@ router.get(
   '/bekoltozesek',
   authenticate,
   isAdmin,
-  async (req, res) => SzobaController.getBekoltozesekWithFilters(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getBekoltozesekWithFilters(req, res)
 );
 
 // Részletes nézet - minden bejelentkezett felhasználó
@@ -143,7 +139,7 @@ router.get(
   '/:id',
   authenticate,
   validateIdParam,
-  async (req, res) => SzobaController.getSzobaById(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getSzobaById(req, res)
 );
 
 // Szobában lakók - csak admin/titkár (contains sensitive student data)
@@ -152,7 +148,7 @@ router.get(
   authenticate,
   canModify,
   validateIdParam,
-  async (req, res) => SzobaController.getStudentsInRoom(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getStudentsInRoom(req, res)
 );
 
 // Szoba kihasználtság - minden bejelentkezett felhasználó
@@ -160,7 +156,7 @@ router.get(
   '/:id/occupancy',
   authenticate,
   validateIdParam,
-  async (req, res) => SzobaController.getRoomOccupancy(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.getRoomOccupancy(req, res)
 );
 
 // Szoba létrehozás, módosítás, törlés - csak főtitkár
@@ -169,7 +165,7 @@ router.post(
   authenticate,
   canModify,
   validateCreateSzoba,
-  async (req, res) => SzobaController.createSzoba(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.createSzoba(req, res)
 );
 
 router.put(
@@ -177,7 +173,7 @@ router.put(
   authenticate,
   canModify,
   validateUpdateSzoba,
-  async (req, res) => SzobaController.updateSzoba(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.updateSzoba(req, res)
 );
 
 router.delete(
@@ -185,7 +181,7 @@ router.delete(
   authenticate,
   isAdmin,
   validateIdParam,
-  async (req, res) => SzobaController.deleteSzoba(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.deleteSzoba(req, res)
 );
 
 // Beköltözési műveletek - minden bejelentkezett felhasználó (főtitkár és titkár is)
@@ -193,14 +189,14 @@ router.post(
   '/bekoltozes',
   authenticate,
   validateCreateBekoltozes,
-  async (req, res) => SzobaController.createBekoltozes(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.createBekoltozes(req, res)
 );
 
 router.post(
   '/bulk-bekoltozes',
   authenticate,
   validateCreateBulkBekoltozes,
-  async (req, res) => SzobaController.createBulkBekoltozes(req, res)
+  async (req, res) => req.app.locals.controllers.szobaController.createBulkBekoltozes(req, res)
 );
 
-module.exports = initController;
+module.exports = router;
