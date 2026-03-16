@@ -8,13 +8,34 @@ const db = require('./models');
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
 const { detectSuspiciousActivity, trackSensitiveOperations } = require('./middleware/securityMiddleware');
-const { csrfTokenMiddleware, csrfProtectionMiddleware, getCsrfToken } = require('./middleware/csrfMiddleware');
+const { csrfTokenMiddleware, csrfProtectionMiddleware } = require('./middleware/csrfMiddleware');
 const { NotFoundError } = require('./utils/AppError');
 const logger = require('./utils/logger');
 const TokenBlacklistService = require('./services/TokenBlacklistService');
+const { runMigrations } = require('./run-migrations');
+const { validateMigrationsBeforeStart } = require('./utils/migrationValidator');
 require('dotenv').config();
 
 const app = express();
+
+// Controller factory function for dependency injection
+const initializeControllers = (db) => {
+  const DiakController = require('./controllers/DiakController');
+  const FelhasznaloController = require('./controllers/FelhasznaloController');
+  const SzobaController = require('./controllers/SzobaController');
+  const SzuloController = require('./controllers/SzuloController');
+  const LakcimController = require('./controllers/LakcimController');
+  const SzobaValtoztatasController = require('./controllers/SzobaValtoztatasController');
+
+  return {
+    diakController: new DiakController(db),
+    felhasznaloController: new FelhasznaloController(db),
+    szobaController: new SzobaController(db),
+    szuloController: new SzuloController(db),
+    lakcimController: new LakcimController(db),
+    szobaValtoztatasController: new SzobaValtoztatasController(db)
+  };
+};
 const PORT = process.env.PORT || 3000;
 
 // CORS konfiguráció - környezeti változókból olvasva
@@ -54,6 +75,9 @@ app.use(cookieParser()); // Cookie parser - needed for CSRF tokens
 // Kérés naplózó middleware
 app.use(requestLogger);
 
+// Request context middleware - adds request ID and timestamp
+app.use(require('./utils/errorResponse').addRequestContext);
+
 // CSRF token middleware - generates token for all requests
 app.use(csrfTokenMiddleware);
 
@@ -76,8 +100,8 @@ const authLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skipSuccessfulRequests: false, // Count all requests, even successful ones
-  handler: (req, res, next, options) => {
-    res.status(429).json(options.message);
+  handler: (_req, res, _options) => {
+    res.status(429).json(_options.message);
   }
 });
 
@@ -133,27 +157,27 @@ const writeLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (req, res, next, options) => {
-    res.status(429).json(options.message);
+  handler: (_req, _res, _options) => {
+    _res.status(429).json(_options.message);
   }
 });
 
-// Megengedőbb limiter csak olvasási végpontokhoz (GET kérések)
+// Olvasási limiter GET kérésekhez (magasabb limit)
 const readLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200, // Limit each IP to 200 read requests per windowMs
   message: {
-    error: 'Túl sok kérés érkezett. Kérjük, próbálja újra később.',
+    error: 'Túl sok lekérdezési kérés érkezett. Kérjük, próbálja újra később.',
     retryAfter: 15 * 60
   },
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (req, res, next, options) => {
-    res.status(429).json(options.message);
+  handler: (_req, _res, _options) => {
+    _res.status(429).json(_options.message);
   }
 });
 
-// Rate limiting alkalmazása auth route-okra (legszigorúbb limitek)
+// Rate limiting alkalmazása specifikus végpontokra (legszigorúbb limitek)
 app.use('/api/auth/login', authLimiter);
 
 // Szigorú rate limiting jelszó visszaállítási végpontokhoz - védelem brute force ellen
@@ -164,19 +188,17 @@ app.use('/api/users/:id/make-admin', adminActionLimiter);
 app.use('/api/users/:id/remove-admin', adminActionLimiter);
 app.use('/api/users/:id/force-logout', adminActionLimiter);
 
-// Írási limiter alkalmazása az összes route-ra (felül lesz írva az olvasási limiterrel GET kéréseknél)
-app.use('/api', writeLimiter);
-
-// Olvasási limiter alkalmazása kifejezetten GET kérésekhez (megengedőbb)
-app.use('/api', (req, res, next) => {
-  if (req.method === 'GET') {
-    return readLimiter(req, res, next);
-  }
-  next();
-});
+// Limiterek elérhetővé tétele a route-ok számára
+app.locals.limiters = {
+  auth: authLimiter,
+  passwordReset: passwordResetLimiter,
+  adminAction: adminActionLimiter,
+  write: writeLimiter,
+  read: readLimiter
+};
 
 // Alapértelmezett route
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({
     message: 'KANYR - Kollégiumi Adatbázis Nyilvántartó Rendszer API',
     version: '1.0.0',
@@ -190,14 +212,19 @@ const startServer = async () => {
     // Adatbázis kapcsolat tesztelése
     await testConnection();
     
-    // Adatbázis szinkronizálása (táblák létrehozása, ha nem léteznek)
-    // { force: false } = csak akkor hoz létre táblákat, ha még nem léteznek
-    await db.sequelize.sync({ force: false });
-    logger.info('✓ Adatbázis szinkronizálva');
+    // Migrációk állapotának ellenőrzése és futtatása
+    await validateMigrationsBeforeStart();
+    await runMigrations();
+    logger.info('✓ Migrációk sikeresen lefutottak');
     
-    // Database available to routes via app.locals
+// Database available to routes via app.locals
     app.locals.db = db;
     logger.info('✓ Adatbázis elérhető a route-ok számára');
+
+    // Initialize controllers with dependency injection
+    const controllers = initializeControllers(db);
+    app.locals.controllers = controllers;
+    logger.info('✓ Controllers initialized with dependency injection');
 
     // CSRF protection middleware - validates tokens on state-changing requests
     // Applied before all API routes to intercept state-changing requests
@@ -234,8 +261,8 @@ const startServer = async () => {
     logger.info('✓ Room change route-ok inicializálva');
 
 // 404 kezelő - csak most regisztráljuk, miután minden route be van állítva
-    app.use((req, res, next) => {
-      next(new NotFoundError('Endpoint'));
+    app.use((_req, _res, _next) => {
+      _next(new NotFoundError('Endpoint'));
     });
 
     // Globális hibakezelő - csak most regisztráljuk, miután minden route be van állítva

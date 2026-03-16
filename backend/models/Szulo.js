@@ -60,16 +60,24 @@ module.exports = (sequelize) => {
         model: 'lakcims',
         key: 'cim_id'
       }
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'szulos',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { unique: true, fields: ['email'] },
       { fields: ['cim_id'] },
-      { unique: true, fields: ['szemelyi_igazolvany_szam'] }
+      { unique: true, fields: ['szemelyi_igazolvany_szam'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -87,6 +95,45 @@ module.exports = (sequelize) => {
       as: 'diaks'
     });
   };
+
+  // Audit logging hooks
+  Szulo.addHook('afterCreate', async (szulo, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'szulos',
+        recordId: szulo.szulo_id,
+        req: options.transaction.req,
+        newValues: szulo.toJSON()
+      });
+    }
+  });
+
+  Szulo.addHook('afterUpdate', async (szulo, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'szulos',
+        recordId: szulo.szulo_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: szulo.toJSON()
+      });
+    }
+  });
+
+  Szulo.addHook('afterDestroy', async (szulo, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'szulos',
+        recordId: szulo.szulo_id,
+        req: options.transaction.req,
+        oldValues: szulo.toJSON()
+      });
+    }
+  });
 
   return Szulo;
 };

@@ -193,7 +193,7 @@ export default {
       loadingHistory.value = true;
       try {
         const response = await studentApi.get('/students/room-history');
-        roomHistory.value.splice(0, roomHistory.value.length, ...response.data.data);
+        roomHistory.value = response.data.data;
         
         // Ellenőrizzük a szobaváltási korlátot
         const currentYear = new Date().getFullYear();
@@ -214,12 +214,11 @@ export default {
       loadingRooms.value = true;
       try {
         // /szobas/available already filters to rooms with free capacity
-        const response = await api.get('/rooms/available');
-        const mappedRooms = response.data.data.map(room => ({
+        const response = await api.get('/szobas/available');
+        availableRooms.value = response.data.data.map(room => ({
           ...room,
           isAvailable: true
         }));
-        availableRooms.value.splice(0, availableRooms.value.length, ...mappedRooms);
       } catch (error) {
         console.error('Hiba a szobák lekérésekor:', error);
       } finally {

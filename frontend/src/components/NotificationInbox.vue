@@ -139,7 +139,7 @@ export default {
       lastFetchTime.value = now
       
       try {
-        const response = await api.get('/room-changes/admin/notifications')
+        const response = await api.get('/szobavaltoztatas/admin/notifications')
         if (response.data.success) {
           notifications.value.splice(0, notifications.value.length, ...response.data.data)
         } else {
@@ -177,7 +177,7 @@ export default {
         // Use Promise.all for better performance when marking multiple notifications
         await Promise.all(
           unreadNotifications.map(async (notification) => {
-            await api.put(`/room-changes/admin/notifications/${notification.notification_id}/read`)
+            await api.put(`/szobavaltoztatas/admin/notifications/${notification.notification_id}/read`)
             notification.elolvasva = true
           })
         )

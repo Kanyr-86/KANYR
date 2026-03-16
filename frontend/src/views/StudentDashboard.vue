@@ -128,7 +128,7 @@ export default {
       loadingHistory.value = true;
       try {
         const response = await studentApi.get('/students/room-history');
-        roomHistory.value.splice(0, roomHistory.value.length, ...response.data.data);
+        roomHistory.value = response.data.data;
         
         // Ellenőrizzük a szobaváltási korlátot
         const currentYear = new Date().getFullYear();
@@ -149,7 +149,7 @@ export default {
       loadingNotifications.value = true;
       try {
         const response = await studentApi.get('/students/notifications');
-        notifications.value.splice(0, notifications.value.length, ...response.data.data);
+        notifications.value = response.data.data;
       } catch (error) {
         console.error('Hiba az értesítések lekérésekor:', error);
       } finally {
@@ -160,12 +160,11 @@ export default {
     const getAvailableRooms = async () => {
       loadingRooms.value = true;
       try {
-        const response = await api.get('/rooms');
-        const mappedRooms = response.data.data.map(room => ({
+        const response = await api.get('/szobas');
+        availableRooms.value = response.data.data.map(room => ({
           ...room,
           isAvailable: room.osszes_hely > 0 // Egyszerűsített ellenőrzés
         }));
-        availableRooms.value.splice(0, availableRooms.value.length, ...mappedRooms);
       } catch (error) {
         console.error('Hiba a szobák lekérésekor:', error);
       } finally {

@@ -42,20 +42,38 @@ module.exports = (sequelize) => {
       validate: {
         isDate: {
           msg: 'Érvényes dátumot adjon meg'
+        },
+        isAfterMoveIn: function(value) {
+          if (value && this.bekoltozes_datum) {
+            const moveInDate = new Date(this.bekoltozes_datum);
+            const moveOutDate = new Date(value);
+            
+            if (moveOutDate < moveInDate) {
+              throw new Error('A kiköltözés dátuma nem lehet korábbi, mint a beköltözés dátuma');
+            }
+          }
         }
       }
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'szoba_bekoltozes',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { fields: ['diak_id'] },
       { fields: ['szoba_id'] },
       { fields: ['bekoltozes_datum'] },
       { fields: ['kikoltozes_datum'] },
-      { fields: ['diak_id', 'kikoltozes_datum'] }
+      { fields: ['diak_id', 'kikoltozes_datum'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -73,6 +91,45 @@ module.exports = (sequelize) => {
       as: 'szoba'
     });
   };
+
+  // Audit logging hooks
+  SzobaBekoltozes.addHook('afterCreate', async (bekoltozes, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'szoba_bekoltozes',
+        recordId: bekoltozes.bekoltozes_id,
+        req: options.transaction.req,
+        newValues: bekoltozes.toJSON()
+      });
+    }
+  });
+
+  SzobaBekoltozes.addHook('afterUpdate', async (bekoltozes, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'szoba_bekoltozes',
+        recordId: bekoltozes.bekoltozes_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: bekoltozes.toJSON()
+      });
+    }
+  });
+
+  SzobaBekoltozes.addHook('afterDestroy', async (bekoltozes, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'szoba_bekoltozes',
+        recordId: bekoltozes.bekoltozes_id,
+        req: options.transaction.req,
+        oldValues: bekoltozes.toJSON()
+      });
+    }
+  });
 
   return SzobaBekoltozes;
 };

@@ -100,17 +100,25 @@ module.exports = (sequelize) => {
       allowNull: true,
       defaultValue: {},
       comment: 'Biztonsági jelzők (pl. force_logout, suspicious_activity)'
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'felhasznalos',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { unique: true, fields: ['email'] },
       { unique: true, fields: ['username'] },
       { fields: ['diak_id'] },
-      { fields: ['token_version'] }
+      { fields: ['token_version'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -118,7 +126,7 @@ module.exports = (sequelize) => {
   // A Felhasznalo modell jelenleg nem kapcsolódik más modellekhez
   // Később itt definiálhatók kapcsolatok más modellekhez (pl. logolás, stb.)
   
-  Felhasznalo.associate = (models) => {
+  Felhasznalo.associate = (_models) => {
     // Egyelőre nincsenek kapcsolatok
     // A jövőben itt definiálhatók kapcsolatok
   };

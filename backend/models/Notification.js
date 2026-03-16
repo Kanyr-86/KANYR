@@ -36,17 +36,25 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     tableName: 'notifications',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    paranoid: true, // Enable soft delete functionality
+    deletedAt: 'deleted_at',
     indexes: [
       { fields: ['diak_id'] },
       { fields: ['szoba_valtoztatas_id'] },
       { fields: ['elolvasva'] },
-      { fields: ['diak_id', 'elolvasva'] }
+      { fields: ['diak_id', 'elolvasva'] },
+      { fields: ['deleted_at'] }
     ]
   });
 
@@ -64,6 +72,45 @@ module.exports = (sequelize) => {
       as: 'szoba_valtoztatas'
     });
   };
+
+  // Audit logging hooks
+  Notification.addHook('afterCreate', async (notification, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logCreate({
+        tableName: 'notifications',
+        recordId: notification.notification_id,
+        req: options.transaction.req,
+        newValues: notification.toJSON()
+      });
+    }
+  });
+
+  Notification.addHook('afterUpdate', async (notification, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      const oldValues = options.attributes ? options.attributes.old : null;
+      await AuditLogger.logUpdate({
+        tableName: 'notifications',
+        recordId: notification.notification_id,
+        req: options.transaction.req,
+        oldValues: oldValues,
+        newValues: notification.toJSON()
+      });
+    }
+  });
+
+  Notification.addHook('afterDestroy', async (notification, options) => {
+    if (options.transaction && options.transaction.req) {
+      const AuditLogger = require('../utils/auditLogger');
+      await AuditLogger.logDelete({
+        tableName: 'notifications',
+        recordId: notification.notification_id,
+        req: options.transaction.req,
+        oldValues: notification.toJSON()
+      });
+    }
+  });
 
   return Notification;
 };
