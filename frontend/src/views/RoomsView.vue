@@ -236,7 +236,7 @@ export default {
       try {
         const response = await api.get('/rooms', { signal })
         if (response.data.success) {
-          rooms.value = response.data.data
+          rooms.value.splice(0, rooms.value.length, ...response.data.data)
           await Promise.all(rooms.value.map(room => fetchRoomOccupancy(room.szoba_id)))
         }
       } catch (error) {
@@ -421,10 +421,11 @@ export default {
             }
           }))
           
-          availableRoomsForBulkTransfer.value = roomsData.filter(room => {
+          const filteredRooms = roomsData.filter(room => {
             const occupancy = room.currentOccupancy || 0
             return occupancy < room.osszes_hely
           })
+          availableRoomsForBulkTransfer.value.splice(0, availableRoomsForBulkTransfer.value.length, ...filteredRooms)
         }
       } catch (error) {
         if (isAbortError(error)) return
@@ -522,7 +523,7 @@ export default {
             params: { prefix: searchQuery.value }
           })
           if (response.data.success) {
-            rooms.value = response.data.data
+            rooms.value.splice(0, rooms.value.length, ...response.data.data)
             await Promise.all(rooms.value.map(room => fetchRoomOccupancy(room.szoba_id)))
           }
         } catch (error) {

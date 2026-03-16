@@ -94,7 +94,7 @@ export default {
       loadingNotifications.value = true;
       try {
         const response = await studentApi.get('/students/notifications');
-        notifications.value = response.data.data;
+        notifications.value.splice(0, notifications.value.length, ...response.data.data);
       } catch (error) {
         console.error('Hiba az értesítések lekérésekor:', error);
       } finally {

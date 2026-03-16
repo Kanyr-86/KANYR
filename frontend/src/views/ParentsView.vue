@@ -203,7 +203,7 @@ export default {
       try {
         const response = await api.get('/parents', { signal })
         if (response.data.success) {
-          parents.value = response.data.data
+          parents.value.splice(0, parents.value.length, ...response.data.data)
         }
       } catch (error) {
         if (isAbortError(error)) {
@@ -387,7 +387,7 @@ export default {
             params: { search: searchQuery.value }
           })
           if (response.data.success) {
-            parents.value = response.data.data
+            parents.value.splice(0, parents.value.length, ...response.data.data)
           }
         } catch (error) {
           console.error('Hiba a szülő keresése közben:', error)

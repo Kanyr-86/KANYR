@@ -341,14 +341,15 @@ export default {
       try {
         const response = await api.get('/students?includeRelations=true', { signal })
         if (response.data?.success) {
-          students.value = Array.isArray(response.data.data) ? response.data.data : []
+          const data = Array.isArray(response.data.data) ? response.data.data : []
+          students.value.splice(0, students.value.length, ...data)
         } else {
-          students.value = []
+          students.value.splice(0, students.value.length)
         }
       } catch (error) {
         if (isAbortError(error)) return
         console.error('Error fetching students:', error)
-        students.value = []
+        students.value.splice(0, students.value.length)
       } finally {
         loading.value = false
       }

@@ -141,7 +141,7 @@ export default {
       try {
         const response = await api.get('/room-changes/admin/notifications')
         if (response.data.success) {
-          notifications.value = response.data.data
+          notifications.value.splice(0, notifications.value.length, ...response.data.data)
         } else {
           toast.error(response.data.error || 'Hiba az értesítések lekérésekor')
         }

@@ -539,7 +539,7 @@ export default defineComponent({
         
         const response = await api.get(`/rooms/bekoltozesek?${params.toString()}`)
         if (response.data.success) {
-          bekoltozesek.value = response.data.data
+          bekoltozesek.value.splice(0, bekoltozesek.value.length, ...response.data.data)
         }
       } catch (err) {
         console.error('Hiba a beköltözések lekérdezésekor:', err)

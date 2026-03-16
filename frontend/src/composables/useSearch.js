@@ -132,7 +132,7 @@ export function useSearch(searchFn, delay = 300) {
   async function performSearch(query) {
     // Eredmények törlése és ne keressünk, ha a lekérdezés üres
     if (!query || query.trim() === '') {
-      searchResults.value = []
+      searchResults.value.splice(0, searchResults.value.length)
       isSearching.value = false
       return
     }
@@ -142,10 +142,11 @@ export function useSearch(searchFn, delay = 300) {
 
     try {
       const results = await searchFn(query.trim())
-      searchResults.value = results || []
+      const data = results || []
+      searchResults.value.splice(0, searchResults.value.length, ...data)
     } catch (err) {
       error.value = err.response?.data?.message || err.message || getErrorMessage('LOAD_ERROR')
-      searchResults.value = []
+      searchResults.value.splice(0, searchResults.value.length)
     } finally {
       isSearching.value = false
     }
@@ -174,7 +175,7 @@ export function useSearch(searchFn, delay = 300) {
   function clearSearch() {
     cancelDebounce()
     searchQuery.value = ''
-    searchResults.value = []
+    searchResults.value.splice(0, searchResults.value.length)
     error.value = null
     isSearching.value = false
   }
@@ -183,7 +184,7 @@ export function useSearch(searchFn, delay = 300) {
   watch(searchQuery, (newQuery) => {
     if (newQuery.trim() === '') {
       // Azonnal törölje az eredményeket üres lekérdezés esetén
-      searchResults.value = []
+      searchResults.value.splice(0, searchResults.value.length)
       error.value = null
       isSearching.value = false
       cancelDebounce()
