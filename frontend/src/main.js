@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import Vue3Toastify from 'vue3-toastify'
 import router from './router'
 import App from './App.vue'
@@ -28,6 +29,9 @@ import 'vue3-toastify/dist/index.css'
 
 const app = createApp(App)
 const pinia = createPinia()
+
+// Add persistence plugin to Pinia
+pinia.use(piniaPluginPersistedstate)
 
 app.use(pinia)
 app.use(router)
