@@ -159,17 +159,17 @@ router.put('/students/notifications/read-all', authenticate, resolveDiakId, asyn
 }));
 
 // Részletes nézet - students can only view their own data, admins can view any
-router.get('/:id', authenticate, attachDiakId, requireDiakOwnership('id'), validateId, validationHandler, asyncHandler(async (req, res) => {
+router.get('/:id(\\d+)', authenticate, attachDiakId, requireDiakOwnership('id'), validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getDiakById(req, res);
 }));
 
-router.get('/:id/report', authenticate, isAdmin, validateId, validationHandler, asyncHandler(async (req, res) => {
+router.get('/:id(\\d+)/report', authenticate, isAdmin, validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.generateStudentReport(req, res);
 }));
 
-router.get('/:id/room', authenticate, attachDiakId, requireDiakOwnership('id'), validateId, validationHandler, asyncHandler(async (req, res) => {
+router.get('/:id(\\d+)/room', authenticate, attachDiakId, requireDiakOwnership('id'), validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.getStudentRoom(req, res);
 }));
@@ -192,23 +192,23 @@ router.post('/', authenticate, requireRole(ROLES.TITKAR, ROLES.FOTITKAR), create
   return controller.createDiak(req, res);
 }));
 
-router.put('/:id', authenticate, canModify, updateDiakValidator, validationHandler, asyncHandler(async (req, res) => {
+router.put('/:id(\\d+)', authenticate, canModify, updateDiakValidator, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.updateDiak(req, res);
 }));
 
-router.delete('/:id', authenticate, isAdmin, validateId, validationHandler, asyncHandler(async (req, res) => {
+router.delete('/:id(\\d+)', authenticate, isAdmin, validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.deleteDiak(req, res);
 }));
 
 // Költöztetési műveletek - minden bejelentkezett felhasználó (főtitkár és titkár is)
-router.post('/:id/transfer', authenticate, validateId, validateTransferStudent, validationHandler, asyncHandler(async (req, res) => {
+router.post('/:id(\\d+)/transfer', authenticate, validateId, validateTransferStudent, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.transferStudent(req, res);
 }));
 
-router.post('/:id/move-out', authenticate, validateId, validateMoveOut, validationHandler, asyncHandler(async (req, res) => {
+router.post('/:id(\\d+)/move-out', authenticate, validateId, validateMoveOut, validationHandler, asyncHandler(async (req, res) => {
   const controller = initializeController(req.app.locals.db);
   return controller.moveOutStudent(req, res);
 }));

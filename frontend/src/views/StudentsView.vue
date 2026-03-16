@@ -1021,7 +1021,7 @@ export default {
       const { signal } = createAbortController()
       try {
         console.log('Calling API: /students?includeRelations=true')
-        const response = await api.get('/students?includeRelations=true', { signal })
+        const response = await api.get('/diaks?includeRelations=true', { signal })
         console.log('API Response:', response)
         console.log('Response data:', response.data)
         console.log('Response data type:', typeof response.data)
@@ -1160,7 +1160,7 @@ export default {
       
       enrollLoading.value = true
       try {
-        const response = await api.post('/students', enrollForm.value)
+        const response = await api.post('/diaks', enrollForm.value)
         if (response.data.success) {
           toast.success(getSuccessMessage('ENROLL_SUCCESS'))
           closeEnrollModal()
@@ -1225,7 +1225,7 @@ export default {
       
       editLoading.value = true
       try {
-        const response = await api.put(`/students/${currentEditId.value}`, editForm.value)
+        const response = await api.put(`/diaks/${currentEditId.value}`, editForm.value)
         if (response.data.success) {
           toast.success(getSuccessMessage('UPDATE_SUCCESS'))
           closeEditModal()
@@ -1261,7 +1261,7 @@ export default {
       
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/students/${deleteStudentData.value.diak_id}`)
+        const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
         if (response.data.success) {
           toast.success(getSuccessMessage('DELETE_SUCCESS'))
           closeDeleteModal()

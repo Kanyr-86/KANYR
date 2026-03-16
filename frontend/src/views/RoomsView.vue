@@ -796,7 +796,7 @@ export default {
       loading.value = true
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/rooms', { signal })
+        const response = await api.get('/szobas', { signal })
         if (response.data.success) {
           rooms.value = response.data.data
           // Fetch occupancy for each room
@@ -814,7 +814,7 @@ export default {
     const fetchRoomOccupancy = async (roomId) => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get(`/rooms/${roomId}/occupancy`, { signal })
+        const response = await api.get(`/szobas/${roomId}/occupancy`, { signal })
         if (response.data.success) {
           const room = rooms.value.find(r => r.szoba_id === roomId)
           if (room) {
@@ -831,7 +831,7 @@ export default {
     const fetchAvailableRooms = async () => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/rooms/available', { signal })
+        const response = await api.get('/szobas/available', { signal })
         if (response.data.success) {
           availableRooms.value = response.data.data
         }
@@ -844,7 +844,7 @@ export default {
     const fetchAvailableStudents = async () => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/students', { signal })
+        const response = await api.get('/diaks', { signal })
         if (response.data.success) {
           // Minden diák megjelenítése (aktív és inaktív is)
           availableStudents.value = response.data.data
@@ -1077,7 +1077,7 @@ export default {
     const createRoom = async () => {
       createLoading.value = true
       try {
-        const response = await api.post('/rooms', roomData.value)
+        const response = await api.post('/szobas', roomData.value)
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
@@ -1104,7 +1104,7 @@ export default {
     const updateRoom = async () => {
       updateLoading.value = true
       try {
-        const response = await api.put(`/rooms/${currentEditRoomId.value}`, editRoomData.value)
+        const response = await api.put(`/szobas/${currentEditRoomId.value}`, editRoomData.value)
         if (response.data.success) {
           showEditModal.value = false
           fetchRooms()
@@ -1126,7 +1126,7 @@ export default {
     const confirmDeleteRoom = async () => {
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/rooms/${deleteRoomData.value.szoba_id}`)
+        const response = await api.delete(`/szobas/${deleteRoomData.value.szoba_id}`)
         if (response.data.success) {
           showDeleteModal.value = false
           fetchRooms()
@@ -1226,7 +1226,7 @@ export default {
     const bulkTransfer = async () => {
       bulkTransferLoading.value = true
       try {
-        const response = await api.post('/rooms/bulk-bekoltozes', bulkTransferData.value)
+        const response = await api.post('/szobas/bulk-bekoltozes', bulkTransferData.value)
         if (response.data.success) {
           const data = response.data.data
           closeBulkTransferModal()
@@ -1264,7 +1264,7 @@ export default {
     const debouncedSearch = debounce(async () => {
       if (searchQuery.value.trim()) {
         try {
-        const response = await api.get('/rooms', {
+        const response = await api.get('/szobas', {
             params: {
               prefix: searchQuery.value
             }
