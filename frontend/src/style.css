@@ -54,18 +54,21 @@ h1 {
   line-height: 1.1;
 }
 
+/* Card styles are now standardized in base.css using CSS custom properties:
+   - --card-padding: 1.5rem
+   - --card-border-radius: 0.5rem
+   - --card-bg: var(--bg-card)
+   - --card-shadow: var(--shadow-card)
+   - --card-border: none
+   - --card-transition: box-shadow 0.3s ease, transform 0.2s ease
+*/
+
 /* Native button styles are now standardized in base.css using CSS variables */
 /* The button selector is styled in base.css with:
    - border-radius: var(--btn-border-radius) = 0.5rem (8px)
    - padding: var(--btn-padding-y) var(--btn-padding-x) = 0.5rem 1rem (8px 16px)
    - Uses rem units consistently
 */
-
-.card {
-  padding: 2em;
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
-}
 
 #app {
   width: 100%;

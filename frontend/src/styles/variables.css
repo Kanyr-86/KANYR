@@ -356,6 +356,31 @@
   --border-focus: var(--primary-500);
 
   /* ==========================================
+   * STANDARDIZED CARD SYSTEM
+   * ========================================== */
+  
+  /* Card Base Variables */
+  --card-padding: 1.5rem;
+  --card-border-radius: 0.5rem;
+  --card-bg: var(--bg-card);
+  --card-border: 1px solid var(--border-primary);
+  --card-shadow: var(--shadow-card);
+  --card-transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  /* Card Header Variables */
+  --card-header-bg: var(--bg-tertiary);
+  --card-header-border-bottom: 1px solid var(--border-primary);
+  --card-header-padding: 1rem 1.5rem;
+  
+  /* Card Body Variables */
+  --card-body-padding: 1.5rem;
+  
+  /* Card Footer Variables */
+  --card-footer-bg: var(--bg-tertiary);
+  --card-footer-border-top: 1px solid var(--border-primary);
+  --card-footer-padding: 1rem 1.5rem;
+
+  /* ==========================================
    * STANDARDIZED BUTTON SYSTEM
    * ========================================== */
   

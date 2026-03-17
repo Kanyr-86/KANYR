@@ -2,12 +2,16 @@
 /* Import variables first */
 @import './variables.css';
 
-/* Global component styles for consistent UI */
+/* ==========================================
+ * STANDARDIZED CARD SYSTEM
+ * ========================================== */
 .card {
-  border: none;
-  box-shadow: var(--shadow-card);
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
-  height: 100%;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: var(--card-transition);
 }
 
 .card:hover {
@@ -16,17 +20,24 @@
 }
 
 .card-header {
-  border-bottom: 1px solid var(--border-primary);
-  padding: 16px 20px;
+  background-color: var(--card-header-bg);
+  border-bottom: var(--card-header-border-bottom);
+  padding: var(--card-header-padding);
 }
 
 .card-body {
-  padding: 20px;
+  padding: var(--card-body-padding);
+}
+
+.card-footer {
+  background-color: var(--card-footer-bg);
+  border-top: var(--card-footer-border-top);
+  padding: var(--card-footer-padding);
 }
 
 .card-title {
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 }
 
 /* Table improvements */

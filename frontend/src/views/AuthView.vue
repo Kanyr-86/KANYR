@@ -62,29 +62,21 @@
   padding: 1rem;
 }
 
+/* Auth view specific card overrides - relies on global card system */
+
 .card {
-  border: none;
-  border-radius: 8px;
-  margin: 0;
-  background-color: var(--bg-card);
+  /* Only override what's necessary for auth view */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .card-header {
-  border-radius: 8px 8px 0 0 !important;
-  padding: 0.75rem 1rem;
-  background-color: var(--bg-card);
+  border-radius: var(--card-border-radius) var(--card-border-radius) 0 0 !important;
 }
-
 
 .card-header h5 {
   font-size: 1.1rem;
   line-height: 1.2;
   color: var(--text-heading);
-}
-
-.card-body {
-  padding: 1rem;
 }
 
 .form-label {

@@ -295,19 +295,8 @@ export default {
   gap: 2rem;
 }
 
-.card {
-  background: var(--bg-card);
-  border-radius: 8px;
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  border: 1px solid var(--border-primary);
-}
-
-.card-header {
-  background-color: var(--bg-tertiary);
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-secondary);
-}
+/* Card styles now use global CSS variables from base.css */
+/* Only view-specific card overrides remain */
 
 .card-header h2 {
   margin: 0;
@@ -316,7 +305,7 @@ export default {
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: var(--card-body-padding);
 }
 
 .loading {

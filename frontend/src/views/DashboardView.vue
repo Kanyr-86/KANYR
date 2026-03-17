@@ -243,48 +243,19 @@
   text-shadow: none;
 }
 
-/* Statistics Cards (.stat-card) - Enhanced hover effects */
-.stat-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-card-gradient);
-  cursor: pointer;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-300);
-}
-
-.stat-card .card-body {
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover .card-body {
-  background-color: rgba(99, 102, 241, 0.05);
-}
-
-/* Fallback for existing hover-card class */
+/* Card hover enhancement - uses global card system with additional hover effects */
 .hover-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-card-gradient);
   cursor: pointer;
 }
 
 .hover-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-elevated);
   border-color: var(--primary-300);
 }
 
-.hover-card .card-body {
-  transition: all 0.3s ease;
-}
-
 .hover-card:hover .card-body {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: rgba(99, 102, 241, var(--hover-alpha-light));
 }
 
 /* Responsive adjustments for better spacing */

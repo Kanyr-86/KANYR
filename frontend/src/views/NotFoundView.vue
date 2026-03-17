@@ -48,16 +48,9 @@
   padding: 1rem;
 }
 
+/* Card uses global system - only specific overrides for 404 page */
 .card {
-  border: none;
-  border-radius: 8px;
-  margin: 0;
-  background-color: var(--bg-card);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.card-body {
-  padding: 2rem;
 }
 
 .error-code {
