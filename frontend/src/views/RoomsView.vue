@@ -108,15 +108,16 @@
           </div>
         </div>
         
-        <!-- Loading skeleton for cards -->
+        <!-- Enhanced loading state -->
         <div v-if="loading" class="row">
           <div class="col-12">
             <div class="d-flex justify-content-center py-5">
               <div class="text-center">
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                  <span class="visually-hidden">Betöltés...</span>
+                  <span class="visually-hidden">Szobák betöltése folyamatban</span>
                 </div>
-                <p class="mt-3 text-muted">Szobák betöltése...</p>
+                <h5 class="mt-3 text-primary fw-semibold">Szobák betöltése...</h5>
+                <p class="text-muted mb-0">Kérjük, várjon amíg betöltjük a szobák adatait</p>
               </div>
             </div>
           </div>

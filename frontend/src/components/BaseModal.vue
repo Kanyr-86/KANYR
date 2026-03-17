@@ -13,6 +13,8 @@
           role="dialog"
           aria-modal="true"
           :aria-labelledby="titleId"
+          :aria-describedby="descriptionId"
+          :aria-label="ariaLabel || title"
         >
           <div class="modal-content">
             <!-- Header -->
@@ -24,8 +26,10 @@
                 <button
                   type="button"
                   class="btn-close"
-                  aria-label="Close"
+                  :aria-label="closeButtonLabel"
+                  :title="closeButtonLabel"
                   @click="close"
+                  @keydown="handleCloseKeydown"
                 ></button>
               </slot>
             </div>
@@ -41,9 +45,11 @@
                 <button
                   type="button"
                   class="btn btn-secondary"
+                  :aria-label="closeButtonLabel"
                   @click="close"
+                  @keydown="handleCloseKeydown"
                 >
-                  Close
+                  {{ closeButtonText }}
                 </button>
               </slot>
             </div>
@@ -143,6 +149,10 @@ export default defineComponent({
   setup(props, { emit }) {
     const modalRef = ref(null)
     const titleId = computed(() => `modal-title-${Math.random().toString(36).substr(2, 9)}`)
+    const descriptionId = computed(() => `modal-description-${Math.random().toString(36).substr(2, 9)}`)
+    
+    // Store the element that triggered the modal for focus restoration
+    const triggerElement = ref(null)
 
     const sizeClass = computed(() => {
       const sizeMap = {
@@ -153,6 +163,126 @@ export default defineComponent({
       }
       return sizeMap[props.size] || ''
     })
+
+    /**
+     * Close button label for accessibility
+     */
+    const closeButtonLabel = computed(() => {
+      return props.title ? `Bezárás: ${props.title}` : 'Bezárás'
+    })
+
+    /**
+     * Close button text
+     */
+    const closeButtonText = computed(() => {
+      return props.title ? 'Bezárás' : 'Close'
+    })
+
+    /**
+     * ARIA label for the modal
+     */
+    const ariaLabel = computed(() => {
+      return props.title ? `${props.title} párbeszédablak` : undefined
+    })
+
+    /**
+     * Get all focusable elements within the modal
+     */
+    function getFocusableElements() {
+      if (!modalRef.value) return []
+      
+      const focusableSelector = [
+        'a[href]',
+        'button:not([disabled])',
+        'input:not([disabled])',
+        'textarea:not([disabled])',
+        'select:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])',
+        '[contenteditable="true"]'
+      ].join(', ')
+      
+      return Array.from(modalRef.value.querySelectorAll(focusableSelector))
+        .filter(el => {
+          // Filter out elements that are not visible or have zero dimensions
+          const style = window.getComputedStyle(el)
+          return style.display !== 'none' && 
+                 style.visibility !== 'hidden' && 
+                 el.offsetWidth > 0 && 
+                 el.offsetHeight > 0
+        })
+    }
+
+    /**
+     * Focus the first focusable element in the modal
+     */
+    function focusFirstElement() {
+      const focusableElements = getFocusableElements()
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus()
+      } else {
+        // If no focusable elements, focus the modal itself
+        modalRef.value.focus()
+      }
+    }
+
+    /**
+     * Focus the last focusable element in the modal
+     */
+    function focusLastElement() {
+      const focusableElements = getFocusableElements()
+      if (focusableElements.length > 0) {
+        focusableElements[focusableElements.length - 1].focus()
+      } else {
+        modalRef.value.focus()
+      }
+    }
+
+    /**
+     * Handle tab key to trap focus within modal
+     */
+    function handleTabKey(event) {
+      if (event.key !== 'Tab') return
+      
+      const focusableElements = getFocusableElements()
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      const activeElement = document.activeElement
+
+      if (event.shiftKey) {
+        // Shift + Tab: if focus is on first element, focus last
+        if (activeElement === firstElement) {
+          event.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        // Tab: if focus is on last element, focus first
+        if (activeElement === lastElement) {
+          event.preventDefault()
+          firstElement.focus()
+        }
+      }
+    }
+
+    /**
+     * Handle keydown events on close button
+     */
+    function handleCloseKeydown(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        close()
+      }
+    }
+
+    /**
+     * Handle keydown events for focus trapping
+     */
+    function handleKeydown(event) {
+      if (props.show && modalRef.value) {
+        handleTabKey(event)
+      }
+    }
 
     /**
      * Close the modal
@@ -194,12 +324,28 @@ export default defineComponent({
     // Watch for show prop changes
     watch(
       () => props.show,
-      (newValue) => {
+      (newValue, oldValue) => {
         preventBodyScroll(newValue)
         
-        if (newValue && modalRef.value) {
+        if (newValue && !oldValue && modalRef.value) {
+          // Store the triggering element for focus restoration
+          triggerElement.value = document.activeElement
+          
           // Focus the modal when opened
           modalRef.value.focus()
+          
+          // Then focus the first interactive element
+          setTimeout(() => {
+            focusFirstElement()
+          }, 50)
+        } else if (!newValue && oldValue && triggerElement.value) {
+          // Restore focus to the triggering element when modal closes
+          setTimeout(() => {
+            if (triggerElement.value && typeof triggerElement.value.focus === 'function') {
+              triggerElement.value.focus()
+            }
+            triggerElement.value = null
+          }, 50)
         }
       },
       { immediate: true }
@@ -208,17 +354,24 @@ export default defineComponent({
     // Add/remove event listeners
     onMounted(() => {
       document.addEventListener('keydown', handleEscapeKey)
+      document.addEventListener('keydown', handleKeydown)
     })
 
     onUnmounted(() => {
       document.removeEventListener('keydown', handleEscapeKey)
+      document.removeEventListener('keydown', handleKeydown)
       preventBodyScroll(false)
     })
 
     return {
       modalRef,
       titleId,
+      descriptionId,
       sizeClass,
+      closeButtonLabel,
+      closeButtonText,
+      ariaLabel,
+      handleCloseKeydown,
       close,
       handleBackdropClick
     }

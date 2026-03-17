@@ -15,8 +15,22 @@
         </div>
         <div class="card-content">
           <div v-if="loadingNotifications" class="loading">Betöltés...</div>
-          <div v-else-if="notifications.length === 0" class="no-notifications">
-            Nincsenek értesítések
+          <div v-else-if="notifications.length === 0" class="py-4">
+            <EmptyState
+              icon="inbox"
+              title="Nincsenek értesítések"
+              description="Még nem érkezett új értesítés."
+              contextText="Az értesítések akkor jelennek meg, amikor fontos változás történik a szobával vagy a diák adataival kapcsolatban."
+              actionText="Főoldal"
+              action-route="/"
+              action-icon="bi bi-house"
+            >
+              <template #secondaryActions>
+                <button class="btn btn-outline-secondary btn-sm" @click="getNotifications">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Frissítés
+                </button>
+              </template>
+            </EmptyState>
           </div>
           <div v-else class="notifications-list">
             <div 

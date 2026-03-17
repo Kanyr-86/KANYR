@@ -104,14 +104,15 @@
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
-              <!-- Loading skeleton for table -->
+        <!-- Enhanced loading state -->
               <div v-if="loading" class="p-4">
                 <div class="d-flex justify-content-center py-5">
                   <div class="text-center">
                     <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                      <span class="visually-hidden">Betöltés...</span>
+                      <span class="visually-hidden">Diákok betöltése folyamatban</span>
                     </div>
-                    <p class="mt-3 text-muted">Diákok betöltése...</p>
+                    <h5 class="mt-3 text-primary fw-semibold">Diákok betöltése...</h5>
+                    <p class="text-muted mb-0">Kérjük, várjon amíg betöltjük a diákok adatait</p>
                   </div>
                 </div>
               </div>

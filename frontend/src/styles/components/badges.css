@@ -4,6 +4,10 @@
   font-weight: 600;
   border-radius: 6px;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5em 0.75em;
 }
 
 /* Badge Color Variants */
@@ -46,6 +50,102 @@
 .status-inactive {
   background-color: var(--danger-600) !important;
   color: var(--text-inverse) !important;
+}
+
+/* Badge Icons */
+.badge .badge-icon {
+  font-size: 0.875em;
+  margin-right: 0.25rem;
+}
+
+/* Semantic badge icons for accessibility */
+.badge.bg-success .badge-icon::before {
+  content: "✓";
+  font-weight: bold;
+}
+
+.badge.bg-danger .badge-icon::before {
+  content: "✗";
+  font-weight: bold;
+}
+
+.badge.bg-warning .badge-icon::before {
+  content: "⚠";
+  font-weight: bold;
+}
+
+.badge.bg-info .badge-icon::before {
+  content: "ℹ";
+  font-weight: bold;
+}
+
+.badge.bg-primary .badge-icon::before {
+  content: "ℹ";
+  font-weight: bold;
+}
+
+.badge.bg-secondary .badge-icon::before {
+  content: "•";
+  font-weight: bold;
+}
+
+/* Status-specific icons */
+.status-active .badge-icon::before {
+  content: "✓";
+  font-weight: bold;
+}
+
+.status-inactive .badge-icon::before {
+  content: "✗";
+  font-weight: bold;
+}
+
+/* High contrast badge overrides */
+[data-theme="high-contrast"] .badge {
+  border: 2px solid var(--border-primary);
+  font-weight: 700;
+}
+
+[data-theme="high-contrast"] .badge.bg-primary,
+[data-theme="high-contrast"] .badge.bg-success,
+[data-theme="high-contrast"] .badge.bg-danger,
+[data-theme="high-contrast"] .badge.bg-info,
+[data-theme="high-contrast"] .badge.bg-secondary {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+[data-theme="high-contrast"] .badge.bg-warning {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+[data-theme="high-contrast"] .status-active,
+[data-theme="high-contrast"] .status-inactive {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+/* High contrast icon overrides */
+[data-theme="high-contrast"] .badge .badge-icon::before {
+  font-size: 1.1em;
+  font-weight: 900;
+}
+
+/* Screen reader only text for color-only indicators */
+.sr-only-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Note: Theme overrides are now handled in base.css */
