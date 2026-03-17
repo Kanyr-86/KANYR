@@ -59,6 +59,7 @@
   margin-bottom: 4px;
   transition: all 0.3s ease;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .sidebar-nav .nav-link:hover {
@@ -73,6 +74,27 @@
   background-color: var(--sidebar-hover);
   border-left: 4px solid var(--sidebar-active);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+/* Light mode specific improvements for sidebar text contrast */
+:root .sidebar-nav .nav-link {
+  color: var(--secondary-700);
+}
+
+:root .sidebar-nav .nav-link:hover,
+:root .sidebar-nav .nav-link.router-link-active {
+  color: var(--secondary-900);
+}
+
+/* Dark mode sidebar adjustments */
+[data-theme="dark"] .sidebar-nav .nav-link {
+  color: var(--secondary-300);
+}
+
+[data-theme="dark"] .sidebar-nav .nav-link:hover,
+[data-theme="dark"] .sidebar-nav .nav-link.router-link-active {
+  color: var(--secondary-50);
 }
 
 .sidebar-nav .nav-link.collapsed {

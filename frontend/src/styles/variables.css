@@ -149,14 +149,14 @@
   --bg-card-gradient: linear-gradient(145deg, var(--primary-50), var(--secondary-50));
 
   --text-primary: var(--secondary-900);
-  --text-secondary: var(--secondary-600);
-  --text-tertiary: var(--secondary-500);
+  --text-secondary: var(--secondary-700);
+  --text-tertiary: var(--secondary-600);
   --text-inverse: var(--primary-50);
   --text-dark: var(--secondary-900);
-  --text-muted: var(--secondary-600);
+  --text-muted: var(--secondary-500);
 
-  --border-primary: var(--secondary-200);
-  --border-secondary: var(--secondary-300);
+  --border-primary: var(--secondary-300);
+  --border-secondary: var(--secondary-400);
 
   --shadow-card: var(--shadow-md);
   --shadow-elevated: var(--shadow-lg);
