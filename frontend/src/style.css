@@ -54,24 +54,12 @@ h1 {
   line-height: 1.1;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--text-primary);
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: var(--primary-500);
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+/* Native button styles are now standardized in base.css using CSS variables */
+/* The button selector is styled in base.css with:
+   - border-radius: var(--btn-border-radius) = 0.5rem (8px)
+   - padding: var(--btn-padding-y) var(--btn-padding-x) = 0.5rem 1rem (8px 16px)
+   - Uses rem units consistently
+*/
 
 .card {
   padding: 2em;
@@ -185,8 +173,5 @@ button:focus-visible {
   }
   a:hover {
     color: var(--primary-500);
-  }
-  button {
-    background-color: var(--primary-50);
   }
 }
