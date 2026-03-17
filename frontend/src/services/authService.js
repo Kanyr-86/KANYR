@@ -1,14 +1,15 @@
 import api from './api'
 import { handleApiError } from './api'
+import { secureStorage } from './secureStorage'
 
 export const authService = {
   async login(email, password) {
     try {
       const response = await api.post('/auth/login', { email, password })
       if (response.data.success) {
-        // Token és felhasználói adatok tárolása
-        localStorage.setItem('token', response.data.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.data.user))
+        // Token és felhasználói adatok tárolása biztonságosan
+        await secureStorage.setToken(response.data.data.token)
+        await secureStorage.setUser(response.data.data.user)
       }
       return response.data
     } catch (error) {
@@ -20,9 +21,9 @@ export const authService = {
   async logout() {
     try {
       await api.post('/auth/logout')
-      // Local storage törlése
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
+      // Biztonságos tároló törlése
+      await secureStorage.removeToken()
+      await secureStorage.removeUser()
       return { success: true }
     } catch (error) {
       const errorData = handleApiError(error)
@@ -52,13 +53,23 @@ export const authService = {
 
 
   // Ellenőrzi, hogy a felhasználó be van-e jelentkezve
-  isAuthenticated() {
-    return !!localStorage.getItem('token')
+  async isAuthenticated() {
+    try {
+      const token = await secureStorage.getToken()
+      return !!token
+    } catch (error) {
+      console.error('Authentication check failed:', error)
+      return false
+    }
   },
 
-  // Aktuális felhasználó lekérdezése a localStorage-ból
-  getCurrentUserFromStorage() {
-    const user = localStorage.getItem('user')
-    return user ? JSON.parse(user) : null
+  // Aktuális felhasználó lekérdezése a biztonságos tárolóból
+  async getCurrentUserFromStorage() {
+    try {
+      return await secureStorage.getUser()
+    } catch (error) {
+      console.error('Failed to get user from storage:', error)
+      return null
+    }
   }
 }

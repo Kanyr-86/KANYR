@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getErrorMessage } from '@/i18n'
 import { useToastStore } from '@/store/toast'
+import { secureStorage } from './secureStorage'
 
 // ─── CSRF Token kezelés ─────────────────────────────────────────────────────
 
@@ -50,26 +51,69 @@ async function ensureCsrfToken() {
 // Zászló a duplikált átirányítások megelőzéséhez, ha több kérés is 401-et ad vissza
 let isRedirectingToLogin = false
 
+// Token refresh művelet blokkolása több egyidejű kérés esetén
+let isRefreshingToken = false
+let refreshSubscribers = []
+
+// Storage error tracking
+let storageErrorCount = 0
+const MAX_STORAGE_ERRORS = 3
+
 function applyAuthInterceptors(instance) {
+  // Token refresh függvény
+  const onTokenRefreshed = (newToken) => {
+    refreshSubscribers.forEach((callback) => callback(newToken))
+    refreshSubscribers = []
+  }
+
+  const addSubscriber = (callback) => {
+    refreshSubscribers.push(callback)
+  }
+
   // JWT és CSRF token csatolása minden kéréshez
   instance.interceptors.request.use(
     async (config) => {
       // JWT token hozzáadása
-      const token = localStorage.getItem('token')
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-      
-      // CSRF token hozzáadása állapotváltoztató kérésekhez (POST, PUT, DELETE, PATCH)
-      const stateChangingMethods = ['post', 'put', 'delete', 'patch']
-      if (stateChangingMethods.includes(config.method?.toLowerCase())) {
-        const csrfToken = await ensureCsrfToken()
-        if (csrfToken) {
-          config.headers[CSRF_HEADER_NAME] = csrfToken
+      try {
+        const token = await secureStorage.getToken()
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
         }
-      }
       
-      return config
+        // CSRF token hozzáadása állapotváltoztató kérésekhez (POST, PUT, DELETE, PATCH)
+        const stateChangingMethods = ['post', 'put', 'delete', 'patch']
+        if (stateChangingMethods.includes(config.method?.toLowerCase())) {
+          const csrfToken = await ensureCsrfToken()
+          if (csrfToken) {
+            config.headers[CSRF_HEADER_NAME] = csrfToken
+          }
+        }
+      
+        return config
+      } catch (error) {
+        // Handle storage errors gracefully
+        if (error.message && (
+          error.message.includes('localStorage quota exceeded') ||
+          error.message.includes('localStorage not available') ||
+          error.message.includes('Invalid data')
+        )) {
+          storageErrorCount++
+          
+          if (storageErrorCount >= MAX_STORAGE_ERRORS) {
+            const toastStore = useToastStore()
+            toastStore.showToast({
+              type: 'error',
+              message: 'Tárhely hiba észlelve. Kérjük, töröljön néhány adatot vagy forduljon a rendszergazdához.',
+              duration: 8000
+            })
+          }
+          
+          // Continue with request even if storage fails for non-sensitive operations
+          return config
+        }
+        
+        return Promise.reject(error)
+      }
     },
     (error) => Promise.reject(error)
   )
@@ -78,38 +122,63 @@ function applyAuthInterceptors(instance) {
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
+      const originalRequest = error.config
+
       if (error.response) {
         const status = error.response.status
         const message = error.response.data?.error || error.message || getErrorMessage('SERVER_ERROR')
 
-        if (status === 401) {
+        if (status === 401 && !originalRequest._retry) {
+          if (isRefreshingToken) {
+            // Ha már folyamatban van a token frissítés, várunk rá
+            return new Promise((resolve) => {
+              addSubscriber((newToken) => {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`
+                resolve(instance(originalRequest))
+              })
+            })
+          }
+
+          originalRequest._retry = true
+          isRefreshingToken = true
+
+          try {
+            // Token frissítési kísérlet
+            const response = await axios.post('/api/auth/refresh', {}, {
+              withCredentials: true
+            })
+
+            if (response.data.success && response.data.data.token) {
+              const newToken = response.data.data.token
+              
+              // Új token mentése
+              await secureStorage.setToken(newToken)
+              
+              // Store frissítése
+              const authStore = useAuthStore()
+              authStore.setToken(newToken)
+
+              // Token frissítése az eredeti kérésben
+              originalRequest.headers.Authorization = `Bearer ${newToken}`
+              
+              // Várakozó kérések feldolgozása
+              onTokenRefreshed(newToken)
+              
+              isRefreshingToken = false
+              return instance(originalRequest)
+            }
+          } catch (refreshError) {
+            // Token refresh sikertelen, kijelentkeztetés
+            isRefreshingToken = false
+            await handleTokenExpiration()
+            return Promise.reject(refreshError)
+          }
+        } else if (status === 401) {
           // Jogosulatlan - töröljük a tárolt hitelesítést és átirányítunk a bejelentkezéshez
           // Duplikált átirányítások megelőzése, ha több egyidejű kérés is hibát ad
           if (!isRedirectingToLogin) {
             isRedirectingToLogin = true
-
-            // Show toast notification for token revocation
-            try {
-              const toastStore = useToastStore()
-              // Check if this is a token revocation message
-              if (message && (
-                message.includes('visszavonva') ||
-                message.includes('érvénytelenné vált') ||
-                message.includes('lejárt')
-              )) {
-                toastStore.showToast({
-                  type: 'warning',
-                  message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
-                  duration: 5000
-                })
-              }
-            } catch (e) {
-              // Toast store might not be available during initialization
-            }
-
-            localStorage.removeItem('token')
-            localStorage.removeItem('user')
-            window.location.href = '/login'
+            await handleTokenExpiration()
           }
         } else if (status === 403) {
           // CSRF token hiba kezelése
@@ -147,6 +216,37 @@ function applyAuthInterceptors(instance) {
       return Promise.reject(error)
     }
   )
+
+  // Token lejárás kezelése
+  async function handleTokenExpiration() {
+    try {
+      const toastStore = useToastStore()
+      // Check if this is a token revocation message
+      if (message && (
+        message.includes('visszavonva') ||
+        message.includes('érvénytelenné vált') ||
+        message.includes('lejárt')
+      )) {
+        toastStore.showToast({
+          type: 'warning',
+          message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
+          duration: 5000
+        })
+      }
+    } catch (e) {
+      // Toast store might not be available during initialization
+    }
+
+    // Biztonságos tároló törlése
+    await secureStorage.removeToken()
+    await secureStorage.removeUser()
+    
+    // Store frissítése
+    const authStore = useAuthStore()
+    await authStore.logout()
+
+    window.location.href = '/login'
+  }
 }
 
 // ─── Axios példányok ─────────────────────────────────────────────────────────
