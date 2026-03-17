@@ -53,7 +53,6 @@ async function ensureCsrfToken() {
 // Zászló a duplikált átirányítások megelőzéséhez, ha több kérés is 401-et ad vissza
 let isRedirectingToLogin = false
 
-<<<<<<< HEAD
 // Token refresh művelet blokkolása több egyidejű kérés esetén
 let isRefreshingToken = false
 let refreshSubscribers = []
@@ -61,10 +60,8 @@ let refreshSubscribers = []
 // Storage error tracking
 let storageErrorCount = 0
 const MAX_STORAGE_ERRORS = 3
-=======
 // Enable request deduplication flag
 const ENABLE_DEDUPLICATION = true
->>>>>>> ef5bf1e98206f97102ce5068851c9fb454611ef9
 
 function applyAuthInterceptors(instance) {
   // Token refresh függvény
@@ -96,7 +93,6 @@ function applyAuthInterceptors(instance) {
           }
         }
       
-<<<<<<< HEAD
         return config
       } catch (error) {
         // Handle storage errors gracefully
@@ -122,14 +118,12 @@ function applyAuthInterceptors(instance) {
         
         return Promise.reject(error)
       }
-=======
       // Generate deduplication key for GET requests (safe to dedupe)
       if (ENABLE_DEDUPLICATION && config.method?.toLowerCase() === 'get') {
         config.dedupeKey = generateRequestKey(config)
       }
       
       return config
->>>>>>> ef5bf1e98206f97102ce5068851c9fb454611ef9
     },
     (error) => Promise.reject(error)
   )
@@ -194,9 +188,7 @@ function applyAuthInterceptors(instance) {
           // Duplikált átirányítások megelőzése, ha több egyidejű kérés is hibát ad
           if (!isRedirectingToLogin) {
             isRedirectingToLogin = true
-<<<<<<< HEAD
             await handleTokenExpiration()
-=======
 
             // Check if this is a token revocation message
             if (message && (
@@ -213,7 +205,6 @@ function applyAuthInterceptors(instance) {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             window.location.href = '/login'
->>>>>>> ef5bf1e98206f97102ce5068851c9fb454611ef9
           }
         } else if (status === 403) {
           // CSRF token hiba kezelése
