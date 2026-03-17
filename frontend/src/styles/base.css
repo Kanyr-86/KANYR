@@ -103,7 +103,7 @@
 }
 
 [data-theme="high-contrast"] .table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, var(--hover-alpha-xs));
 }
 
 /* Button improvements */
@@ -117,7 +117,7 @@
 
 .btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, var(--shadow-alpha-sm));
 }
 
 /* Badge improvements */
@@ -139,14 +139,14 @@
 
 .form-control:focus, .form-select:focus {
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+  box-shadow: var(--focus-ring);
 }
 
 /* Modal improvements */
 .modal-content {
   border: none;
   border-radius: var(--border-radius-xl);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, var(--shadow-alpha-lg));
   background-color: var(--bg-card);
   border: 1px solid var(--border-primary);
 }
@@ -169,7 +169,7 @@
 }
 
 .modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, var(--shadow-alpha-backdrop));
 }
 
 /* Alert improvements */
@@ -270,7 +270,7 @@
 }
 
 .stat-card:hover .card-body {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: rgba(99, 102, 241, var(--hover-alpha-light));
 }
 
 /* Fallback for existing hover-card class */
@@ -292,7 +292,7 @@
 }
 
 .hover-card:hover .card-body {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: rgba(99, 102, 241, var(--hover-alpha-light));
 }
 
 /* Ensure consistent badge styling */
@@ -349,7 +349,7 @@
 }
 
 .room-card:hover .card-body {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: rgba(99, 102, 241, var(--hover-alpha-light));
 }
 
 /* Status indicators */
@@ -425,9 +425,9 @@
   height: 1rem;
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.06) 25%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.06) 75%
+    rgba(0, 0, 0, var(--skeleton-alpha-start)) 25%,
+    rgba(0, 0, 0, var(--skeleton-alpha-mid)) 50%,
+    rgba(0, 0, 0, var(--skeleton-alpha-end)) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;

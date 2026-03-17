@@ -1,8 +1,8 @@
 /* Modal Component Styles */
 .modal-content {
   border: none;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, var(--shadow-alpha-lg));
   background-color: var(--bg-card);
   border: 1px solid var(--border-primary);
 }
@@ -32,7 +32,7 @@
 }
 
 .modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, var(--shadow-alpha-backdrop));
 }
 
 .modal.show .modal-dialog {
@@ -82,7 +82,7 @@
 .modal-body .form-select:focus {
   outline: none;
   border-color: var(--primary-600);
-  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+  box-shadow: var(--focus-ring);
 }
 
 .modal-body .form-label {

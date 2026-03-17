@@ -4,12 +4,12 @@
 }
 
 .card-shadow {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, var(--shadow-alpha-xs));
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, var(--shadow-alpha-md));
 }
 
 .card-title {
@@ -43,9 +43,9 @@
   height: 1rem;
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.06) 25%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.06) 75%
+    rgba(0, 0, 0, var(--skeleton-alpha-start)) 25%,
+    rgba(0, 0, 0, var(--skeleton-alpha-mid)) 50%,
+    rgba(0, 0, 0, var(--skeleton-alpha-end)) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
