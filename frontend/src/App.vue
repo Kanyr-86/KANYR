@@ -102,13 +102,13 @@ html, body {
   flex: 1;
   min-height: 100vh;
   padding: 24px;
-  margin-left: 64px;
+  margin-left: var(--sidebar-collapsed-width);
   transition: margin-left 0.3s ease;
   background-color: var(--bg-page);
 }
 
 .main-content.sidebar-expanded {
-  margin-left: 250px;
+  margin-left: var(--sidebar-width);
 }
 
 /* Breadcrumb wrapper styles */

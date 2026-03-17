@@ -1,0 +1,351 @@
+/* ==========================================
+ * ACCESSIBILITY & PERFORMANCE FIXES
+ * ==========================================
+ * This file contains:
+ * 1. prefers-reduced-motion support for vestibular disorders
+ * 2. Performance-optimized transitions (using transform/opacity only)
+ * ========================================== */
+
+/* ------------------------------------------
+ * 1. REDUCED MOTION SUPPORT
+ * ------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all CSS animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Specifically target common animated elements */
+  .hover-card,
+  .stat-card,
+  .room-card,
+  .base-card,
+  .card {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Disable pulse animation for status indicators */
+  .status-indicator.online {
+    animation: none !important;
+  }
+
+  /* Disable skeleton loader animation */
+  .skeleton-line {
+    animation: none !important;
+    background: var(--bg-tertiary) !important;
+  }
+
+  /* Disable sidebar transitions */
+  .sidebar {
+    transition: none !important;
+  }
+
+  .sidebar-nav .nav-link {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  /* Disable button hover transforms */
+  .btn,
+  .btn-action,
+  button {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .btn:hover,
+  .btn-action:hover,
+  button:hover {
+    transform: none !important;
+  }
+
+  /* Disable modal transitions */
+  .modal-dialog,
+  .modal-content {
+    transition: none !important;
+  }
+
+  .modal.show .modal-dialog {
+    transform: none !important;
+  }
+
+  /* Disable form focus transitions */
+  .form-control,
+  .form-select,
+  input,
+  textarea,
+  select {
+    transition: none !important;
+  }
+
+  /* Toast/Notification animations */
+  .Toastify__toast,
+  .toast {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Vue transitions */
+  .fade-enter-active,
+  .fade-leave-active,
+  .slide-enter-active,
+  .slide-leave-active,
+  .modal-enter-active,
+  .modal-leave-active {
+    transition: none !important;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to,
+  .slide-enter-from,
+  .slide-leave-to,
+  .modal-enter-from,
+  .modal-leave-to {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ------------------------------------------
+ * 2. PERFORMANCE-OPTIMIZED TRANSITIONS
+ * ------------------------------------------ */
+
+/* 
+ * PERFORMANCE RULE: Only animate transform and opacity
+ * BAD: width, height, margin, padding, top, left, etc. (causes layout thrashing)
+ * GOOD: transform, opacity (compositor-only properties)
+ */
+
+/* Optimized card transitions - use transform instead of layout properties */
+.card,
+.base-card,
+.hover-card,
+.stat-card,
+.room-card {
+  /* OLD: transition: box-shadow 0.3s ease, transform 0.2s ease; */
+  /* NEW: Separate transitions for compositor-only properties */
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.card:hover,
+.base-card:hover,
+.hover-card:hover,
+.stat-card:hover,
+.room-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Optimized button transitions */
+.btn {
+  /* OLD: transition: all 0.2s ease; */
+  /* NEW: Only transition transform and opacity */
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-action {
+  /* Use transform instead of all */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  will-change: transform;
+}
+
+.btn-action:hover {
+  transform: var(--btn-action-hover-transform, translateY(-2px));
+}
+
+/* Optimized sidebar transitions */
+.sidebar {
+  /* OLD: transition: width var(--transition-normal), transform 0.3s ease; */
+  /* NEW: Use transform for position changes, but width still needs transition */
+  transition: transform var(--transition-normal);
+  will-change: transform;
+}
+
+/* For width changes on desktop, we still need to animate width but add will-change */
+@media (min-width: 992px) {
+  .sidebar {
+    transition: transform var(--transition-normal), width var(--transition-normal);
+    will-change: transform, width;
+  }
+}
+
+/* Optimized sidebar nav link transitions */
+.sidebar-nav .nav-link {
+  /* OLD: transition: all 0.3s ease; */
+  /* NEW: Only transition transform and colors */
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-left-color 0.3s ease;
+  will-change: transform;
+}
+
+.sidebar-nav .nav-link:hover {
+  transform: translateX(4px);
+}
+
+/* Optimized modal transitions */
+.modal-content {
+  /* No width/height transitions */
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.modal-dialog {
+  transition: transform 0.3s ease-out;
+  will-change: transform;
+}
+
+/* Optimized form control transitions */
+.form-control,
+.form-select {
+  /* OLD: transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; */
+  /* NEW: Keep as is - these don't cause layout thrashing */
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Optimized backdrop transitions */
+.modal-backdrop,
+.sidebar-backdrop {
+  transition: opacity 0.3s ease;
+  will-change: opacity;
+}
+
+/* Optimized toast/notification transitions */
+.Toastify__toast {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+/* Optimized skeleton loader - uses GPU-accelerated properties */
+.skeleton-line {
+  /* Keep animation but optimize */
+  will-change: background-position;
+  transform: translateZ(0); /* Force GPU layer */
+}
+
+/* Optimized status indicator pulse */
+.status-indicator.online {
+  /* The pulse animation is already using transform which is good */
+  will-change: transform, box-shadow;
+}
+
+/* ------------------------------------------
+ * 3. VUE TRANSITION CLASSES (Performance Optimized)
+ * ------------------------------------------ */
+
+/* Fade transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+  will-change: opacity;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide transitions - use transform instead of position properties */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.slide-left-enter-from,
+.slide-left-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+/* Scale transitions */
+.scale-enter-active,
+.scale-leave-active {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  will-change: transform, opacity;
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+/* Modal transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+/* ------------------------------------------
+ * 4. REDUCED MOTION PREFERENCE DETECTION HELPER
+ * ------------------------------------------ */
+
+/* 
+ * JavaScript can detect this class to conditionally disable JS animations
+ * Usage in JS: if (document.documentElement.classList.contains('reduced-motion')) { ... }
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --reduced-motion: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --reduced-motion: 0;
+  }
+}

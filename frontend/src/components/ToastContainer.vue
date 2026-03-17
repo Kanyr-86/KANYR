@@ -142,17 +142,20 @@ export default defineComponent({
   opacity: 1;
 }
 
-/* Transition animations */
+/* Transition animations - Performance optimized */
 .toast-enter-active {
   animation: slideIn 0.3s ease-out;
+  will-change: transform, opacity;
 }
 
 .toast-leave-active {
   animation: slideOut 0.3s ease-in;
+  will-change: transform, opacity;
 }
 
 .toast-move {
   transition: transform 0.3s ease;
+  will-change: transform;
 }
 
 @keyframes slideIn {
@@ -174,6 +177,25 @@ export default defineComponent({
   to {
     opacity: 0;
     transform: translateX(100%);
+  }
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter-active,
+  .toast-leave-active {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .toast-move {
+    transition: none !important;
+  }
+
+  .toast-enter-from,
+  .toast-leave-to {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

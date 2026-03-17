@@ -229,30 +229,32 @@ export default defineComponent({
 <style scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  /* Modern replacement for top/left/right/bottom: 0 */
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  /* Ensures proper centering on all screen sizes */
   z-index: var(--z-modal);
   padding: 1rem;
 }
 
 .modal-dialog {
   background: none;
-  max-height: calc(100vh - 2rem);
+  max-width: min(90vw, 600px);
+  /* Responsive max-width */
+  max-height: min(90vh, 800px);
+  /* Responsive max-height */
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .modal-content {
   background-color: var(--bg-page);
   border-radius: 0.375rem;
   box-shadow: var(--shadow-card);
-  max-height: calc(100vh - 2rem);
+  max-height: 100%;
   overflow-y: auto;
 }
 
@@ -286,15 +288,17 @@ export default defineComponent({
   gap: 0.5rem;
 }
 
-/* Transition animations */
+/* Transition animations - Performance optimized with transform/opacity only */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.3s ease;
+  will-change: opacity;
 }
 
 .modal-enter-active .modal-dialog,
 .modal-leave-active .modal-dialog {
   transition: transform 0.3s ease;
+  will-change: transform;
 }
 
 .modal-enter-from,
@@ -307,6 +311,30 @@ export default defineComponent({
   transform: scale(0.95) translateY(-20px);
 }
 
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active {
+    transition: none !important;
+  }
+
+  .modal-enter-active .modal-dialog,
+  .modal-leave-active .modal-dialog {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .modal-enter-from,
+  .modal-leave-to {
+    opacity: 1 !important;
+  }
+
+  .modal-enter-from .modal-dialog,
+  .modal-leave-to .modal-dialog {
+    transform: none !important;
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 575.98px) {
   .modal-overlay {
@@ -315,7 +343,9 @@ export default defineComponent({
 
   .modal-dialog {
     margin: 0;
-    max-width: 100%;
+    max-width: min(95vw, 600px);
+    /* Slightly wider on small screens for better usability */
+    max-height: min(95vh, 800px);
   }
 }
 

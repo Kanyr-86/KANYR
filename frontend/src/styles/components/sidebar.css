@@ -15,17 +15,17 @@
 /* Brand Section */
 .sidebar-brand {
   background-color: var(--primary-600);
-  color: white;
+  color: var(--text-inverse);
   min-height: 60px;
 }
 
 .brand-icon i {
   font-size: 1.5rem;
-  color: white;
+  color: var(--text-inverse);
 }
 
 .brand-text h5 {
-  color: white;
+  color: var(--text-inverse);
   margin-bottom: 0;
 }
 
@@ -43,7 +43,7 @@
   height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-  color: white;
+  color: var(--text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +66,7 @@
   color: var(--text-primary);
   background-color: var(--sidebar-hover);
   transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, var(--shadow-alpha-sm));
 }
 
 .sidebar-nav .nav-link.router-link-active,
@@ -75,7 +75,7 @@
   color: var(--text-primary);
   background-color: var(--sidebar-hover);
   border-left: 4px solid var(--sidebar-active);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, var(--shadow-alpha-md));
   font-weight: 600;
 }
 
@@ -146,7 +146,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, var(--shadow-alpha-backdrop));
   z-index: var(--z-modal-backdrop);
   backdrop-filter: blur(2px);
 }
