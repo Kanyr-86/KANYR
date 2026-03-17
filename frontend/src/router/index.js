@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 
+// Track auth initialization state to prevent race conditions
+let authInitializationPromise = null
+
 /**
  * Route meta property validator
  * Ensures all route meta properties are valid to prevent runtime errors
@@ -48,72 +51,181 @@ function validateAllRoutesMeta(routes) {
   routes.forEach(validateRoute)
 }
 
+/**
+ * Guard 1: Auth State Initialization
+ * Ensures auth state is initialized before any route access checks
+ * Prevents race conditions by tracking initialization promise
+ * @param {Object} to - Target route
+ * @param {Object} from - Previous route
+ * @param {Object} authStore - Auth store instance
+ * @returns {Promise<boolean>} - True if initialization completed successfully
+ */
+async function authInitializationGuard(to, from, authStore) {
+  // Only initialize if we have a token but no user data
+  if (!authStore.user && authStore.isAuthenticated && authStore.token) {
+    // If initialization is already in progress, wait for it
+    if (authInitializationPromise) {
+      try {
+        await authInitializationPromise
+        return true
+      } catch (error) {
+        console.error('Auth initialization failed:', error)
+        return false
+      }
+    }
+
+    // Start new initialization and track it
+    authInitializationPromise = authStore.initializeAuth()
+      .catch(error => {
+        console.error('Failed to initialize auth:', error)
+        throw error
+      })
+      .finally(() => {
+        // Clear the promise after completion (success or failure)
+        authInitializationPromise = null
+      })
+
+    try {
+      await authInitializationPromise
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+  return true
+}
+
+/**
+ * Guard 2: Authentication Check
+ * Verifies user is authenticated for protected routes
+ * @param {Object} to - Target route
+ * @param {Object} authStore - Auth store instance
+ * @returns {string|null} - Redirect path if not authenticated, null if allowed
+ */
+function authenticationGuard(to, authStore) {
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return '/login'
+  }
+  return null
+}
+
+/**
+ * Guard 3: Role-Based Access Control
+ * Checks if authenticated user has access to the requested route
+ * Supports meta.allowedRoles for declarative role-based access control
+ * @param {Object} to - Target route
+ * @param {Object} authStore - Auth store instance
+ * @returns {string|null} - Redirect path if access denied, null if allowed
+ */
+function roleAccessGuard(to, authStore) {
+  if (to.meta.requiresAuth && authStore.isAuthenticated) {
+    // Pass allowedRoles from route meta to hasAccess for declarative RBAC
+    const allowedRoles = to.meta.allowedRoles || null
+    if (!authStore.hasAccess(to.name, allowedRoles)) {
+      // Redirect to appropriate dashboard based on role
+      return authStore.getDashboardRoute()
+    }
+  }
+  return null
+}
+
+/**
+ * Guard 4: Redirect Logic
+ * Handles special redirect cases (e.g., root path)
+ * @param {Object} to - Target route
+ * @param {Object} authStore - Auth store instance
+ * @returns {string|null} - Redirect path if needed, null if no redirect
+ */
+function redirectGuard(to, authStore) {
+  // Handle root path redirect based on auth state and role
+  if (to.path === '/' && authStore.isAuthenticated) {
+    return authStore.getDashboardRoute()
+  }
+
+  // Redirect authenticated users away from login page
+  if (to.path === '/login' && authStore.isAuthenticated) {
+    return authStore.getDashboardRoute()
+  }
+
+  return null
+}
+
+/**
+ * Meta Validation Guard
+ * Validates route meta properties before processing
+ * @param {Object} to - Target route
+ * @returns {boolean} - True if meta is valid
+ */
+function metaValidationGuard(to) {
+  if (to.meta && !validateRouteMeta(to.meta)) {
+    console.error(`Navigation to route with invalid meta: ${to.path}`)
+    // Allow navigation but log the error - prevents runtime crashes
+  }
+  return true
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/login',
       name: 'Login',
-      component: () => import('../views/AuthView.vue')
+      component: () => import('../views/AuthView.vue'),
+      meta: { requiresAuth: false }
     },
     {
       path: '/dashboard',
       name: 'Dashboard',
       component: () => import('../views/DashboardView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
     },
     {
       path: '/students',
       name: 'Students',
       component: () => import('../views/StudentsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
     },
     {
       path: '/rooms',
       name: 'Rooms',
       component: () => import('../views/RoomsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
     },
     {
       path: '/parents',
       name: 'Parents',
       component: () => import('../views/ParentsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
     },
     {
       path: '/reports',
       name: 'Reports',
       component: () => import('../views/ReportsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
     },
     {
       path: '/student-dashboard',
       name: 'StudentDashboard',
       component: () => import('../views/StudentDashboard.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['student'] }
     },
     {
       path: '/student-rooms',
       name: 'StudentRooms',
       component: () => import('../views/StudentRoomsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['student'] }
     },
     {
       path: '/student-notifications',
       name: 'StudentNotifications',
       component: () => import('../views/StudentNotificationsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, allowedRoles: ['student'] }
     },
     {
       path: '/',
-      redirect: (to) => {
-        // Auth store importálása a felhasználói szerepkör ellenőrzéséhez
-        const authStore = useAuthStore();
-        if (authStore.isAuthenticated) {
-          return authStore.isAdmin ? '/dashboard' : '/student-dashboard';
-        }
-        return '/login';
-      }
+      name: 'Root',
+      redirect: '/login'
     },
     {
       path: '/:pathMatch(.*)*',
@@ -126,43 +238,40 @@ const router = createRouter({
 // Validate all routes on router creation
 validateAllRoutesMeta(router.options.routes)
 
+/**
+ * Main navigation guard
+ * Composes multiple single-responsibility guards
+ * Execution order matters: validation → initialization → auth check → role check → redirects
+ */
 router.beforeEach(async (to, from, next) => {
-  // Validate route meta before processing
-  if (to.meta && !validateRouteMeta(to.meta)) {
-    console.error(`Navigation to route with invalid meta: ${to.path}`)
-    // Allow navigation but log the error - prevents runtime crashes
+  const authStore = useAuthStore()
+
+  // Step 1: Validate route meta
+  metaValidationGuard(to)
+
+  // Step 2: Ensure auth is initialized (prevents race conditions)
+  await authInitializationGuard(to, from, authStore)
+
+  // Step 3: Check authentication
+  const authRedirect = authenticationGuard(to, authStore)
+  if (authRedirect) {
+    return next(authRedirect)
   }
 
-  // Auth store importálása - most már biztonságosan használható
-  const authStore = useAuthStore()
-  
-  // Auth állapot inicializálása, ha szükséges
-  if (!authStore.user && authStore.isAuthenticated && authStore.token) {
-    try {
-      await authStore.initializeAuth()
-    } catch (e) {
-      console.error('Failed to initialize auth:', e)
-    }
+  // Step 4: Check role-based access
+  const roleRedirect = roleAccessGuard(to, authStore)
+  if (roleRedirect) {
+    return next(roleRedirect)
   }
-  
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if (to.meta.requiresAuth && authStore.isAuthenticated) {
-    // Ellenőrizzük, hogy a felhasználónak van-e hozzáférése az adott útvonalhoz
-    if (!authStore.hasAccess(to.name)) {
-      // Átirányítás a megfelelő dashboard-ra szerepkör alapján
-      const dashboardRoute = authStore.isAdmin ? '/dashboard' : '/student-dashboard'
-      next(dashboardRoute)
-    } else {
-      next()
-    }
-  } else if (to.path === '/' && authStore.isAuthenticated) {
-    // Átirányítás a megfelelő dashboard-ra szerepkör alapján
-    const dashboardRoute = authStore.isAdmin ? '/dashboard' : '/student-dashboard'
-    next(dashboardRoute)
-  } else {
-    next()
+
+  // Step 5: Handle special redirects
+  const redirect = redirectGuard(to, authStore)
+  if (redirect) {
+    return next(redirect)
   }
+
+  // All checks passed, allow navigation
+  next()
 })
 
 export default router
