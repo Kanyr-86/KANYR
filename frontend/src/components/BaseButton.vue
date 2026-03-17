@@ -4,6 +4,8 @@
     class="btn base-button"
     :class="buttonClasses"
     :disabled="isDisabled"
+    :aria-label="ariaLabel"
+    :title="title"
     @click="handleClick"
   >
     <!-- Loading Spinner -->
@@ -196,6 +198,24 @@ export default defineComponent({
     block: {
       type: Boolean,
       default: false
+    },
+
+    /**
+     * ARIA label for accessibility (overrides auto-generated labels)
+     * @type {string}
+     */
+    ariaLabel: {
+      type: String,
+      default: ''
+    },
+
+    /**
+     * Title attribute for tooltip
+     * @type {string}
+     */
+    title: {
+      type: String,
+      default: ''
     }
   },
 
@@ -245,6 +265,76 @@ export default defineComponent({
     })
 
     /**
+     * ARIA label for accessibility
+     */
+    const ariaLabel = computed(() => {
+      // If button has explicit aria-label prop, use it
+      if (props.ariaLabel) {
+        return props.ariaLabel
+      }
+      
+      // If button has icon but no text content, generate label from icon
+      if (props.icon && !slots.default) {
+        return getAriaLabelFromIcon(props.icon)
+      }
+      
+      // If button has text content, use that as label
+      if (slots.default) {
+        return undefined // Let screen reader use button text
+      }
+      
+      // Default fallback
+      return props.variant === 'primary' ? 'Gomb' : undefined
+    })
+
+    /**
+     * Title attribute for tooltip
+     */
+    const title = computed(() => {
+      if (props.title) {
+        return props.title
+      }
+      
+      // Generate title from icon if no explicit title
+      if (props.icon && !props.title) {
+        return getAriaLabelFromIcon(props.icon)
+      }
+      
+      return undefined
+    })
+
+    /**
+     * Get ARIA label from icon class
+     */
+    function getAriaLabelFromIcon(iconClass) {
+      const iconLabels = {
+        'bi-save': 'Mentés',
+        'bi-trash': 'Törlés',
+        'bi-pencil': 'Szerkesztés',
+        'bi-eye': 'Megtekintés',
+        'bi-plus': 'Hozzáadás',
+        'bi-x': 'Bezárás',
+        'bi-check': 'Megerősítés',
+        'bi-arrow-left': 'Vissza',
+        'bi-arrow-right': 'Tovább',
+        'bi-search': 'Keresés',
+        'bi-download': 'Letöltés',
+        'bi-upload': 'Feltöltés',
+        'bi-printer': 'Nyomtatás',
+        'bi-gear': 'Beállítások',
+        'bi-info': 'Információ',
+        'bi-question': 'Súgó',
+        'bi-exclamation': 'Figyelmeztetés',
+        'bi-check-circle': 'Sikeres',
+        'bi-x-circle': 'Hiba',
+        'bi-exclamation-triangle': 'Figyelmeztetés',
+        'bi-info-circle': 'Információ'
+      }
+      
+      return iconLabels[iconClass] || 'Gomb'
+    }
+
+    /**
      * Handle click event
      * @param {Event} event
      */
@@ -259,6 +349,8 @@ export default defineComponent({
       iconClass,
       showIcon,
       isDisabled,
+      ariaLabel,
+      title,
       handleClick
     }
   }

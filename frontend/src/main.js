@@ -21,6 +21,9 @@ import './styles/components/notification-inbox.css'
 import './styles/bootstrap-optimized.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
+// Import global components
+import AccessibleStatus from './components/AccessibleStatus.vue'
+
 // Note: Bootstrap JS is NOT imported because we use custom Vue components
 // If you need specific Bootstrap JS components (like tooltips), import them individually:
 // import { Modal, Dropdown, Tooltip } from 'bootstrap/dist/js/bootstrap.esm.min.js'
@@ -32,6 +35,9 @@ const pinia = createPinia()
 
 // Add persistence plugin to Pinia
 pinia.use(piniaPluginPersistedstate)
+
+// Register global components
+app.component('AccessibleStatus', AccessibleStatus)
 
 app.use(pinia)
 app.use(router)
