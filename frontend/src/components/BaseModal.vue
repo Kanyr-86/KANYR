@@ -229,30 +229,32 @@ export default defineComponent({
 <style scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  /* Modern replacement for top/left/right/bottom: 0 */
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  /* Ensures proper centering on all screen sizes */
   z-index: var(--z-modal);
   padding: 1rem;
 }
 
 .modal-dialog {
   background: none;
-  max-height: calc(100vh - 2rem);
+  max-width: min(90vw, 600px);
+  /* Responsive max-width */
+  max-height: min(90vh, 800px);
+  /* Responsive max-height */
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .modal-content {
   background-color: var(--bg-page);
   border-radius: 0.375rem;
   box-shadow: var(--shadow-card);
-  max-height: calc(100vh - 2rem);
+  max-height: 100%;
   overflow-y: auto;
 }
 
@@ -315,7 +317,9 @@ export default defineComponent({
 
   .modal-dialog {
     margin: 0;
-    max-width: 100%;
+    max-width: min(95vw, 600px);
+    /* Slightly wider on small screens for better usability */
+    max-height: min(95vh, 800px);
   }
 }
 
