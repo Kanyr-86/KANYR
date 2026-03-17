@@ -52,20 +52,43 @@ app.use(cors({
   origin: getAllowedOrigins(),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+  exposedHeaders: ['X-Total-Count'] // Allow frontend to read total count header
 }));
 
-// Biztonsági fejlécek Helmet-tel
+// Enhanced security headers with Helmet
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:', 'https:']
+      imgSrc: ["'self'", 'data:', 'https:'],
+      fontSrc: ["'self'", 'https:'],
+      connectSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameAncestors: ["'none'"]
     }
   },
-  crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production'
+  crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production',
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: 'deny' },
+  hidePoweredBy: true,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  ieNoOpen: true,
+  noSniff: true,
+  originAgentCluster: true,
+  permittedCrossDomainPolicies: false,
+  referrerPolicy: { policy: ["no-referrer"] },
+  xssFilter: true
 }));
 
 app.use(express.json()); // JSON body parser
@@ -116,7 +139,7 @@ const passwordResetLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false, // Minden kérést számolunk, még a sikereseket is
-  handler: (req, res, next, options) => {
+  handler: (req, res, _next, options) => {
     logger.warn('Rate limit exceeded for password reset', {
       ip: req.ip,
       path: req.path,
@@ -137,7 +160,7 @@ const adminActionLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
-  handler: (req, res, next, options) => {
+  handler: (req, res, _next, options) => {
     logger.warn('Rate limit exceeded for admin actions', {
       ip: req.ip,
       userId: req.user?.userId,

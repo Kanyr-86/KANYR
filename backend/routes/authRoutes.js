@@ -4,8 +4,8 @@ const FelhasznaloService = require('../services/FelhasznaloService');
 const FelhasznaloRepository = require('../repositories/FelhasznaloRepository');
 const TokenBlacklistService = require('../services/TokenBlacklistService');
 const { authenticate } = require('../middleware/authMiddleware');
-const { csrfProtectionMiddleware, getCsrfToken } = require('../middleware/csrfMiddleware');
-const { ValidationError, UnauthorizedError } = require('../utils/AppError');
+const { getCsrfToken } = require('../middleware/csrfMiddleware');
+const { ValidationError } = require('../utils/AppError');
 
 const router = express.Router();
 
@@ -46,7 +46,7 @@ const loginValidationRules = [
 router.post(
   '/login',
   loginValidationRules,
-  async (req, res, next) => {
+  async (req, res, _next) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -68,7 +68,7 @@ router.post(
         message: 'Sikeres bejelentkezés'
       });
     } catch (error) {
-      next(error);
+      _next(error);
     }
   }
 );
@@ -80,7 +80,7 @@ router.post(
 router.post(
   '/logout',
   authenticate,
-  async (req, res, next) => {
+  async (req, res, _next) => {
     try {
       // Token kinyerése a header-ből
       const authHeader = req.headers['authorization'];
@@ -96,7 +96,7 @@ router.post(
         success: true,
         message: 'Sikeres kijelentkezés'
       });
-    } catch (error) {
+    } catch (error) { // eslint-disable-line no-unused-vars
       // Még ha a token visszavonása nem sikerül is, a kijelentkezést sikeresnek tekintjük
       // mivel a kliens oldalon a token törlésre kerül
       res.json({
@@ -147,5 +147,34 @@ router.get(
  * Hasznos ha a token lejárt vagy újra kell generálni
  */
 router.get('/csrf-token', getCsrfToken);
+
+/**
+ * POST /api/auth/refresh
+ * Token frissítése új token generálásával
+ * Csak érvényes token esetén működik, új token generálása történik
+ */
+router.post(
+  '/refresh',
+  authenticate,
+  async (req, res) => {
+    try {
+      const service = initializeService(req.app.locals.db);
+      
+      // Token frissítése - új token generálása
+      const result = await service.refreshToken(req.user.userId);
+
+      res.json({
+        success: true,
+        data: result,
+        message: 'Token sikeresen frissítve'
+      });
+    } catch (refreshError) { // eslint-disable-line no-unused-vars
+      res.status(500).json({
+        success: false,
+        error: 'Token frissítése sikertelen'
+      });
+    }
+  }
+);
 
 module.exports = router;
