@@ -162,6 +162,18 @@ export const VALIDATION_SUMMARY = {
 }
 
 /**
+ * Dirty form warning messages
+ */
+export const DIRTY_FORM_MESSAGES = {
+  UNSAVED_CHANGES: 'Mentetlen változtatások vannak.',
+  CONFIRM_LEAVE: 'Mentetlen változtatások vannak. Biztosan elhagyja az oldalt?',
+  CONFIRM_DISCARD: 'Biztosan elveti a módosításokat?',
+  STAY_ON_PAGE: 'Maradok az oldalon',
+  LEAVE_PAGE: 'Elhagyom az oldalt',
+  DISCARD_CHANGES: 'Módosítások elvetése',
+}
+
+/**
  * Error boundary messages
  */
 export const ERROR_BOUNDARY_MESSAGES = {
@@ -185,6 +197,7 @@ export const MESSAGES = {
   PARENT: PARENT_MESSAGES,
   VALIDATION_SUMMARY: VALIDATION_SUMMARY,
   ERROR_BOUNDARY: ERROR_BOUNDARY_MESSAGES,
+  DIRTY_FORM: DIRTY_FORM_MESSAGES,
 }
 
 export default MESSAGES
