@@ -246,6 +246,18 @@ const router = createRouter({
       redirect: '/login'
     },
     {
+      path: '/test-navigation',
+      name: 'TestNavigation',
+      component: () => import('../views/TestNavigationView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/form-demo',
+      name: 'FormEnhancementsDemo',
+      component: () => import('../views/FormEnhancementsDemo.vue'),
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../views/NotFoundView.vue')

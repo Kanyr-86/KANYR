@@ -69,7 +69,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-nav .nav-link.router-link-active {
+.sidebar-nav .nav-link.router-link-active,
+.sidebar-nav .nav-link.active,
+.sidebar-nav .nav-link.exact-active {
   color: var(--text-primary);
   background-color: var(--sidebar-hover);
   border-left: 4px solid var(--sidebar-active);

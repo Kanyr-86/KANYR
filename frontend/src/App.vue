@@ -6,6 +6,11 @@
     />
     
     <div class="main-content" :class="{ 'sidebar-expanded': !isSidebarCollapsed }">
+      <!-- Breadcrumb navigation -->
+      <div v-if="!isLoginPage" class="breadcrumb-wrapper">
+        <Breadcrumb />
+      </div>
+      
       <ErrorBoundary>
         <router-view />
       </ErrorBoundary>
@@ -34,6 +39,7 @@ const Sidebar = defineAsyncComponent(() => import('./components/Sidebar.vue'))
 const ErrorBoundary = defineAsyncComponent(() => import('./components/ErrorBoundary.vue'))
 const ToastContainer = defineAsyncComponent(() => import('./components/ToastContainer.vue'))
 const ConfirmDialog = defineAsyncComponent(() => import('./components/ConfirmDialog.vue'))
+const Breadcrumb = defineAsyncComponent(() => import('./components/Breadcrumb.vue'))
 
 export default defineComponent({
   name: 'App',
@@ -42,7 +48,8 @@ export default defineComponent({
     ErrorBoundary,
     ToastContainer,
     ConfirmDialog,
-    LoadingOverlay
+    LoadingOverlay,
+    Breadcrumb
   },
   setup() {
     const route = useRoute()
@@ -104,16 +111,29 @@ html, body {
   margin-left: 250px;
 }
 
+/* Breadcrumb wrapper styles */
+.breadcrumb-wrapper {
+  margin-bottom: 16px;
+}
+
 @media (max-width: 991.98px) {
   .main-content {
     margin-left: 0 !important;
     padding: 16px;
+  }
+  
+  .breadcrumb-wrapper {
+    margin-bottom: 12px;
   }
 }
 
 @media (max-width: 767.98px) {
   .main-content {
     padding: 12px;
+  }
+  
+  .breadcrumb-wrapper {
+    margin-bottom: 8px;
   }
 }
 </style>

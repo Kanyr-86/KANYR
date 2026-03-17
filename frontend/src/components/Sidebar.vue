@@ -50,6 +50,8 @@
               to="/dashboard" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-speedometer2 me-3"></i>
               <span v-show="!isCollapsed">Admin Dashboard</span>
@@ -60,6 +62,8 @@
               to="/students" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-people me-3"></i>
               <span v-show="!isCollapsed">Diákok</span>
@@ -70,6 +74,8 @@
               to="/parents" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-person-lines-fill me-3"></i>
               <span v-show="!isCollapsed">Szülők</span>
@@ -80,6 +86,8 @@
               to="/rooms" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-door-open me-3"></i>
               <span v-show="!isCollapsed">Szobák</span>
@@ -90,6 +98,8 @@
               to="/reports" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-file-earmark-bar-graph me-3"></i>
               <span v-show="!isCollapsed">Riportok</span>
@@ -104,6 +114,8 @@
               to="/student-dashboard" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-speedometer2 me-3"></i>
               <span v-show="!isCollapsed">Diák Dashboard</span>
@@ -114,6 +126,8 @@
               to="/student-rooms" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-door-open me-3"></i>
               <span v-show="!isCollapsed">Szobám</span>
@@ -124,6 +138,8 @@
               to="/student-notifications" 
               class="nav-link d-flex align-items-center"
               :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
             >
               <i class="bi bi-bell me-3"></i>
               <span v-show="!isCollapsed">Értesítések</span>
@@ -133,7 +149,7 @@
       </ul>
     </nav>
 
-<!-- Theme Toggle Section -->
+    <!-- Theme Toggle Section -->
     <div class="sidebar-theme p-3 border-top">
       <ThemeToggle :collapsed="isCollapsed" />
     </div>
