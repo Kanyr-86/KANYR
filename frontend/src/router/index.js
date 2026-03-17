@@ -1,8 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../store/auth'
+import { ref } from 'vue'
 
 // Track auth initialization state to prevent race conditions
 let authInitializationPromise = null
+
+// Global navigation loading state
+export const isRouteLoading = ref(false)
+
+/**
+ * Show route loading indicator
+ */
+export function startRouteLoading() {
+  isRouteLoading.value = true
+}
+
+/**
+ * Hide route loading indicator
+ */
+export function stopRouteLoading() {
+  isRouteLoading.value = false
+}
 
 /**
  * Route meta property validator
@@ -232,11 +250,31 @@ const router = createRouter({
       name: 'NotFound',
       component: () => import('../views/NotFoundView.vue')
     }
-  ]
+  ],
+  /**
+   * Scroll behavior configuration
+   * - Restores saved scroll position when navigating back/forward
+   * - Scrolls to top for new navigation
+   * - Supports smooth scrolling
+   */
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0, behavior: 'smooth' }
+  }
 })
 
 // Validate all routes on router creation
 validateAllRoutesMeta(router.options.routes)
+
+/**
+ * Navigation guard: Show loading indicator at start of navigation
+ */
+router.beforeEach((to, from, next) => {
+  startRouteLoading()
+  next()
+})
 
 /**
  * Main navigation guard
@@ -272,6 +310,20 @@ router.beforeEach(async (to, from, next) => {
 
   // All checks passed, allow navigation
   next()
+})
+
+/**
+ * Navigation guard: Hide loading indicator when navigation is complete
+ */
+router.afterEach(() => {
+  stopRouteLoading()
+})
+
+/**
+ * Navigation guard: Hide loading indicator on navigation error
+ */
+router.onError(() => {
+  stopRouteLoading()
 })
 
 export default router
