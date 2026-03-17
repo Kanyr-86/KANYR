@@ -41,9 +41,10 @@ function generateToken() {
  * @returns {string} Client identifier
  */
 function getClientId(req) {
-  const ip = req.ip || req.connection.remoteAddress;
-  const userAgent = req.headers['user-agent'] || '';
-  const userId = req.user?.userId || 'anonymous';
+  const ip = req.ip || req.connection.remoteAddress || req.socket?.remoteAddress || 'unknown';
+  const userAgent = req.headers['user-agent'] || 'unknown';
+  // Handle both authenticated and unauthenticated requests
+  const userId = req.user && req.user.userId ? req.user.userId.toString() : 'anonymous';
   return crypto.createHash('sha256')
     .update(`${ip}:${userAgent}:${userId}`)
     .digest('hex');
