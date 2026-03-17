@@ -105,10 +105,11 @@ export default defineComponent({
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Transition animations */
+/* Transition animations - Performance optimized */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
+  will-change: opacity;
 }
 
 .fade-enter-from,
@@ -119,11 +120,31 @@ export default defineComponent({
 /* Ensure spinner animation is smooth */
 .spinner-border {
   animation: spinner-border 0.75s linear infinite;
+  will-change: transform;
 }
 
 @keyframes spinner-border {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: none !important;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 1 !important;
+  }
+
+  .spinner-border {
+    animation: none !important;
+    border: 3px solid currentColor;
+    border-top-color: transparent;
   }
 }
 </style>

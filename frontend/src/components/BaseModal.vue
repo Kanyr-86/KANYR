@@ -288,15 +288,17 @@ export default defineComponent({
   gap: 0.5rem;
 }
 
-/* Transition animations */
+/* Transition animations - Performance optimized with transform/opacity only */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.3s ease;
+  will-change: opacity;
 }
 
 .modal-enter-active .modal-dialog,
 .modal-leave-active .modal-dialog {
   transition: transform 0.3s ease;
+  will-change: transform;
 }
 
 .modal-enter-from,
@@ -307,6 +309,30 @@ export default defineComponent({
 .modal-enter-from .modal-dialog,
 .modal-leave-to .modal-dialog {
   transform: scale(0.95) translateY(-20px);
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active {
+    transition: none !important;
+  }
+
+  .modal-enter-active .modal-dialog,
+  .modal-leave-active .modal-dialog {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .modal-enter-from,
+  .modal-leave-to {
+    opacity: 1 !important;
+  }
+
+  .modal-enter-from .modal-dialog,
+  .modal-leave-to .modal-dialog {
+    transform: none !important;
+  }
 }
 
 /* Responsive adjustments */
