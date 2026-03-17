@@ -26,9 +26,22 @@
           </div>
         </div>
         
-        <div v-else-if="notifications.length === 0" class="text-center text-muted py-4">
-          <i class="bi bi-envelope-open" style="font-size: 2rem;"></i>
-          <p class="mt-2 mb-0">Nincsenek értesítések</p>
+        <div v-else-if="notifications.length === 0" class="py-4">
+          <EmptyState
+            icon="inbox"
+            title="Nincsenek értesítések"
+            description="Még nem érkezett új értesítés."
+            contextText="Az értesítések akkor jelennek meg, amikor fontos változás történik a szobával vagy a diák adataival kapcsolatban."
+            actionText="Diákok megtekintése"
+            action-route="/students"
+            action-icon="bi bi-people"
+          >
+            <template #secondaryActions>
+              <button class="btn btn-outline-secondary btn-sm" @click="refreshNotifications">
+                <i class="bi bi-arrow-clockwise me-1"></i>Frissítés
+              </button>
+            </template>
+          </EmptyState>
         </div>
         
         <div v-else>
