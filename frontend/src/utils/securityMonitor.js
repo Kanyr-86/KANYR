@@ -3,8 +3,6 @@
  * Provides security event tracking and monitoring for the frontend application
  */
 
-import { secureStorage } from '../services/secureStorage'
-
 // Security event types
 const SECURITY_EVENTS = {
   STORAGE_QUOTA_WARNING: 'storage_quota_warning',
@@ -25,6 +23,14 @@ const ALERT_THRESHOLD = {
   storageQuotaWarning: 5,
   xssAttempts: 3,
   tokenRefreshFailures: 3
+}
+
+// Lazy-loaded secure storage reference
+let secureStorageRef = null
+
+// Function to set secure storage reference (dependency injection)
+export function setSecureStorage(storage) {
+  secureStorageRef = storage
 }
 
 /**
@@ -163,6 +169,11 @@ function triggerAlert(alertType, details) {
  */
 async function persistCriticalEvent(event) {
   try {
+    if (!secureStorageRef) {
+      console.warn('Secure storage not available for persisting critical event')
+      return
+    }
+    
     const criticalEvents = await getCriticalEvents()
     criticalEvents.push(event)
     
@@ -171,7 +182,7 @@ async function persistCriticalEvent(event) {
       criticalEvents.splice(0, criticalEvents.length - 50)
     }
 
-    await secureStorage.setItem('critical_security_events', criticalEvents, false)
+    await secureStorageRef.setItem('critical_security_events', criticalEvents, false)
   } catch (error) {
     console.error('Failed to persist critical security event:', error)
   }
@@ -183,7 +194,12 @@ async function persistCriticalEvent(event) {
  */
 async function getCriticalEvents() {
   try {
-    const events = await secureStorage.getItem('critical_security_events', false)
+    if (!secureStorageRef) {
+      console.warn('Secure storage not available for retrieving critical events')
+      return []
+    }
+    
+    const events = await secureStorageRef.getItem('critical_security_events', false)
     return Array.isArray(events) ? events : []
   } catch (error) {
     console.error('Failed to retrieve critical security events:', error)
@@ -209,7 +225,7 @@ export function getSecurityStats() {
     dailyEvents: dailyEvents.length,
     eventTypes: {},
     severityBreakdown: {},
-    storageStats: secureStorage.getStorageStats()
+    storageStats: secureStorageRef ? secureStorageRef.getStorageStats() : null
   }
 
   // Count event types
@@ -247,19 +263,21 @@ export function exportSecurityData() {
  */
 export function initSecurityMonitoring() {
   // Monitor storage quota warnings
-  const originalSetItem = secureStorage.setItem.bind(secureStorage)
-  secureStorage.setItem = async function(key, value, isSensitive) {
-    try {
-      return await originalSetItem(key, value, isSensitive)
-    } catch (error) {
-      if (error.message && error.message.includes('quota')) {
-        logSecurityEvent(SECURITY_EVENTS.STORAGE_QUOTA_EXCEEDED, {
-          key,
-          isSensitive,
-          error: error.message
-        })
+  if (secureStorageRef) {
+    const originalSetItem = secureStorageRef.setItem.bind(secureStorageRef)
+    secureStorageRef.setItem = async function(key, value, isSensitive) {
+      try {
+        return await originalSetItem(key, value, isSensitive)
+      } catch (error) {
+        if (error.message && error.message.includes('quota')) {
+          logSecurityEvent(SECURITY_EVENTS.STORAGE_QUOTA_EXCEEDED, {
+            key,
+            isSensitive,
+            error: error.message
+          })
+        }
+        throw error
       }
-      throw error
     }
   }
 
@@ -283,6 +301,3 @@ export function initSecurityMonitoring() {
 
 // Export event types for external use
 export { SECURITY_EVENTS }
-
-// Initialize monitoring when module is loaded
-initSecurityMonitoring()

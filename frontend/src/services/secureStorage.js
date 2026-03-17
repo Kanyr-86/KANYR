@@ -5,7 +5,7 @@
  */
 
 import CryptoJS from 'crypto-js'
-import { logSecurityEvent, SECURITY_EVENTS } from '../utils/securityMonitor'
+import { logSecurityEvent, SECURITY_EVENTS, setSecureStorage } from '../utils/securityMonitor'
 
 // Configuration
 const STORAGE_KEYS = {
@@ -605,3 +605,10 @@ export const secureStorage = {
 
 // Export storage keys for use in other modules
 export { STORAGE_KEYS }
+
+// Register secure storage with security monitor after module is loaded
+setSecureStorage(secureStorage)
+
+// Initialize security monitoring now that secure storage is available
+import { initSecurityMonitoring } from '../utils/securityMonitor'
+initSecurityMonitoring()

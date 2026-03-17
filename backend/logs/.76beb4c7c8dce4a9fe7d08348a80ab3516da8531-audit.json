@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "c:\\Users\\pajor\\Desktop\\School\\Projekt\\KANYR\\backend\\logs\\.76beb4c7c8dce4a9fe7d08348a80ab3516da8531-audit.json",
+    "files": [
+        {
+            "date": 1773763304657,
+            "name": "c:\\Users\\pajor\\Desktop\\School\\Projekt\\KANYR\\backend\\logs\\error-2026-03-17.log",
+            "hash": "17dff3cedf2fe18e1d2f704b72a03424c6101708f1a1fff4c0bac1644a57b26d"
+        }
+    ],
+    "hashType": "sha256"
+}
