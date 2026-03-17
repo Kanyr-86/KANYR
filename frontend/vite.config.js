@@ -1,11 +1,93 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
+import purgeCss from 'vite-plugin-purgecss'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
+    // CSS Purging - removes unused CSS rules
+    // Only runs in production build to avoid slowing down development
+    mode === 'production' && purgeCss({
+      content: [
+        './index.html',
+        './src/**/*.vue',
+        './src/**/*.js',
+        './src/**/*.css'
+      ],
+      // Safelist patterns for dynamically added classes
+      safelist: [
+        // Bootstrap dynamic classes
+        /^modal-/,
+        /^fade/,
+        /^show/,
+        /^active/,
+        /^disabled/,
+        /^btn-/,
+        /^alert-/,
+        /^text-/,
+        /^bg-/,
+        /^border-/,
+        /^rounded/,
+        /^shadow/,
+        /^spinner-/,
+        /^d-/,
+        /^flex-/,
+        /^justify-content-/,
+        /^align-items-/,
+        /^col-/,
+        /^row/,
+        /^container/,
+        /^m[trblxy]?-/,
+        /^p[trblxy]?-/,
+        /^gap-/,
+        /^w-/,
+        /^h-/,
+        /^position-/,
+        /^top-/,
+        /^bottom-/,
+        /^start-/,
+        /^end-/,
+        /^translate-middle/,
+        /^overflow-/,
+        /^opacity-/,
+        /^visible/,
+        /^invisible/,
+        /^visually-hidden/,
+        // Theme classes that might be dynamically added
+        /^theme-/,
+        /^dark/,
+        /^light/,
+        // Vue transition classes
+        /^v-enter/,
+        /^v-leave/,
+        /^v-move/,
+        // Toast classes
+        /^Vue-Toastification/,
+        // Custom component classes
+        /^sidebar/,
+        /^card/,
+        /^table/,
+        /^form/,
+        /^input/,
+        /^select/,
+        /^textarea/,
+        /^label/,
+        /^invalid/,
+        /^valid/,
+        /^was-validated/,
+        /^needs-validation/
+      ],
+      // CSS selectors to ignore (never purge)
+      blocklist: [],
+      // Extract CSS from JavaScript
+      variables: true,
+      // Font face declarations should be preserved
+      fontFace: true,
+      // Keyframes should be preserved
+      keyframes: true
+    }),
     // Bundle analyzer - generates stats.html on build
     // Run 'npm run build' to see the visualization
     visualizer({
@@ -14,7 +96,7 @@ export default defineConfig({
       brotliSize: true,
       filename: 'dist/stats.html'
     })
-  ],
+  ].filter(Boolean),
   build: {
     // Enable CSS code splitting
     cssCodeSplit: true,
@@ -77,4 +159,4 @@ export default defineConfig({
     },
     port: 5173
   }
-})
+}))

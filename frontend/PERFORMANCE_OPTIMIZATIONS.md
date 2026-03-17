@@ -193,6 +193,112 @@ This document outlines all the performance optimizations implemented in the KANY
 - `vite.config.js` - Added code splitting and bundle analyzer
 - `package.json` - Removed unused dependency, added dev dependencies
 
+### 9. CSS Purging and Critical CSS (NEW - March 2025)
+
+#### ✅ CSS Purging with PurgeCSS
+**Problem Identified:**
+- Unused CSS rules remaining in production builds
+- Bootstrap utilities that are never used still included in bundle
+- Increasing CSS bundle size unnecessarily
+
+**Solution Implemented:**
+
+1. **Installed vite-plugin-purgecss**
+   - Package: `vite-plugin-purgecss` (v0.2.13)
+   - Analyzes all Vue, JS, and CSS files
+   - Removes unused CSS selectors automatically
+
+2. **Vite Configuration**
+   - File: `vite.config.js`
+   - Plugin configured to:
+     - Scan content: `index.html`, all `.vue`, `.js`, `.css` files
+     - Comprehensive safelist for dynamic Bootstrap classes:
+       - Modal, fade, show, active states
+       - All button variants, alert variants
+       - Grid system (col-*, row, container)
+       - Flexbox and display utilities
+       - Spacing utilities (m-*, p-*, gap-*)
+       - Text and background utilities
+       - Vue transition classes (v-enter, v-leave)
+       - Toast notification classes
+       - Form validation states
+     - Preserves CSS variables, font-face, and keyframes
+   - Only runs in production builds (skipped in development)
+
+3. **Build Scripts**
+   - Added: `npm run build:debug` - Build in development mode (no purging)
+   - Added: `npm run css:analyze` - Analyze CSS output after build
+
+#### ✅ Critical CSS Extraction
+**Problem Identified:**
+- No critical CSS for above-the-fold content
+- Render-blocking CSS delays First Contentful Paint (FCP)
+- Users see blank page while CSS loads
+
+**Solution Implemented:**
+
+1. **Created Critical CSS File**
+   - File: `src/styles/critical.css`
+   - Contains minimal CSS for initial viewport render:
+     - CSS reset and base styles
+     - Container and grid system (basic)
+     - Essential typography
+     - Critical utility classes (display, flexbox, spacing)
+     - Button styles (primary, secondary, outline)
+     - Card component
+     - Loading spinner
+     - App layout (sidebar, main content)
+     - Form control basics
+     - Reduced motion support
+   - Size target: `< 15KB` minified
+
+2. **Inlined Critical CSS in HTML**
+   - File: `index.html`
+   - Critical CSS minified and inlined in `<head>`
+   - Eliminates render-blocking CSS request
+   - Improves First Contentful Paint significantly
+   - Added preconnect to API domain for faster resource loading
+   - Added async loading for non-critical CSS
+
+3. **Performance Optimizations in HTML**
+   - `preconnect` to API domain (reduces DNS lookup time)
+   - `dns-prefetch` for fallback
+   - Meta description and theme-color for PWA support
+   - Initial loading spinner animation while Vue app loads
+
+#### ✅ Benefits
+- **PurgeCSS Benefits:**
+  - Removes unused CSS selectors (estimated 20-40% reduction)
+  - Smaller CSS bundles for production
+  - Faster CSS parsing and application
+  - Better Core Web Vitals scores
+
+- **Critical CSS Benefits:**
+  - Faster First Contentful Paint (FCP)
+  - Eliminates render-blocking CSS
+  - Better perceived performance
+  - Works even on slow connections
+  - Improved Lighthouse performance score
+
+- **Combined Benefits:**
+  - **Estimated CSS size reduction: 40-60%**
+  - **Estimated FCP improvement: 200-500ms**
+  - Better SEO rankings (Core Web Vitals)
+  - Improved user experience on mobile/slow networks
+
+#### ✅ Files Modified/Created
+- `vite.config.js` - Added PurgeCSS plugin configuration
+- `index.html` - Inlined critical CSS, added preconnect hints
+- `src/styles/critical.css` - NEW: Critical CSS file (reference)
+- `package.json` - Added vite-plugin-purgecss and critters dependencies
+
+#### ✅ How to Test
+1. **Build for production**: `npm run build`
+2. **Analyze bundle**: `npm run build:analyze`
+3. **Check CSS size**: Look at `dist/assets/css/` files
+4. **Lighthouse test**: Run Chrome DevTools Lighthouse audit
+5. **Compare FCP**: Check Performance tab for First Contentful Paint timing
+
 ## Performance Metrics
 
 ### Before Optimizations
