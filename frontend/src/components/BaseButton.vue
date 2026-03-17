@@ -267,10 +267,11 @@ export default defineComponent({
 
 <style scoped>
 .base-button {
+  /* Uses standardized CSS variables from variables.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: var(--btn-gap, 0.5rem);
 }
 
 .base-button:disabled {

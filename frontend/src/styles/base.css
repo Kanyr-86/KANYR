@@ -106,18 +106,90 @@
   background-color: rgba(0, 0, 0, var(--hover-alpha-xs));
 }
 
-/* Button improvements */
+/* ==========================================
+ * STANDARDIZED BUTTON SYSTEM
+ * ========================================== */
+
+/* Base Button - Uses CSS variables for consistency */
 .btn {
-  font-weight: 500;
-  border-radius: var(--border-radius-md);
-  padding: 8px 16px;
-  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap);
+  padding: var(--btn-padding-y) var(--btn-padding-x);
+  border-radius: var(--btn-border-radius);
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-font-weight);
+  line-height: var(--btn-line-height);
+  transition: var(--btn-transition);
   border: none;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, var(--shadow-alpha-sm));
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* Button Size Variants */
+.btn-sm {
+  padding: var(--btn-padding-y-sm) var(--btn-padding-x-sm);
+  font-size: var(--btn-font-size-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+.btn-lg {
+  padding: var(--btn-padding-y-lg) var(--btn-padding-x-lg);
+  font-size: var(--btn-font-size-lg);
+  border-radius: var(--border-radius-lg);
+}
+
+/* Block/Full-width Button */
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+/* Disabled State */
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure native button elements use standardized styles */
+button:not(.btn):not([class*="btn-"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap);
+  padding: var(--btn-padding-y) var(--btn-padding-x);
+  border-radius: var(--btn-border-radius);
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-font-weight);
+  line-height: var(--btn-line-height);
+  transition: var(--btn-transition);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:not(.btn):not([class*="btn-"]):hover {
+  border-color: var(--primary-500);
+}
+
+button:not(.btn):not([class*="btn-"]):focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
 }
 
 /* Badge improvements */
