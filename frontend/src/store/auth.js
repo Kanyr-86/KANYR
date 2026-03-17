@@ -80,13 +80,34 @@ export const useAuthStore = defineStore('auth', {
       return '/login'
     },
 
-    // Ellenőrzi, hogy a felhasználónak van-e hozzáférése az adott útvonalakhoz
-    // MEGJEGYZÉS: a routeName-nek meg kell egyeznie a router/index.js-ben definiált PascalCase nevekkel
-    hasAccess(routeName) {
+    /**
+     * Ellenőrzi, hogy a felhasználónak van-e hozzáférése az adott útvonalakhoz
+     * Támogatja a meta.allowedRoles alapú ellenőrzést és a routeName alapú ellenőrzést
+     * @param {string} routeName - Az útvonal neve
+     * @param {Array} allowedRoles - Opcionális, a route meta.allowedRoles értéke
+     * @returns {boolean} - True ha van hozzáférés
+     */
+    hasAccess(routeName, allowedRoles = null) {
       if (!this.isAuthenticated) {
         return false
       }
-      
+
+      // Ha van explicit allowedRoles, azt ellenőrizzük
+      if (allowedRoles && Array.isArray(allowedRoles)) {
+        if (allowedRoles.includes('admin') && allowedRoles.includes('student')) {
+          return true // Mindkét szerepkörnek engedélyezve van
+        }
+        if (allowedRoles.includes('admin') && this.isAdmin) {
+          return true
+        }
+        if (allowedRoles.includes('student') && this.isStudent) {
+          return true
+        }
+        return false
+      }
+
+      // Fallback: routeName alapú ellenőrzés
+      // MEGJEGYZÉS: a routeName-nek meg kell egyeznie a router/index.js-ben definiált PascalCase nevekkel
       switch (routeName) {
         // Csak admin útvonalak (egyezik a router-ből származó PascalCase útvonal nevekkel)
         case 'Dashboard':

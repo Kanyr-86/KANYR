@@ -219,8 +219,13 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Szülő felvétele</h5>
-            <button type="button" class="btn-close" @click="showCreateModal = false"></button>
+            <h5 class="modal-title">
+              Szülő felvétele
+              <span v-if="isCreateFormDirty" class="badge bg-warning text-dark ms-2" title="Mentetlen változtatások">
+                <i class="bi bi-pencil-square"></i>
+              </span>
+            </h5>
+            <button type="button" class="btn-close" @click="closeCreateModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="createParent">
@@ -295,7 +300,7 @@
               </div>
               
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showCreateModal = false">Mégse</button>
+                <button type="button" class="btn btn-secondary" @click="closeCreateModal">Mégse</button>
                 <button type="submit" class="btn btn-primary" :disabled="createLoading">
                   {{ createLoading ? 'Mentés...' : 'Mentés' }}
                 </button>
@@ -311,8 +316,13 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Szülő szerkesztése</h5>
-            <button type="button" class="btn-close" @click="showEditModal = false"></button>
+            <h5 class="modal-title">
+              Szülő szerkesztése
+              <span v-if="isEditFormDirty" class="badge bg-warning text-dark ms-2" title="Mentetlen változtatások">
+                <i class="bi bi-pencil-square"></i>
+              </span>
+            </h5>
+            <button type="button" class="btn-close" @click="closeEditModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="updateParent">
@@ -384,7 +394,7 @@
               </div>
               
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showEditModal = false">Mégse</button>
+                <button type="button" class="btn btn-secondary" @click="closeEditModal">Mégse</button>
                 <button type="submit" class="btn btn-primary" :disabled="updateLoading">
                   {{ updateLoading ? 'Mentés...' : 'Mentés' }}
                 </button>
@@ -559,9 +569,10 @@ import { ref, onMounted, computed, watch, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import api from '../services/api'
 import { useDebounce } from '../composables/useDebounce'
-import { toast } from 'vue3-toastify'
-import { getSuccessMessage, getErrorMessage } from '@/i18n'
+import { getSuccessMessage, getErrorMessage, DIRTY_FORM_MESSAGES } from '@/i18n'
+import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
+import { useDirtyForm } from '../composables/useDirtyForm'
 
 // Lazy load heavy components
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
@@ -636,8 +647,7 @@ export default {
           console.log('Request was aborted - component unmounted')
           return
         }
-        console.error(getErrorMessage('LOAD_ERROR'), error)
-        toast.error(getErrorMessage('LOAD_ERROR'))
+        handleError(error, { context: 'ParentsView/fetchParents' })
       } finally {
         loading.value = false
       }
@@ -690,6 +700,45 @@ export default {
       return labels[type] || type
     }
 
+    // Dirty form tracking for create form
+    const {
+      isDirty: isCreateFormDirty,
+      resetForm: resetCreateFormToInitial,
+      markAsClean: markCreateFormAsClean
+    } = useDirtyForm(parentData, {
+      enableNavigationGuard: false, // We handle this manually for modals
+      confirmMessage: DIRTY_FORM_MESSAGES.CONFIRM_DISCARD
+    })
+
+    // Dirty form tracking for edit form
+    const {
+      isDirty: isEditFormDirty,
+      resetForm: resetEditFormToInitial,
+      markAsClean: markEditFormAsClean
+    } = useDirtyForm(editParentData, {
+      enableNavigationGuard: false,
+      confirmMessage: DIRTY_FORM_MESSAGES.CONFIRM_DISCARD
+    })
+
+    // Modal close handlers with dirty check
+    const closeCreateModal = () => {
+      if (isCreateFormDirty.value) {
+        const shouldClose = window.confirm(DIRTY_FORM_MESSAGES.CONFIRM_DISCARD)
+        if (!shouldClose) return
+      }
+      showCreateModal.value = false
+      resetCreateForm()
+    }
+
+    const closeEditModal = () => {
+      if (isEditFormDirty.value) {
+        const shouldClose = window.confirm(DIRTY_FORM_MESSAGES.CONFIRM_DISCARD)
+        if (!shouldClose) return
+      }
+      showEditModal.value = false
+      currentEditParentId.value = null
+    }
+
     const createParent = async () => {
       createLoading.value = true
       try {
@@ -697,12 +746,12 @@ export default {
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
+          markCreateFormAsClean()
           fetchParents()
           toast.success(getSuccessMessage('CREATE_SUCCESS'))
         }
       } catch (error) {
-        console.error(getErrorMessage('CREATE_ERROR'), error)
-        toast.error(getErrorMessage('CREATE_ERROR'))
+        handleError(error, { context: 'ParentsView/createParent' })
       } finally {
         createLoading.value = false
       }
@@ -731,12 +780,12 @@ export default {
         const response = await api.put(`/szulos/${currentEditParentId.value}`, editParentData.value)
         if (response.data.success) {
           showEditModal.value = false
+          markEditFormAsClean()
           fetchParents()
           toast.success(getSuccessMessage('UPDATE_SUCCESS'))
         }
       } catch (error) {
-        console.error(getErrorMessage('UPDATE_ERROR'), error)
-        toast.error(getErrorMessage('UPDATE_ERROR'))
+        handleError(error, { context: 'ParentsView/updateParent' })
       } finally {
         updateLoading.value = false
       }
@@ -851,6 +900,8 @@ export default {
       viewParentData,
       filteredParents,
       uniqueCities,
+      isCreateFormDirty,
+      isEditFormDirty,
       fetchParents,
       createParent,
       editParent,
@@ -859,6 +910,8 @@ export default {
       confirmDeleteParent,
       viewParent,
       closeViewModal,
+      closeCreateModal,
+      closeEditModal,
       formatDate,
       resetCreateForm,
       debouncedSearch,

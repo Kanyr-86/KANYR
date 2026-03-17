@@ -16,6 +16,9 @@
     
     <!-- Global confirmation dialog -->
     <ConfirmDialog />
+    
+    <!-- Route loading indicator -->
+    <LoadingOverlay :show="isRouteLoading" message="Loading..." :opacity="0.3" />
   </div>
 </template>
 
@@ -23,6 +26,8 @@
 import { defineComponent, computed, onMounted, ref, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from './composables/useTheme'
+import { isRouteLoading } from './router'
+import LoadingOverlay from './components/LoadingOverlay.vue'
 
 // Lazy load global components
 const Sidebar = defineAsyncComponent(() => import('./components/Sidebar.vue'))
@@ -36,7 +41,8 @@ export default defineComponent({
     Sidebar,
     ErrorBoundary,
     ToastContainer,
-    ConfirmDialog
+    ConfirmDialog,
+    LoadingOverlay
   },
   setup() {
     const route = useRoute()
@@ -65,7 +71,8 @@ export default defineComponent({
     return {
       isLoginPage,
       isSidebarCollapsed,
-      handleSidebarCollapse
+      handleSidebarCollapse,
+      isRouteLoading
     }
   }
 })

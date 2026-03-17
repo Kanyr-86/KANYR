@@ -696,8 +696,8 @@ import { ref, onMounted, computed, reactive, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { useApiStore } from '../store/api'
 import api from '../services/api'
-import { toast } from 'vue3-toastify'
 import { getSuccessMessage, getErrorMessage, VALIDATION_MESSAGES } from '@/i18n'
+import { handleError, handleSuccess, handleValidationErrors } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
 import { RecycleScroller } from 'vue-virtual-scroller'
 
@@ -1154,7 +1154,7 @@ export default {
       
       if (!isFormValid) {
         showValidationSummary.value = true
-        toast.error('Kérjük, javítsa a hibákat a mentés előtt!')
+        handleValidationErrors(errors.value)
         return
       }
       
@@ -1162,13 +1162,12 @@ export default {
       try {
         const response = await api.post('/diaks', enrollForm.value)
         if (response.data.success) {
-          toast.success(getSuccessMessage('ENROLL_SUCCESS'))
+          handleSuccess(getSuccessMessage('ENROLL_SUCCESS'))
           closeEnrollModal()
           fetchStudents()
         }
       } catch (error) {
-        console.error(getErrorMessage('CREATE_ERROR'), error)
-        toast.error(error.response?.data?.error || getErrorMessage('CREATE_ERROR'))
+        handleError(error, { context: 'StudentsView/submitEnrollment' })
       } finally {
         enrollLoading.value = false
       }
@@ -1219,7 +1218,7 @@ export default {
       
       if (!isFormValid) {
         showEditValidationSummary.value = true
-        toast.error('Kérjük, javítsa a hibákat a mentés előtt!')
+        handleValidationErrors(editErrors.value)
         return
       }
       
@@ -1227,13 +1226,12 @@ export default {
       try {
         const response = await api.put(`/diaks/${currentEditId.value}`, editForm.value)
         if (response.data.success) {
-          toast.success(getSuccessMessage('UPDATE_SUCCESS'))
+          handleSuccess(getSuccessMessage('UPDATE_SUCCESS'))
           closeEditModal()
           fetchStudents()
         }
       } catch (error) {
-        console.error(getErrorMessage('UPDATE_ERROR'), error)
-        toast.error(error.response?.data?.error || getErrorMessage('UPDATE_ERROR'))
+        handleError(error, { context: 'StudentsView/submitEdit' })
       } finally {
         editLoading.value = false
       }
@@ -1263,15 +1261,16 @@ export default {
       try {
         const response = await api.delete(`/diaks/${deleteStudentData.value.diak_id}`)
         if (response.data.success) {
-          toast.success(getSuccessMessage('DELETE_SUCCESS'))
+          handleSuccess(getSuccessMessage('DELETE_SUCCESS'))
           closeDeleteModal()
           fetchStudents()
         } else {
-          toast.error(response.data.error || getErrorMessage('DELETE_ERROR'))
+          handleError(new Error(response.data.error || getErrorMessage('DELETE_ERROR')), { 
+            context: 'StudentsView/confirmDelete' 
+          })
         }
       } catch (error) {
-        console.error(getErrorMessage('DELETE_ERROR'), error)
-        toast.error(error.response?.data?.error || getErrorMessage('DELETE_ERROR'))
+        handleError(error, { context: 'StudentsView/confirmDelete' })
       } finally {
         deleteLoading.value = false
       }
