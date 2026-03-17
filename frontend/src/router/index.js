@@ -1,4 +1,52 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../store/auth'
+
+/**
+ * Route meta property validator
+ * Ensures all route meta properties are valid to prevent runtime errors
+ * @param {Object} meta - Route meta object
+ * @returns {boolean} - True if meta is valid
+ */
+function validateRouteMeta(meta) {
+  if (!meta || typeof meta !== 'object') return true // No meta is valid
+
+  // Validate requiresAuth - must be boolean if present
+  if (meta.requiresAuth !== undefined && typeof meta.requiresAuth !== 'boolean') {
+    console.warn(`Route meta validation error: 'requiresAuth' must be a boolean, got ${typeof meta.requiresAuth}`)
+    return false
+  }
+
+  // Validate allowedRoles - must be array if present
+  if (meta.allowedRoles !== undefined && !Array.isArray(meta.allowedRoles)) {
+    console.warn(`Route meta validation error: 'allowedRoles' must be an array, got ${typeof meta.allowedRoles}`)
+    return false
+  }
+
+  // Validate title - must be string if present
+  if (meta.title !== undefined && typeof meta.title !== 'string') {
+    console.warn(`Route meta validation error: 'title' must be a string, got ${typeof meta.title}`)
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Validate all routes meta properties
+ * @param {Array} routes - Array of route objects
+ */
+function validateAllRoutesMeta(routes) {
+  const validateRoute = (route) => {
+    if (route.meta && !validateRouteMeta(route.meta)) {
+      console.error(`Invalid meta in route: ${route.path || route.name || 'unnamed'}`)
+    }
+    // Validate children recursively
+    if (route.children) {
+      route.children.forEach(validateRoute)
+    }
+  }
+  routes.forEach(validateRoute)
+}
 
 const router = createRouter({
   history: createWebHistory(),
@@ -66,11 +114,25 @@ const router = createRouter({
         }
         return '/login';
       }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('../views/NotFoundView.vue')
     }
   ]
 })
 
+// Validate all routes on router creation
+validateAllRoutesMeta(router.options.routes)
+
 router.beforeEach(async (to, from, next) => {
+  // Validate route meta before processing
+  if (to.meta && !validateRouteMeta(to.meta)) {
+    console.error(`Navigation to route with invalid meta: ${to.path}`)
+    // Allow navigation but log the error - prevents runtime crashes
+  }
+
   // Auth store importálása - most már biztonságosan használható
   const authStore = useAuthStore()
   

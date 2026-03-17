@@ -17,11 +17,12 @@ export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Hálózati hiba - kérjük, ellenőrizze az internetkapcsolatát',
   UNEXPECTED_ERROR: 'Váratlan hiba történt',
   ACCESS_DENIED: 'Hozzáférés megtagadva',
-  
+
   // HTTP status specific
   UNAUTHORIZED: 'Bejelentkezés szükséges',
   FORBIDDEN: 'Nincs jogosultsága ehhez a művelethez',
   NOT_FOUND: 'A keresett erőforrás nem található',
+  NOT_FOUND_PAGE: 'Az oldal nem található',
   VALIDATION_ERROR: 'Érvénytelen adatok',
   
   // Auth errors
