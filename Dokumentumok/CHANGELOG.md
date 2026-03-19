@@ -708,3 +708,139 @@ async function handleSubmit() {
 
 **Utolsó frissítés**: 2026.03.19  
 **Karbantartó**: KANYR Fejlesztő Csapat
+
+## [2026.03.19] - Frontend Komponenskönyvtár Bővítés és Dokumentáció Frissítés
+
+### Újdonságok ✨
+
+#### Frontend Komponenskönyvtár Bővítés
+- **`frontend/src/components/AccessibleStatus.vue`** - Hozzáférhető státusz komponens
+  - `status` prop - státusz típusa (success, warning, danger, info)
+  - `label` prop - szöveges leírás
+  - `icon` prop - opcionális ikon
+  - `sr-only` szöveg a képernyőolvasók számára
+  - Bootstrap 5 badge styling
+
+- **`frontend/src/components/EnhancedForm.vue`** - Fejlett form komponens
+  - `fields` prop - mezők konfigurációja
+  - `modelValue` - form adatok
+  - `errors` - validációs hibák
+  - `loading` - betöltési állapot
+  - `submitText` - elküldés gomb szövege
+  - `@submit` - elküldés esemény
+  - `@cancel` - visszavonás esemény
+  - `@reset` - alaphelyzet esemény
+  - `@field-change` - mezőváltozás esemény
+
+- **`frontend/src/components/FieldHint.vue`** - Mező súgó komponens
+  - `hint` prop - súgó szöveg
+  - `icon` prop - opcionális ikon
+  - `variant` prop - stílus variáns (info, warning, success)
+  - `sr-only` szöveg a képernyőolvasók számára
+
+- **`frontend/src/components/ValidationSummary.vue`** - Validációs összegzés
+  - `errors` prop - hiba objektum vagy tömb
+  - `title` prop - összegzés címe
+  - `variant` prop - stílus variáns (danger, warning)
+  - `@clear` - törlés esemény
+  - `@error-click` - hibára kattintás esemény
+
+#### Composables Bővítés
+- **`frontend/src/composables/useInlineValidation.js`** - Inline validáció
+  - `validateField()` - mező validáció
+  - `validateForm()` - teljes form validáció
+  - `clearErrors()` - hibák törlése
+  - `errors` - reaktív hiba állapot
+  - `isValid` - form érvényességi állapot
+
+- **`frontend/src/composables/useDirtyForm.js`** - Form változás követés
+  - `isDirty` - form változás állapota
+  - `hasChanges()` - változás ellenőrzés
+  - `resetDirty()` - változás állapot visszaállítása
+  - `originalData` - eredeti adatok tárolása
+
+- **`frontend/src/composables/useRequestDeduplication.js`** - Kérelmek deduplikáció
+  - `dedupe()` - kérelem deduplikáció
+  - `cancelDeduped()` - deduplikált kérelmek megszakítása
+  - `isDeduping` - deduplikáció állapota
+  - `pendingRequests` - függőben lévő kérelmek
+
+- **`frontend/src/composables/useSanitizer.js`** - Bemeneti tisztítás
+  - `sanitize()` - bemenet tisztítás
+  - `sanitizeObject()` - objektum tisztítás
+  - `sanitizeArray()` - tömb tisztítás
+  - `escapeHtml()` - HTML karakterek escape-elése
+  - `stripScripts()` - script elemek eltávolítása
+
+#### Styling Frissítések
+- **`frontend/src/style.css`** - CSS változók bővítése
+  - `--color-primary`, `--color-secondary` - fő színek
+  - `--radius-sm`, `--radius-md`, `--radius-lg` - lekerekítési értékek
+  - `--spacing-xs`, `--spacing-sm`, `--spacing-md`, `--spacing-lg`, `--spacing-xl` - térközök
+  - `--font-size-xs`, `--font-size-sm`, `--font-size-md`, `--font-size-lg`, `--font-size-xl` - betűméretek
+  - `--transition-fast`, `--transition-normal`, `--transition-slow` - átmeneti idők
+  - `--shadow-sm`, `--shadow-md`, `--shadow-lg` - árnyék értékek
+
+### Dokumentáció Frissítések 📚
+
+#### README.md Frissítés
+- **Verziószám frissítése** - 1.11 → 2.0.0
+- **Utolsó frissítés dátum** - 2026.02.23 → 2026.03.19
+- **Rendszer leírás frissítése** - Új komponensek és funkcionalitások hozzáadása
+- **Technológiai stack frissítése** - Vue 3 + Pinia + Bootstrap 5 részletes leírás
+- **API végpontok frissítése** - Új végpontok és módosított végpontok
+- **Gyors indítás útmutató** - Frissített parancsok és teszt fiókok
+
+#### CHANGELOG.md Struktúra
+- **Dokumentáció szakasz** - Új szakasz hozzáadása a dokumentációs változások nyomon követésére
+- **Biztonsági ellenőrzőlista** - Frissített biztonsági intézkedések
+- **API végpont összefoglaló** - Frissített végpontok és leírások
+
+### Használati Példák
+
+#### AccessibleStatus
+```vue
+<AccessibleStatus 
+  status="success" 
+  label="Sikeres művelet"
+  icon="bi-check-circle"
+>
+  A művelet sikeresen megtörtént.
+</AccessibleStatus>
+```
+
+#### EnhancedForm
+```vue
+<EnhancedForm
+  :fields="formFields"
+  :model-value="formData"
+  :errors="formErrors"
+  :loading="isLoading"
+  submit-text="Mentés"
+  @submit="handleSubmit"
+  @cancel="handleCancel"
+  @reset="handleReset"
+  @field-change="handleFieldChange"
+/>
+```
+
+#### useInlineValidation
+```javascript
+const { validateField, validateForm, errors, isValid } = useInlineValidation()
+
+async function handleSubmit() {
+  if (validateForm(formData)) {
+    await saveData(formData)
+  }
+}
+```
+
+### Megjegyzések 📝
+
+- Az új komponensek teljes körűen tesztelve és dokumentálva
+- Minden komponens tartalmaz TypeScript típusdefiníciókat
+- A composable-ek teljes körűen tesztelve és dokumentálva
+- CSS változók konzisztens design system-et biztosítanak
+- A dokumentáció frissítve a legújabb fejlesztésekkel
+
+
