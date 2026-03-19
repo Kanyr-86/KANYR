@@ -682,12 +682,14 @@
 <script>
 import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
+import { useToastStore } from '../store/toast'
 import api from '../services/api'
 import { debounce } from 'lodash-es'
 import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
 import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
 import { RecycleScroller } from 'vue-virtual-scroller'
+import { toast } from 'vue3-toastify'
 
 // Lazy load heavy components
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
@@ -797,7 +799,7 @@ export default {
       loading.value = true
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/szobas', { signal })
+        const response = await api.get('/rooms', { signal })
         if (response.data.success) {
           rooms.value = response.data.data
           // Fetch occupancy for each room
@@ -814,7 +816,7 @@ export default {
     const fetchRoomOccupancy = async (roomId) => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get(`/szobas/${roomId}/occupancy`, { signal })
+        const response = await api.get(`/rooms/${roomId}/occupancy`, { signal })
         if (response.data.success) {
           const room = rooms.value.find(r => r.szoba_id === roomId)
           if (room) {
@@ -831,7 +833,7 @@ export default {
     const fetchAvailableRooms = async () => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/szobas/available', { signal })
+        const response = await api.get('/rooms/available', { signal })
         if (response.data.success) {
           availableRooms.value = response.data.data
         }
@@ -844,7 +846,7 @@ export default {
     const fetchAvailableStudents = async () => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/diaks', { signal })
+        const response = await api.get('/students', { signal })
         if (response.data.success) {
           // Minden diák megjelenítése (aktív és inaktív is)
           availableStudents.value = response.data.data
@@ -874,7 +876,7 @@ export default {
       const { signal: mainSignal } = createAbortController()
       try {
         // Szobák lekérdezése
-        const response = await api.get('/szobas', { signal: mainSignal })
+        const response = await api.get('/rooms', { signal: mainSignal })
         if (response.data.success) {
           const roomsData = response.data.data
           
@@ -885,7 +887,7 @@ export default {
               (async () => {
                 const { signal } = createAbortController()
                 try {
-                  const occupancyResponse = await api.get(`/szobas/${room.szoba_id}/occupancy`, { signal })
+                  const occupancyResponse = await api.get(`/rooms/${room.szoba_id}/occupancy`, { signal })
                   if (occupancyResponse.data.success) {
                     room.currentOccupancy = occupancyResponse.data.data.currentOccupancy
                   }
@@ -899,7 +901,7 @@ export default {
               (async () => {
                 const { signal } = createAbortController()
                 try {
-                  const studentsResponse = await api.get(`/szobas/${room.szoba_id}/occupants`, { signal })
+                  const studentsResponse = await api.get(`/rooms/${room.szoba_id}/occupants`, { signal })
                   if (studentsResponse.data.success && studentsResponse.data.data.length > 0) {
                     // Az első lakó neme határozza meg a szoba nemét
                     const firstResident = studentsResponse.data.data[0]
@@ -1077,7 +1079,7 @@ export default {
     const createRoom = async () => {
       createLoading.value = true
       try {
-        const response = await api.post('/szobas', roomData.value)
+        const response = await api.post('/rooms', roomData.value)
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
@@ -1103,7 +1105,7 @@ export default {
     const updateRoom = async () => {
       updateLoading.value = true
       try {
-        const response = await api.put(`/szobas/${currentEditRoomId.value}`, editRoomData.value)
+        const response = await api.put(`/rooms/${currentEditRoomId.value}`, editRoomData.value)
         if (response.data.success) {
           showEditModal.value = false
           fetchRooms()
@@ -1124,7 +1126,7 @@ export default {
     const confirmDeleteRoom = async () => {
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/szobas/${deleteRoomData.value.szoba_id}`)
+        const response = await api.delete(`/rooms/${deleteRoomData.value.szoba_id}`)
         if (response.data.success) {
           showDeleteModal.value = false
           fetchRooms()
@@ -1156,7 +1158,7 @@ export default {
       }
       
       try {
-        const response = await api.get(`/szobas/${room.szoba_id}/occupancy`)
+        const response = await api.get(`/rooms/${room.szoba_id}/occupancy`)
         console.log('API válasz:', response.data)
         if (response.data.success) {
           const data = response.data.data
@@ -1191,7 +1193,7 @@ export default {
     const transferStudent = async (student) => {
       try {
         // Get available rooms for transfer
-        const response = await api.get('/szobas/available')
+        const response = await api.get('/rooms/available')
         if (response.data.success) {
           const availableRooms = response.data.data
           const currentRoom = rooms.value.find(r => r.szoba_id === student.szoba?.szoba_id)
@@ -1224,7 +1226,7 @@ export default {
     const bulkTransfer = async () => {
       bulkTransferLoading.value = true
       try {
-        const response = await api.post('/szobas/bulk-bekoltozes', bulkTransferData.value)
+        const response = await api.post('/rooms/bulk-bekoltozes', bulkTransferData.value)
         if (response.data.success) {
           const data = response.data.data
           closeBulkTransferModal()
@@ -1262,7 +1264,7 @@ export default {
     const debouncedSearch = debounce(async () => {
       if (searchQuery.value.trim()) {
         try {
-        const response = await api.get('/szobas', {
+        const response = await api.get('/rooms', {
             params: {
               prefix: searchQuery.value
             }
@@ -1318,6 +1320,7 @@ export default {
       availableRooms,
       availableStudents,
       filteredRooms,
+      availableRoomsCount,
       selectedBulkGender,
       selectedNewMoveIns,
       selectedTransfers,

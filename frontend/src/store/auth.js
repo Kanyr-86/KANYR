@@ -132,9 +132,17 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await authService.login(email, password)
         if (response.success) {
-          await this.setToken(response.data.data.token)
-          await this.setUser(response.data.data.user)
-          this.isAuthenticated = true
+          // Biztonságosan kinyerjük a token és user adatokat
+          const token = response.data?.data?.token || response.data?.token
+          const user = response.data?.data?.user || response.data?.user
+          
+          if (token && user) {
+            await this.setToken(token)
+            await this.setUser(user)
+            this.isAuthenticated = true
+          } else {
+            throw new Error('Invalid response format - missing token or user data')
+          }
         }
         return response
       } catch (error) {

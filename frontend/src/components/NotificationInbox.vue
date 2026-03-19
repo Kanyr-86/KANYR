@@ -152,7 +152,7 @@ export default {
       lastFetchTime.value = now
       
       try {
-        const response = await api.get('/szobavaltoztatas/admin/notifications')
+        const response = await api.get('/room-changes/admin/notifications')
         if (response.data.success) {
           notifications.value.splice(0, notifications.value.length, ...response.data.data)
         } else {
@@ -170,7 +170,7 @@ export default {
       if (notification.elolvasva) return
 
       try {
-        const response = await api.put(`/szobavaltoztatas/admin/notifications/${notification.notification_id}/read`)
+        const response = await api.put(`/room-changes/admin/notifications/${notification.notification_id}/read`)
         if (response.data.success) {
           notification.elolvasva = true
         } else {
@@ -190,7 +190,7 @@ export default {
         // Use Promise.all for better performance when marking multiple notifications
         await Promise.all(
           unreadNotifications.map(async (notification) => {
-            await api.put(`/szobavaltoztatas/admin/notifications/${notification.notification_id}/read`)
+            await api.put(`/room-changes/admin/notifications/${notification.notification_id}/read`)
             notification.elolvasva = true
           })
         )

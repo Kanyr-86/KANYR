@@ -115,7 +115,7 @@
                   </div>
                   <div>
                     <span class="badge">
-                      {{ parent.diaks ? parent.diaks.length : 0 }} gyerek
+                    {{ parent.gyerekek ? parent.gyerekek.length : 0 }} gyerek
                     </span>
                   </div>
                 </div>
@@ -154,11 +154,11 @@
                   </div>
                 </div>
                 
-                <div v-if="parent.diaks && parent.diaks.length > 0">
+                <div v-if="parent.gyerekek && parent.gyerekek.length > 0">
                   <h6 class="mb-2">Gyerekek:</h6>
                   <div class="list-group list-group-flush">
                     <div class="list-group-item d-flex justify-content-between align-items-center" 
-                         v-for="diak in parent.diaks" :key="diak.diak_id">
+                         v-for="diak in parent.gyerekek" :key="diak.diak_id">
                       <div class="d-flex align-items-center">
                         <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
                           {{ diak.nev.charAt(0).toUpperCase() }}
@@ -459,8 +459,8 @@
                   @click="activeViewTab = 'gyerekek'"
                 >
                   Gyerekek 
-                  <span v-if="viewParentData?.diaks?.length > 0" class="badge">
-                    {{ viewParentData.diaks.length }}
+                  <span v-if="viewParentData?.gyerekek?.length > 0" class="badge">
+                    {{ viewParentData.gyerekek.length }}
                   </span>
                 </button>
               </li>
@@ -523,7 +523,7 @@
 
             <!-- Gyerekek tab -->
             <div v-if="activeViewTab === 'gyerekek' && viewParentData">
-              <div v-if="viewParentData.diaks && viewParentData.diaks.length > 0">
+              <div v-if="viewParentData.gyerekek && viewParentData.gyerekek.length > 0">
                 <div class="table-responsive">
                   <table class="table table-striped table-hover">
                     <thead>
@@ -535,7 +535,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="diak in viewParentData.diaks" :key="diak.diak_id">
+                      <tr v-for="diak in viewParentData.gyerekek" :key="diak.diak_id">
                         <td>{{ diak.nev }}</td>
                         <td>{{ diak.email }}</td>
                         <td>{{ formatDate(diak.szuletesi_datum) }}</td>
@@ -567,12 +567,14 @@
 <script>
 import { ref, onMounted, computed, watch, defineAsyncComponent } from 'vue'
 import { useAuthStore } from '../store/auth'
+import { useToastStore } from '../store/toast'
 import api from '../services/api'
 import { useDebounce } from '../composables/useDebounce'
 import { getSuccessMessage, getErrorMessage, DIRTY_FORM_MESSAGES } from '@/i18n'
 import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
 import { useDirtyForm } from '../composables/useDirtyForm'
+import { toast } from 'vue3-toastify'
 
 // Lazy load heavy components
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
@@ -677,7 +679,7 @@ export default {
 
     const totalChildrenCount = computed(() => {
       return parents.value.reduce((total, parent) => {
-        return total + (parent.diaks ? parent.diaks.length : 0)
+        return total + (parent.gyerekek ? parent.gyerekek.length : 0)
       }, 0)
     })
 
@@ -900,6 +902,7 @@ export default {
       viewParentData,
       filteredParents,
       uniqueCities,
+      totalChildrenCount,
       isCreateFormDirty,
       isEditFormDirty,
       fetchParents,

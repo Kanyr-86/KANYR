@@ -504,19 +504,19 @@ export default defineComponent({
       
       try {
         // Fetch statistics
-        const statsResponse = await api.get('/diaks/statistics')
+        const statsResponse = await api.get('/students/statistics')
         if (statsResponse.data.success) {
           stats.value = statsResponse.data.data
         }
         
         // Fetch rooms
-        const roomsResponse = await api.get('/szobas')
+        const roomsResponse = await api.get('/rooms')
         if (roomsResponse.data.success) {
           rooms.value = roomsResponse.data.data
         }
         
         // Fetch active students
-        const studentsResponse = await api.get('/diaks')
+        const studentsResponse = await api.get('/students')
         if (studentsResponse.data.success) {
           activeStudents.value = studentsResponse.data.data.filter(s => s.aktiv)
         }
@@ -537,7 +537,7 @@ export default defineComponent({
         if (filters.value.datumFrom) params.append('datumFrom', filters.value.datumFrom)
         if (filters.value.datumTo) params.append('datumTo', filters.value.datumTo)
         
-        const response = await api.get(`/szobas/bekoltozesek?${params.toString()}`)
+        const response = await api.get(`/rooms/bekoltozesek?${params.toString()}`)
         if (response.data.success) {
           bekoltozesek.value.splice(0, bekoltozesek.value.length, ...response.data.data)
         }
@@ -595,7 +595,7 @@ export default defineComponent({
       } else if (type === 'occupancy') {
         // Szobák frissítése
         try {
-          const roomsResponse = await api.get('/szobas')
+          const roomsResponse = await api.get('/rooms')
           if (roomsResponse.data.success) {
             rooms.value = roomsResponse.data.data
           }
@@ -605,7 +605,7 @@ export default defineComponent({
       } else if (type === 'students') {
         // Aktív diákok frissítése
         try {
-          const studentsResponse = await api.get('/diaks')
+          const studentsResponse = await api.get('/students')
           if (studentsResponse.data.success) {
             activeStudents.value = studentsResponse.data.data.filter(s => s.aktiv)
           }

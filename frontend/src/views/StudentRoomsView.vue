@@ -214,7 +214,7 @@ export default {
       loadingRooms.value = true;
       try {
         // /szobas/available already filters to rooms with free capacity
-        const response = await api.get('/szobas/available');
+        const response = await api.get('/rooms/available');
         availableRooms.value = response.data.data.map(room => ({
           ...room,
           isAvailable: true

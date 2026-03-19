@@ -1,9 +1,11 @@
 const logger = require('../utils/logger');
+const { Op } = require('sequelize');
 
 class RevokedTokenRepository {
   constructor(db) {
     this.db = db;
     this.RevokedToken = db.RevokedToken;
+    this.Op = Op;
   }
 
   /**
@@ -31,7 +33,7 @@ class RevokedTokenRepository {
         return null;
       }
       logger.error('Error adding token to blacklist', { error: error.message, userId });
-      throw new Error(`Hiba a token feketelistához adása közben: ${error.message}`);
+      throw new Error(`Hiba a token feketelistához adása közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -48,7 +50,7 @@ class RevokedTokenRepository {
       return !!revokedToken;
     } catch (error) {
       logger.error('Error checking token blacklist', { error: error.message });
-      throw new Error(`Hiba a token ellenőrzése közben: ${error.message}`);
+      throw new Error(`Hiba a token ellenőrzése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -66,7 +68,7 @@ class RevokedTokenRepository {
       return tokens;
     } catch (error) {
       logger.error('Error finding revoked tokens by user', { error: error.message, userId });
-      throw new Error(`Hiba a tokenek lekérdezése közben: ${error.message}`);
+      throw new Error(`Hiba a tokenek lekérdezése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -80,7 +82,7 @@ class RevokedTokenRepository {
       const deleted = await this.RevokedToken.destroy({
         where: {
           expires_at: {
-            [this.db.Sequelize.Op.lt]: now
+            [this.Op.lt]: now
           }
         }
       });
@@ -91,7 +93,7 @@ class RevokedTokenRepository {
       return deleted;
     } catch (error) {
       logger.error('Error cleaning up expired tokens', { error: error.message });
-      throw new Error(`Hiba a lejárt tokenek törlése közben: ${error.message}`);
+      throw new Error(`Hiba a lejárt tokenek törlése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -110,7 +112,7 @@ class RevokedTokenRepository {
       return deleted;
     } catch (error) {
       logger.error('Error revoking all user tokens', { error: error.message, userId });
-      throw new Error(`Hiba a felhasználó tokenjeinek törlése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó tokenjeinek törlése közben: ${error.message}`, { cause: error });
     }
   }
 }

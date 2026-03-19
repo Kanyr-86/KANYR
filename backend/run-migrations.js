@@ -185,4 +185,15 @@ async function main() {
   }
 }
 
-main();
+// Export functions for use in other modules
+module.exports = {
+  runMigrations,
+  rollbackMigration,
+  showStatus,
+  main
+};
+
+// Run main if this file is executed directly
+if (require.main === module) {
+  main();
+}

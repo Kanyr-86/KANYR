@@ -12,11 +12,26 @@ async function seedDatabase() {
   try {
     logger.info('🔄 Adatbázis szinkronizálása...');
     
-    // Táblák törlése (fejlesztéshez)
-    // Megjegyzés: Csak szükség esetén töröljük az adatokat
-    await sequelize.truncate({ cascade: true, force: true });
+    // Először szinkronizáljuk a sémát (létrehozzuk a táblákat)
+    await sequelize.sync({ force: true });
+    logger.info('✓ Adatbázis séma létrehozva');
     
-    logger.info('✓ Adatbázis szinkronizálva');
+    // Táblák törlése (fejlesztéshez) - csak akkor, ha a táblák már léteznek
+    // Megjegyzés: Csak szükség esetén töröljük az adatokat
+    try {
+      // Először ellenőrizzük, hogy léteznek-e a táblák
+      const tables = await sequelize.query("SELECT name FROM sqlite_master WHERE type='table'");
+      const tableNames = tables[0].map(row => row.name);
+      
+      if (tableNames.length > 0) {
+        await sequelize.truncate({ cascade: true, force: true });
+        logger.info('✓ Adatbázis tartalma törölve');
+      } else {
+        logger.info('ℹ Nincsenek meglévő táblák, új adatbázis létrehozása');
+      }
+    } catch (err) {
+      logger.warn('⚠ Adatbázis tartalom törlése sikertelen, folytatás a létező adatokkal', { error: err.message });
+    }
 
     // ========== LAKCÍMEK LÉTREHOZÁSA ==========
     logger.info('📍 Lakcímek létrehozása...');
@@ -65,42 +80,42 @@ async function seedDatabase() {
     const szulok = await db.Szulo.bulkCreate([
       {
         nev: 'Nagy Anna',
-        email: 'nagy.anna@email.hu',
+        email: 'nagy.anna.parent@kanyr.hu',
         telefonszam: '06-30-123-4567',
         szemelyi_igazolvany_szam: '111111AAA',
         cim_id: lakcimek[0].cim_id
       },
       {
         nev: 'Nagy János',
-        email: 'nagy.janos@email.hu',
+        email: 'nagy.janos.parent@kanyr.hu',
         telefonszam: '06-70-234-5678',
         szemelyi_igazolvany_szam: '222222BBB',
         cim_id: lakcimek[1].cim_id
       },
       {
         nev: 'Kovács Eszter',
-        email: 'kovacs.eszter@email.hu',
+        email: 'kovacs.eszter.parent@kanyr.hu',
         telefonszam: '06-30-345-6789',
         szemelyi_igazolvany_szam: '333333CCC',
         cim_id: lakcimek[2].cim_id
       },
       {
         nev: 'Szabó Péter',
-        email: 'szabo.peter@email.hu',
+        email: 'szabo.peter.parent@kanyr.hu',
         telefonszam: '06-70-456-7890',
         szemelyi_igazolvany_szam: '444444DDD',
         cim_id: lakcimek[3].cim_id
       },
       {
         nev: 'Bodnár Judit',
-        email: 'bodnar.judit@email.hu',
+        email: 'bodnar.judit.parent@kanyr.hu',
         telefonszam: '06-30-567-8901',
         szemelyi_igazolvany_szam: '555555EEE',
         cim_id: lakcimek[4].cim_id
       },
       {
         nev: 'Kiss Mihály',
-        email: 'kiss.mihaly@email.hu',
+        email: 'kiss.mihaly.parent@kanyr.hu',
         telefonszam: '06-70-678-9012',
         szemelyi_igazolvany_szam: '666666FFF',
         cim_id: lakcimek[5].cim_id
@@ -113,7 +128,7 @@ async function seedDatabase() {
     const diaks = await db.Diak.bulkCreate([
       {
         nev: 'Nagy Bernadett',
-        email: 'nagy.bernadett@student.hu',
+        email: 'nagy.bernadett.2024@student.hu',
         telefonszam: '06-30-111-1111',
         szuletesi_datum: '2006-03-15',
         szemelyi_igazolvany_szam: '100001AAA',
@@ -126,7 +141,7 @@ async function seedDatabase() {
       },
       {
         nev: 'Nagy Péter',
-        email: 'nagy.peter@student.hu',
+        email: 'nagy.peter.2024@student.hu',
         telefonszam: '06-30-222-2222',
         szuletesi_datum: '2005-07-22',
         szemelyi_igazolvany_szam: '100002BBB',
@@ -139,7 +154,7 @@ async function seedDatabase() {
       },
       {
         nev: 'Kovács Zsófia',
-        email: 'kovacs.zsofia@student.hu',
+        email: 'kovacs.zsofia.2024@student.hu',
         telefonszam: '06-30-333-3333',
         szuletesi_datum: '2006-11-08',
         szemelyi_igazolvany_szam: '100003CCC',
@@ -152,7 +167,7 @@ async function seedDatabase() {
       },
       {
         nev: 'Szabó Katalin',
-        email: 'szabo.katalin@student.hu',
+        email: 'szabo.katalin.2024@student.hu',
         telefonszam: '06-30-444-4444',
         szuletesi_datum: '2005-09-18',
         szemelyi_igazolvany_szam: '100004DDD',
@@ -165,7 +180,7 @@ async function seedDatabase() {
       },
       {
         nev: 'Bodnár Krisztina',
-        email: 'bodnar.krisztina@student.hu',
+        email: 'bodnar.krisztina.2024@student.hu',
         telefonszam: '06-30-555-5555',
         szuletesi_datum: '2006-01-25',
         szemelyi_igazolvany_szam: '100005EEE',
@@ -178,7 +193,7 @@ async function seedDatabase() {
       },
       {
         nev: 'Kiss Tamás',
-        email: 'kiss.tamas@student.hu',
+        email: 'kiss.tamas.2024@student.hu',
         telefonszam: '06-30-666-6666',
         szuletesi_datum: '2005-05-30',
         szemelyi_igazolvany_szam: '100006FFF',
@@ -267,9 +282,9 @@ async function seedDatabase() {
     // ========== FELHASZNÁLÓK LÉTREHOZÁSA ==========
     logger.info('👤 Felhasználók létrehozása...');
     
-    // Jelszavak hash-elése
-    const adminPasswordHash = await bcrypt.hash('admin123', 10);
-    const studentPasswordHash = await bcrypt.hash('student123', 10);
+    // Jelszavak hash-elése - komplex jelszavak a validációknak megfelelően
+    const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
+    const studentPasswordHash = await bcrypt.hash('Student123!', 10);
     
     const felhasznalok = await db.Felhasznalo.bulkCreate([
       {
@@ -281,42 +296,42 @@ async function seedDatabase() {
       },
       {
         username: 'student1',
-        email: 'nagy.bernadett@student.hu',
+        email: 'nagy.bernadett.2024@student.hu',
         password: studentPasswordHash,
         admin: false,  // Diák
         diak_id: diaks[0].diak_id  // Link to first student (Nagy Bernadett)
       },
       {
         username: 'student2',
-        email: 'nagy.peter@student.hu',
+        email: 'nagy.peter.2024@student.hu',
         password: studentPasswordHash,
         admin: false,  // Diák
         diak_id: diaks[1].diak_id  // Link to second student (Nagy Péter)
       },
       {
         username: 'student3',
-        email: 'kovacs.zsofia@student.hu',
+        email: 'kovacs.zsofia.2024@student.hu',
         password: studentPasswordHash,
         admin: false,  // Diák
         diak_id: diaks[2].diak_id  // Link to third student (Kovács Zsófia)
       },
       {
         username: 'student4',
-        email: 'szabo.katalin@student.hu',
+        email: 'szabo.katalin.2024@student.hu',
         password: studentPasswordHash,
         admin: false,  // Diák
         diak_id: diaks[3].diak_id  // Link to fourth student (Szabó Katalin)
       },
       {
         username: 'student5',
-        email: 'bodnar.krisztina@student.hu',
+        email: 'bodnar.krisztina.2024@student.hu',
         password: studentPasswordHash,
         admin: false,  // Diák
         diak_id: diaks[4].diak_id  // Link to fifth student (Bodnár Krisztina)
       },
       {
         username: 'student6',
-        email: 'kiss.tamas@student.hu',
+        email: 'kiss.tamas.2024@student.hu',
         password: studentPasswordHash,
         admin: false,  // Diák
         diak_id: diaks[5].diak_id  // Link to sixth student (Kiss Tamás)

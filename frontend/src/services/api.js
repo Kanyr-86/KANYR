@@ -318,11 +318,11 @@ applyAuthInterceptors(api)
 
 /**
  * Diák API példány.
- * A baseURL '/api/diaks', így egy studentApi.get('/students/room') hívás
- * GET /api/diaks/students/room -ra fut (egyezik a DiakRoutes.js-el)
+ * A baseURL '/api/students', így egy studentApi.get('/room') hívás
+ * GET /api/students/room -ra fut (egyezik a DiakRoutes.js-el)
  */
 const studentApi = axios.create({
-  baseURL: '/api/diaks',
+  baseURL: '/api/students',
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
   withCredentials: true

@@ -59,17 +59,22 @@ function encryptData(data) {
  */
 function decryptData(encryptedData) {
   try {
+    // Check if encryptedData is valid
+    if (!encryptedData || typeof encryptedData !== 'string') {
+      throw new Error('Invalid encrypted data format')
+    }
+    
     const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY)
     const decrypted = bytes.toString(CryptoJS.enc.Utf8)
     
     if (!decrypted) {
-      throw new Error('Failed to decrypt data')
+      throw new Error('Failed to decrypt data - empty result')
     }
     
     return decrypted
   } catch (error) {
     console.error('Decryption error:', error)
-    throw new Error('Failed to decrypt data')
+    throw new Error('Failed to decrypt data: ' + error.message)
   }
 }
 

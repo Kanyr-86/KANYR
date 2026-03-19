@@ -706,5 +706,5 @@ async function handleSubmit() {
 
 ---
 
-**Utolsó frissítés**: 2026.02.23  
+**Utolsó frissítés**: 2026.03.19  
 **Karbantartó**: KANYR Fejlesztő Csapat
