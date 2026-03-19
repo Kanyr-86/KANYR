@@ -1,5 +1,7 @@
-/* Modal Component Styles */
-.modal-content {
+/* Modal Component Styles - BEM Methodology */
+
+/* Block: Modal Content */
+.modal__content {
   border: none;
   border-radius: var(--border-radius-xl);
   box-shadow: 0 10px 25px rgba(0, 0, 0, var(--shadow-alpha-lg));
@@ -7,30 +9,34 @@
   border: 1px solid var(--border-primary);
 }
 
-.modal-header {
+/* Element: Header */
+.modal__header {
   background-color: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-primary);
   padding: 1rem 1.5rem;
 }
 
-.modal-header .modal-title {
+.modal__title {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-heading);
   margin: 0;
 }
 
-.modal-body {
+/* Element: Body */
+.modal__body {
   padding: 1.5rem;
   background-color: var(--bg-card);
 }
 
-.modal-footer {
+/* Element: Footer */
+.modal__footer {
   background-color: var(--bg-tertiary);
   border-top: 1px solid var(--border-primary);
   padding: 1rem 1.5rem;
 }
 
+/* Backdrop */
 .modal-backdrop {
   background-color: rgba(0, 0, 0, var(--shadow-alpha-backdrop));
 }
@@ -39,18 +45,18 @@
   transform: translate(0, 0);
 }
 
-/* Modal Dialog Sizes */
-.modal-sm .modal-content {
+/* Modifier: Modal Sizes */
+.modal--sm .modal__content {
   border-radius: 10px;
 }
 
-.modal-lg .modal-content,
-.modal-xl .modal-content {
+.modal--lg .modal__content,
+.modal--xl .modal__content {
   border-radius: 12px;
 }
 
-/* Modal Close Button */
-.btn-close {
+/* Element: Close Button */
+.modal__close {
   background: transparent;
   border: none;
   color: var(--text-secondary);
@@ -60,14 +66,14 @@
   transition: all 0.2s ease;
 }
 
-.btn-close:hover {
+.modal__close:hover {
   opacity: 1;
   color: var(--text-primary);
 }
 
-/* Modal Form Elements */
-.modal-body .form-control,
-.modal-body .form-select {
+/* Element: Form Controls within Modal */
+.modal__form-control,
+.modal__form-select {
   border-radius: 8px;
   border: 1px solid var(--border-primary);
   padding: 10px 12px;
@@ -76,95 +82,96 @@
   background-color: var(--bg-page);
   color: var(--text-primary);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  width: 100%;
 }
 
-.modal-body .form-control:focus,
-.modal-body .form-select:focus {
+.modal__form-control:focus,
+.modal__form-select:focus {
   outline: none;
   border-color: var(--primary-600);
   box-shadow: var(--focus-ring);
 }
 
-.modal-body .form-label {
+.modal__form-label {
   font-weight: 500;
   color: var(--text-heading);
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
+  display: block;
 }
 
-/* Modal Buttons */
-.modal-footer .btn {
+/* Element: Buttons within Modal */
+.modal__btn {
   font-weight: 500;
   border-radius: 8px;
   padding: 8px 16px;
   transition: all 0.2s ease;
   border: none;
+  cursor: pointer;
 }
 
-.modal-footer .btn-secondary {
+.modal__btn--secondary {
   background: linear-gradient(135deg, var(--secondary-600), var(--secondary-700));
   color: var(--text-inverse);
   box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
 }
 
-.modal-footer .btn-secondary:hover {
+.modal__btn--secondary:hover {
   background: linear-gradient(135deg, var(--secondary-700), var(--secondary-600));
   box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
 }
 
-.modal-footer .btn-primary {
+.modal__btn--primary {
   background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
   color: var(--text-inverse);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
-.modal-footer .btn-primary:hover {
+.modal__btn--primary:hover {
   background: linear-gradient(135deg, var(--primary-700), var(--primary-600));
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
-/* Note: Theme overrides are now handled in base.css */
-
 /* High contrast modal overrides */
-[data-theme="high-contrast"] .modal-content {
+[data-theme="high-contrast"] .modal__content {
   background-color: var(--bg-card);
   border: 2px solid var(--border-primary);
   border-radius: 8px;
 }
 
-[data-theme="high-contrast"] .modal-header {
+[data-theme="high-contrast"] .modal__header {
   background-color: var(--bg-page);
   border-bottom: 2px solid var(--border-primary);
 }
 
-[data-theme="high-contrast"] .modal-title {
+[data-theme="high-contrast"] .modal__title {
   color: var(--text-primary);
   font-weight: 700;
 }
 
-[data-theme="high-contrast"] .modal-body {
+[data-theme="high-contrast"] .modal__body {
   background-color: var(--bg-card);
   color: var(--text-primary);
 }
 
-[data-theme="high-contrast"] .modal-footer {
+[data-theme="high-contrast"] .modal__footer {
   background-color: var(--bg-page);
   border-top: 2px solid var(--border-primary);
 }
 
-[data-theme="high-contrast"] .btn-close {
+[data-theme="high-contrast"] .modal__close {
   background-color: #000000;
   opacity: 1;
 }
 
-[data-theme="high-contrast"] .modal-body .form-control,
-[data-theme="high-contrast"] .modal-body .form-select {
+[data-theme="high-contrast"] .modal__form-control,
+[data-theme="high-contrast"] .modal__form-select {
   background-color: #ffffff;
   border: 2px solid #000000;
   color: #000000;
 }
 
-[data-theme="high-contrast"] .modal-body .form-label {
+[data-theme="high-contrast"] .modal__form-label {
   color: #000000;
   font-weight: 700;
 }

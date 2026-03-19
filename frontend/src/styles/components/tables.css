@@ -1,50 +1,96 @@
-/* Table Component Styles */
+/* Table Component Styles - BEM Methodology */
+
+/* Block: Table */
 .table {
   background-color: var(--bg-card);
   border-color: var(--border-primary);
+  width: 100%;
+  margin-bottom: 1rem;
 }
 
-.table-hover tbody tr:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.table-light {
-  background-color: var(--bg-tertiary);
-  border-bottom-color: var(--border-primary);
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: var(--bg-tertiary);
-}
-
-.table-bordered {
-  border: 1px solid var(--border-primary);
-}
-
-.table-bordered th,
-.table-bordered td {
-  border: 1px solid var(--border-primary);
-}
-
-/* Table Head Styles */
-.table thead th {
+/* Element: Table Header Cell */
+.table__header {
   background-color: var(--bg-tertiary);
   border-bottom: 2px solid var(--border-primary);
   font-weight: 600;
   color: var(--text-heading);
   vertical-align: middle;
+  padding: 0.75rem;
+  text-align: left;
 }
 
-/* Table Body Styles */
-.table tbody td {
+/* Element: Table Body Cell */
+.table__cell {
   border-top: 1px solid var(--border-primary);
   vertical-align: middle;
+  padding: 0.75rem;
 }
 
-/* Table Responsive */
+/* Element: Table Row */
+.table__row {
+  transition: background-color 0.15s ease;
+}
+
+/* Modifier: Hover Effect */
+.table--hover .table__row:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Modifier: Striped Rows */
+.table--striped .table__row:nth-of-type(odd) {
+  background-color: var(--bg-tertiary);
+}
+
+/* Modifier: Bordered Table */
+.table--bordered {
+  border: 1px solid var(--border-primary);
+}
+
+.table--bordered .table__header,
+.table--bordered .table__cell {
+  border: 1px solid var(--border-primary);
+}
+
+/* Modifier: Light Header */
+.table--light .table__header {
+  background-color: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+/* Block: Table Responsive Container */
 .table-responsive {
   border: 1px solid var(--border-primary);
   border-radius: var(--border-radius-md);
+  overflow-x: auto;
 }
 
-/* Note: Theme overrides are now handled in base.css */
+/* High contrast table styles */
+[data-theme="high-contrast"] .table {
+  background-color: var(--bg-page);
+  border: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .table__header {
+  background-color: var(--bg-page);
+  border-bottom: 2px solid var(--border-primary);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+[data-theme="high-contrast"] .table__cell {
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="high-contrast"] .table--hover .table__row:hover {
+  background-color: var(--bg-hover);
+}
+
+[data-theme="high-contrast"] .table-responsive {
+  background-color: var(--bg-page);
+  border: 2px solid var(--border-primary);
+}
+
+[data-theme="high-contrast"] .table--striped .table__row:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, var(--hover-alpha-xs));
+}

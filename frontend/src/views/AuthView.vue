@@ -7,8 +7,8 @@
         </div>
         <div class="card-body p-3">
           <form @submit.prevent="handleLogin">
-            <div class="mb-2">
-              <label for="email" class="form-label mb-1 small">Email cím</label>
+            <div class="mb-2 form-row">
+              <label for="email" class="form-label mb-1 small">E-mail cím</label>
               <input 
                 type="email" 
                 class="form-control form-control-sm" 
@@ -18,7 +18,7 @@
                 required
               >
             </div>
-            <div class="mb-2">
+            <div class="mb-2 form-row">
               <label for="password" class="form-label mb-1 small">Jelszó</label>
               <input 
                 type="password" 
@@ -76,13 +76,31 @@
 .card-header h5 {
   font-size: 1.1rem;
   line-height: 1.2;
-  color: var(--text-heading);
+  color: white;
 }
 
 .form-label {
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
   color: var(--text-body);
+}
+
+/* Form row layout - label és input egy vonalban */
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.form-row .form-label {
+  width: 85px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.form-row .form-control {
+  flex: 1;
 }
 
 .form-control-sm {
