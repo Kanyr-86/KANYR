@@ -3,3 +3,7 @@ node_modules/
 *.sqlite-journal.env
 .env.local
 .env.*.local
+
+backend/logs
+*.log
+*-aduit.json

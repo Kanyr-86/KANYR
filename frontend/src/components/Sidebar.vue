@@ -8,16 +8,7 @@
     :style="sidebarStyles"
   >
     <!-- Brand/Logo Section -->
-    <div class="sidebar-brand d-flex align-items-center justify-content-between p-3">
-      <div class="d-flex align-items-center">
-        <div class="brand-icon me-3">
-          <i class="bi bi-building"></i>
-        </div>
-        <div class="brand-text" v-show="!isCollapsed">
-          <h5 class="mb-0">KANYR</h5>
-          <small class="text-muted">Kollégiumi Nyilvántartó</small>
-        </div>
-      </div>
+    <div class="sidebar-brand d-flex align-items-center p-3">
       <button 
         class="btn btn-outline-light btn-sm d-none d-lg-inline-flex"
         @click="toggleSidebar"

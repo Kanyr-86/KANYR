@@ -9,7 +9,9 @@
     "start-frontend": "cd frontend && npm run dev",
     "start-all": "concurrently \"cd backend && npx nodemon app.js\" \"npm run start-frontend\"",
     "build-frontend": "cd frontend && npm run build",
-    "dev": "concurrently \"cd backend && npx nodemon app.js\" \"cd frontend && npm run dev\""
+    "setup": "cd backend && node -e \"const fs=require('fs');if(!fs.existsSync('.env')){fs.copyFileSync('.env.example','.env');console.log('✓ Created .env from .env.example');}else{console.log('✓ .env already exists');}\"",
+    "seed": "cd backend && node testdata.js",
+    "dev": "npm run setup && cd backend && node testdata.js && cd .. && concurrently \"cd backend && npx nodemon app.js\" \"cd frontend && npm run dev\""
   },
   "repository": {
     "type": "git",

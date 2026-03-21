@@ -12,6 +12,8 @@ const { csrfTokenMiddleware, csrfProtectionMiddleware } = require('./middleware/
 const { NotFoundError } = require('./utils/AppError');
 const logger = require('./utils/logger');
 const TokenBlacklistService = require('./services/TokenBlacklistService');
+const { validateMigrationsBeforeStart } = require('./utils/migrationValidator');
+const { runMigrations } = require('./run-migrations');
 require('dotenv').config();
 
 const app = express();
@@ -234,12 +236,57 @@ const startServer = async () => {
     await testConnection();
     
     // Migrációk állapotának ellenőrzése és futtatása
-    // Megjegyzés: A tesztadatok frissítésekor a sequelize.sync({ force: true }) törölte a SequelizeMeta táblát,
-    // így a rendszer újra szeretné futtatni a már lefutott migrációkat. Mivel a modellek már tartalmazzák
-    // a szükséges változtatásokat, ezért átmenetileg kihagyjuk a migráció validációt és futtatást.
-    // await validateMigrationsBeforeStart();
-    // await runMigrations();
-    logger.info('✓ Migrációk átmenetileg kihagyva, modellek már tartalmazzák a szükséges változtatásokat');
+    // Most már biztonságosan futtathatjuk a migrációkat, mivel a revoked_tokens tábla hiányát javítottuk
+    try {
+      await validateMigrationsBeforeStart();
+      await runMigrations();
+      logger.info('✓ Migrációk sikeresen lefutottak');
+    } catch (migrationError) {
+      logger.warn('⚠️  Migration validation failed, creating revoked_tokens table directly', { error: migrationError.message });
+      
+      // Create revoked_tokens table directly if migrations fail
+      const queryInterface = db.sequelize.getQueryInterface();
+      const { DataTypes } = require('sequelize');
+      
+      await queryInterface.createTable('revoked_tokens', {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false
+        },
+        token: {
+          type: DataTypes.TEXT,
+          allowNull: false
+        },
+        user_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'felhasznalos',
+            key: 'user_id'
+          }
+        },
+        expires_at: {
+          type: DataTypes.DATE,
+          allowNull: false
+        },
+        revoked_at: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          defaultValue: DataTypes.NOW
+        }
+      }, {
+        indexes: [
+          { unique: true, fields: ['token'] },
+          { fields: ['user_id'] },
+          { fields: ['expires_at'] },
+          { fields: ['revoked_at'] }
+        ]
+      });
+      
+      logger.info('✓ revoked_tokens table created directly');
+    }
     
 // Database available to routes via app.locals
     app.locals.db = db;

@@ -124,558 +124,529 @@
         </div>
         
         <!-- Szobák kártyák -->
-        <div v-else class="rooms-container">
-          <RecycleScroller
-            class="scroller"
-            :items="filteredRooms"
-            :item-size="280"
-            key-field="szoba_id"
-            v-slot="{ item: room }"
+        <div v-else class="row g-4">
+          <div 
+            v-for="room in filteredRooms" 
+            :key="room.szoba_id" 
+            class="col-12 col-md-6 col-lg-4"
           >
-            <div class="room-card-wrapper">
-              <div class="card shadow-sm h-100">
-                <div class="card-header border-0">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <h5 class="mb-0">{{ room.szoba_szama }}</h5>
+            <div class="card shadow-sm h-100">
+              <div class="card-header border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="mb-0">{{ room.szoba_szama }}</h5>
+                  </div>
+                  <div>
+                    <span class="badge" :class="getRoomStatusClass(room)">
+                      {{ getRoomStatusText(room) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-people-fill text-primary me-2"></i>
+                      <div>
+                        <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
+                        <small class="text-muted">Férőhely</small>
+                      </div>
                     </div>
-                    <div>
-                      <span class="badge" :class="getRoomStatusClass(room)">
-                        {{ getRoomStatusText(room) }}
+                  </div>
+                  <div class="col-6">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-person-fill text-success me-2"></i>
+                      <div>
+                        <div class="fw-semibold">{{ room.currentOccupancy || 0 }} fő</div>
+                        <small class="text-muted">Jelenlegi lakók</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px;">
+                  <div class="progress-bar" 
+                       :class="getTransferRoomProgressClass(room)"
+                       :style="{ width: getOccupancyPercentage(room) + '%' }">
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between">
+                    <small class="text-muted">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
+                    <small class="text-muted">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                  </div>
+                </div>
+                
+                <div v-if="room.diakok && room.diakok.length > 0">
+                  <h6 class="mb-2">Lakók:</h6>
+                  <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center" 
+                         v-for="student in room.diakok.slice(0, 3)" :key="student.diak_id">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;"
+                             v-text="student.nev ? student.nev.charAt(0).toUpperCase() : ''">
+                        </div>
+                        <div>
+                          <div class="fw-semibold" v-text="student.nev"></div>
+                        </div>
+                      </div>
+                      <span class="badge" :class="student.aktiv ? 'status-active' : 'status-inactive'">
+                        {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="row mb-3">
-                    <div class="col-6">
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-people-fill text-primary me-2"></i>
-                        <div>
-                          <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
-                          <small class="text-muted">Férőhely</small>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-person-fill text-success me-2"></i>
-                        <div>
-                          <div class="fw-semibold">{{ room.currentOccupancy || 0 }} fő</div>
-                          <small class="text-muted">Jelenlegi lakók</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="progress mb-3" style="height: 8px;">
-                    <div class="progress-bar" 
-                         :class="getTransferRoomProgressClass(room)"
-                         :style="{ width: getOccupancyPercentage(room) + '%' }">
-                    </div>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                      <small class="text-muted">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
-                      <small class="text-muted">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
-                    </div>
-                  </div>
-                  
-                  <div v-if="room.diakok && room.diakok.length > 0">
-                    <h6 class="mb-2">Lakók:</h6>
-                    <div class="list-group list-group-flush">
-                      <div class="list-group-item d-flex justify-content-between align-items-center" 
-                           v-for="student in room.diakok.slice(0, 3)" :key="student.diak_id">
-                        <div class="d-flex align-items-center">
-                          <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;"
-                               v-text="student.nev ? student.nev.charAt(0).toUpperCase() : ''">
-                          </div>
-                          <div>
-                            <div class="fw-semibold" v-text="student.nev"></div>
-                          </div>
-                        </div>
-                        <span class="badge" :class="student.aktiv ? 'status-active' : 'status-inactive'">
-                          {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
-                        </span>
-                      </div>
-                      <div v-if="room.diakok.length > 3" class="list-group-item text-center text-muted">
-                        <small>+{{ room.diakok.length - 3 }} további lakó</small>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-else>
-                    <div class="alert alert-light border text-center mb-0">
-                      <i class="bi bi-emoji-smile text-muted me-2"></i>
-                      <span class="text-muted">Nincs bent lakó</span>
+                    <div v-if="room.diakok.length > 3" class="list-group-item text-center text-muted">
+                      <small>+{{ room.diakok.length - 3 }} további lakó</small>
                     </div>
                   </div>
                 </div>
-                <div class="card-footer border-0">
-                  <div class="d-flex justify-content-between">
+                <div v-else>
+                  <div class="alert alert-light border text-center mb-0">
+                    <i class="bi bi-emoji-smile text-muted me-2"></i>
+                    <span class="text-muted">Nincs bent lakó</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer border-0">
+                <div class="d-flex justify-content-between">
+                  <button 
+                    class="btn btn-outline-primary btn-sm" 
+                    @click="viewRoomDetails(room)"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-eye me-1"></i>Részletek
+                  </button>
+                  <div class="btn-group" role="group">
                     <button 
-                      class="btn btn-outline-primary btn-sm" 
-                      @click="viewRoomDetails(room)"
+                      class="btn btn-outline-warning btn-sm" 
+                      @click="editRoom(room)"
                       :disabled="loading"
                     >
-                      <i class="bi bi-eye me-1"></i>Részletek
+                      <i class="bi bi-pencil me-1"></i>Szerkesztés
                     </button>
-                    <div class="btn-group" role="group">
-                      <button 
-                        class="btn btn-outline-warning btn-sm" 
-                        @click="editRoom(room)"
-                        :disabled="loading"
-                      >
-                        <i class="bi bi-pencil me-1"></i>Szerkesztés
-                      </button>
-                      <button 
-                        class="btn btn-outline-danger btn-sm" 
-                        @click="deleteRoom(room)"
-                        :disabled="loading"
-                      >
-                        <i class="bi bi-trash me-1"></i>Törlés
-                      </button>
-                    </div>
+                    <button 
+                      class="btn btn-outline-danger btn-sm" 
+                      @click="deleteRoom(room)"
+                      :disabled="loading"
+                    >
+                      <i class="bi bi-trash me-1"></i>Törlés
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-          </RecycleScroller>
+          </div>
         </div>
       </div>
     </div>
     
     <!-- Szoba felvétel modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showCreateModal" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Szoba felvétele</h5>
-            <button type="button" class="btn-close" @click="showCreateModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="createRoom">
-              <div class="mb-3">
-                <BaseInput
-                  v-model="roomData.szoba_szama"
-                  label="Szobaszám"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <BaseInput
-                  v-model="roomData.osszes_hely"
-                  label="Férőhely"
-                  type="number"
-                  min="1"
-                  max="10"
-                  required
-                />
-              </div>
-              
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showCreateModal = false">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="createLoading">
-                  {{ createLoading ? 'Mentés...' : 'Mentés' }}
-                </button>
-              </div>
-            </form>
-          </div>
+    <BaseModal
+      v-model:show="showCreateModal"
+      title="Szoba felvétele"
+      size="md"
+      @close="showCreateModal = false"
+    >
+      <form @submit.prevent="createRoom" id="createRoomForm">
+        <div class="mb-3">
+          <BaseInput
+            v-model="roomData.szoba_szama"
+            label="Szobaszám"
+            required
+          />
         </div>
-      </div>
-    </div>
+        <div class="mb-3">
+          <BaseInput
+            v-model="roomData.osszes_hely"
+            label="Férőhely"
+            type="number"
+            min="1"
+            max="10"
+            required
+          />
+        </div>
+      </form>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showCreateModal = false">Mégse</button>
+        <button type="submit" form="createRoomForm" class="btn btn-primary" :disabled="createLoading">
+          {{ createLoading ? 'Mentés...' : 'Mentés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Szoba szerkesztés modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showEditModal" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Szoba szerkesztése</h5>
-            <button type="button" class="btn-close" @click="showEditModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="updateRoom">
-              <div class="mb-3">
-                <BaseInput
-                  v-model="editRoomData.szoba_szama"
-                  label="Szobaszám"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <BaseInput
-                  v-model="editRoomData.osszes_hely"
-                  label="Férőhely"
-                  type="number"
-                  min="1"
-                  max="10"
-                  required
-                />
-              </div>
-              
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showEditModal = false">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="updateLoading">
-                  {{ updateLoading ? 'Mentés...' : 'Mentés' }}
-                </button>
-              </div>
-            </form>
-          </div>
+    <BaseModal
+      v-model:show="showEditModal"
+      title="Szoba szerkesztése"
+      size="md"
+      @close="showEditModal = false"
+    >
+      <form @submit.prevent="updateRoom" id="editRoomForm">
+        <div class="mb-3">
+          <BaseInput
+            v-model="editRoomData.szoba_szama"
+            label="Szobaszám"
+            required
+          />
         </div>
-      </div>
-    </div>
+        <div class="mb-3">
+          <BaseInput
+            v-model="editRoomData.osszes_hely"
+            label="Férőhely"
+            type="number"
+            min="1"
+            max="10"
+            required
+          />
+        </div>
+      </form>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showEditModal = false">Mégse</button>
+        <button type="submit" form="editRoomForm" class="btn btn-primary" :disabled="updateLoading">
+          {{ updateLoading ? 'Mentés...' : 'Mentés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- TÖMEGES BEKÖLTÖZTETÉS - 1. LÉPÉS: Szoba kiválasztása -->
-    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal && bulkTransferStep === 1" style="display: block;">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Tömeges beköltöztetés - 1. lépés: Szoba kiválasztása</h5>
-            <button type="button" class="btn-close" @click="closeBulkTransferModal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="alert alert-info mb-3">
-              <i class="bi bi-info-circle"></i>
-              Válassza ki a szobát, ahová a diákokat költöztetni szeretné. 
-              Csak a szabad hellyel rendelkező szobák jelennek meg.
-            </div>
-            
-            <div v-if="availableRoomsForBulkTransfer.length === 0" class="alert alert-warning">
-              <strong>Nincs elérhető szoba!</strong><br>
-              Minden szoba tele van, vagy nincs elegendő szabad hely.
-            </div>
-            
-            <div class="row" v-else>
-              <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForBulkTransfer" :key="room.szoba_id">
-                <div class="card mb-3 room-card">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">{{ room.szoba_szama }}</h6>
-                    <div class="d-flex gap-1">
-                      <span class="badge" :class="getTransferRoomBadgeClass(room)">
-                        {{ getTransferRoomBadgeText(room) }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <p class="card-text mb-1">
-                      <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
-                    </p>
-                    <p class="card-text mb-1">
-                      <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
-                    </p>
-                    <p class="card-text mb-2">
-                      <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
-                    </p>
-                    <div class="progress mb-3" style="height: 8px;">
-                      <div class="progress-bar" 
-                           :class="getTransferRoomProgressClass(room)"
-                           :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
-                           :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
-                           aria-valuemin="0" 
-                           aria-valuemax="100">
-                      </div>
-                    </div>
-                    <button 
-                      class="btn btn-sm w-100 btn-outline-primary" 
-                      @click="selectRoomForBulkTransfer(room)">
-                      Kiválaszt
-                    </button>
-                  </div>
-                </div>
+    <BaseModal
+      v-model:show="showBulkTransferModalStep1"
+      title="Tömeges beköltöztetés - 1. lépés: Szoba kiválasztása"
+      size="xl"
+      @close="closeBulkTransferModal"
+    >
+      <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle"></i>
+        Válassza ki a szobát, ahová a diákokat költöztetni szeretné. 
+        Csak a szabad hellyel rendelkező szobák jelennek meg.
+      </div>
+      
+      <div v-if="availableRoomsForBulkTransfer.length === 0" class="alert alert-warning">
+        <strong>Nincs elérhető szoba!</strong><br>
+        Minden szoba tele van, vagy nincs elegendő szabad hely.
+      </div>
+      
+      <div class="row" v-else>
+        <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForBulkTransfer" :key="room.szoba_id">
+          <div class="card mb-3 room-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">{{ room.szoba_szama }}</h6>
+              <div class="d-flex gap-1">
+                <span class="badge" :class="getTransferRoomBadgeClass(room)">
+                  {{ getTransferRoomBadgeText(room) }}
+                </span>
               </div>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeBulkTransferModal">Mégse</button>
+            <div class="card-body">
+              <p class="card-text mb-1">
+                <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
+              </p>
+              <p class="card-text mb-1">
+                <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
+              </p>
+              <p class="card-text mb-2">
+                <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+              </p>
+              <div class="progress mb-3" style="height: 8px;">
+                <div class="progress-bar" 
+                     :class="getTransferRoomProgressClass(room)"
+                     :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
+                     :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+              </div>
+              <button 
+                class="btn btn-sm w-100 btn-outline-primary" 
+                @click="selectRoomForBulkTransfer(room)">
+                Kiválaszt
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeBulkTransferModal">Mégse</button>
+      </template>
+    </BaseModal>
 
     <!-- TÖMEGES BEKÖLTÖZTETÉS - 2. LÉPÉS: Szoba megerősítése -->
-    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal && bulkTransferStep === 2" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Tömeges beköltöztetés - 2. lépés: Szoba megerősítése</h5>
-            <button type="button" class="btn-close" @click="closeBulkTransferModal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="alert alert-info mb-3">
-              Kérjük, erősítse meg a kiválasztott szobát:
+    <BaseModal
+      v-model:show="showBulkTransferModalStep2"
+      title="Tömeges beköltöztetés - 2. lépés: Szoba megerősítése"
+      size="md"
+      @close="closeBulkTransferModal"
+    >
+      <div class="alert alert-info mb-3">
+        Kérjük, erősítse meg a kiválasztott szobát:
+      </div>
+      
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">{{ selectedRoomForTransfer?.szoba_szama }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-borderless table-sm">
+            <tbody>
+              <tr>
+                <td><strong>Státusz:</strong></td>
+                <td>
+                  <span class="badge" :class="getTransferRoomBadgeClass(selectedRoomForTransfer)">
+                    {{ getTransferRoomBadgeText(selectedRoomForTransfer) }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Férőhely:</strong></td>
+                <td>{{ selectedRoomForTransfer?.osszes_hely }} fő</td>
+              </tr>
+              <tr>
+                <td><strong>Jelenlegi lakók:</strong></td>
+                <td>{{ selectedRoomForTransfer?.currentOccupancy || 0 }} fő</td>
+              </tr>
+              <tr>
+                <td><strong>Szabad helyek:</strong></td>
+                <td class="text-success">
+                  <strong>{{ (selectedRoomForTransfer?.osszes_hely || 0) - (selectedRoomForTransfer?.currentOccupancy || 0) }} fő</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="progress" style="height: 10px;">
+            <div class="progress-bar" 
+                 :class="getTransferRoomProgressClass(selectedRoomForTransfer)"
+                 :style="{ width: getTransferRoomOccupancyPercentage(selectedRoomForTransfer) + '%' }">
             </div>
-            
-            <div class="card border-primary">
-              <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">{{ selectedRoomForTransfer?.szoba_szama }}</h5>
-              </div>
-              <div class="card-body">
-                <table class="table table-borderless table-sm">
-                  <tbody>
-                    <tr>
-                      <td><strong>Státusz:</strong></td>
-                      <td>
-                        <span class="badge" :class="getTransferRoomBadgeClass(selectedRoomForTransfer)">
-                          {{ getTransferRoomBadgeText(selectedRoomForTransfer) }}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong>Férőhely:</strong></td>
-                      <td>{{ selectedRoomForTransfer?.osszes_hely }} fő</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Jelenlegi lakók:</strong></td>
-                      <td>{{ selectedRoomForTransfer?.currentOccupancy || 0 }} fő</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Szabad helyek:</strong></td>
-                      <td class="text-success">
-                        <strong>{{ (selectedRoomForTransfer?.osszes_hely || 0) - (selectedRoomForTransfer?.currentOccupancy || 0) }} fő</strong>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div class="progress" style="height: 10px;">
-                  <div class="progress-bar" 
-                       :class="getTransferRoomProgressClass(selectedRoomForTransfer)"
-                       :style="{ width: getTransferRoomOccupancyPercentage(selectedRoomForTransfer) + '%' }">
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="alert alert-warning mt-3">
-              <small>
-                <i class="bi bi-exclamation-triangle"></i>
-                Ezután kiválaszthatja a diákokat, akiket ebbe a szobába szeretne költöztetni.
-              </small>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="bulkTransferStep = 1">
-              <i class="bi bi-arrow-left"></i> Vissza
-            </button>
-            <button type="button" class="btn btn-primary" @click="confirmRoomAndProceed">
-              Tovább a diákok kiválasztásához
-              <i class="bi bi-arrow-right"></i>
-            </button>
           </div>
         </div>
       </div>
-    </div>
+      
+      <div class="alert alert-warning mt-3">
+        <small>
+          <i class="bi bi-exclamation-triangle"></i>
+          Ezután kiválaszthatja a diákokat, akiket ebbe a szobába szeretne költöztetni.
+        </small>
+      </div>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="goBackToStep1">
+          <i class="bi bi-arrow-left"></i> Vissza
+        </button>
+        <button type="button" class="btn btn-primary" @click="confirmRoomAndProceed">
+          Tovább a diákok kiválasztásához
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </template>
+    </BaseModal>
 
     <!-- TÖMEGES BEKÖLTÖZTETÉS - 3. LÉPÉS: Diákok kiválasztása -->
-    <div class="modal fade show" tabindex="-1" v-if="showBulkTransferModal && bulkTransferStep === 3" style="display: block;">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              Tömeges beköltöztetés - 3. lépés: Diákok kiválasztása
-              <span class="badge bg-info ms-2">{{ selectedRoomForTransfer?.szoba_szama }}</span>
-            </h5>
-            <button type="button" class="btn-close" @click="closeBulkTransferModal"></button>
-          </div>
-          <div class="modal-body">
-            <!-- Beköltözés dátuma -->
-            <div class="mb-3">
-              <BaseInput
-                v-model="bulkTransferData.bekoltozes_datum"
-                label="Beköltözés / átköltöztetés dátuma"
-                type="date"
-                required
-              />
-            </div>
+    <BaseModal
+      v-model:show="showBulkTransferModalStep3"
+      title="Tömeges beköltöztetés - 3. lépés: Diákok kiválasztása"
+      size="xl"
+      @close="closeBulkTransferModal"
+    >
+      <!-- Beköltözés dátuma -->
+      <div class="mb-3">
+        <BaseInput
+          v-model="bulkTransferData.bekoltozes_datum"
+          label="Beköltözés / átköltöztetés dátuma"
+          type="date"
+          required
+        />
+      </div>
 
-            <!-- Összesítő -->
-            <div v-if="bulkTransferData.diak_ids.length > 0" class="alert alert-info mb-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>Kiválasztott diákok:</strong> {{ bulkTransferData.diak_ids.length }} fő
-                  <br>
-                  <small>
-                    <span class="text-success">Új beköltöztetés: {{ selectedNewMoveIns.length }} fő</span> |
-                    <span class="text-warning">Átköltöztetés: {{ selectedTransfers.length }} fő</span>
-                  </small>
-                </div>
-                <div v-if="selectedTransfers.length > 0">
-                  <small class="text-muted">
-                    Az átköltöztetett diákok régi szobája automatikusan felszabadul.
-                  </small>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Diákok kiválasztása</label>
-              <div class="alert alert-light border mb-2">
-                <small class="text-muted">
-                  <i class="bi bi-info-circle"></i>
-                  <strong>Útmutató:</strong>
-                  <span class="badge bg-success ms-1">Inaktív</span> = új beköltöztetés,
-                  <span class="badge bg-warning text-dark ms-1">Aktív</span> = átköltöztetés másik szobából
-                </small>
-              </div>
-              <div v-if="selectedBulkGender" class="alert alert-info mb-2">
-                <small>
-                  <strong>Kiválasztott nem:</strong> {{ selectedBulkGender === 'férfi' ? 'Férfi' : 'Nő' }} |
-                  <span class="text-muted">Csak azonos nemű diákokat választhat.</span>
-                </small>
-              </div>
-              <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                <table class="table table-striped table-hover">
-                  <thead class="table-dark sticky-top">
-                    <tr>
-                      <th style="width: 50px;">Választ</th>
-                      <th>Név</th>
-                      <th>Email</th>
-                      <th>Nem</th>
-                      <th>Státusz</th>
-                      <th>Jelenlegi szoba</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="student in availableStudents" :key="student.diak_id" 
-                        :class="{ 
-                          'table-secondary': !isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id),
-                          'table-success': bulkTransferData.diak_ids.includes(student.diak_id) && !student.aktiv,
-                          'table-warning': bulkTransferData.diak_ids.includes(student.diak_id) && student.aktiv
-                        }">
-                      <td class="text-center">
-                        <input type="checkbox" 
-                               class="form-check-input"
-                               :value="student.diak_id" 
-                               v-model="bulkTransferData.diak_ids"
-                               :disabled="!isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id)">
-                      </td>
-                      <td>
-                        <strong v-text="student.nev"></strong>
-                        <span v-if="bulkTransferData.diak_ids.includes(student.diak_id)" class="ms-2">
-                          <span v-if="!student.aktiv" class="badge bg-success">Új beköltöztetés</span>
-                          <span v-else class="badge bg-warning text-dark">Átköltöztetés</span>
-                        </span>
-                      </td>
-                      <td>{{ student.email }}</td>
-                      <td>{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td>
-                      <td>
-                        <span class="badge" :class="student.aktiv ? 'bg-warning text-dark' : 'bg-success'">
-                          {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
-                        </span>
-                      </td>
-                      <td>
-                        <span v-if="student.szoba" class="badge bg-info">
-                          {{ student.szoba.szoba_szama }}
-                        </span>
-                        <span v-else class="text-muted">-</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      <!-- Összesítő -->
+      <div v-if="bulkTransferData.diak_ids.length > 0" class="alert alert-info mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Kiválasztott diákok:</strong> {{ bulkTransferData.diak_ids.length }} fő
+            <br>
+            <small>
+              <span class="text-success">Új beköltöztetés: {{ selectedNewMoveIns.length }} fő</span> |
+              <span class="text-warning">Átköltöztetés: {{ selectedTransfers.length }} fő</span>
+            </small>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="bulkTransferStep = 2">
-              <i class="bi bi-arrow-left"></i> Vissza
-            </button>
-            <button type="button" class="btn btn-primary" 
-                    :disabled="bulkTransferLoading || bulkTransferData.diak_ids.length === 0"
-                    @click="bulkTransfer">
-              <span v-if="bulkTransferLoading">Feldolgozás...</span>
-              <span v-else>
-                {{ getTransferButtonText() }}
-              </span>
-            </button>
+          <div v-if="selectedTransfers.length > 0">
+            <small class="text-muted">
+              Az átköltöztetett diákok régi szobája automatikusan felszabadul.
+            </small>
           </div>
         </div>
       </div>
-    </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Diákok kiválasztása</label>
+        <div class="alert alert-light border mb-2">
+          <small class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            <strong>Útmutató:</strong>
+            <span class="badge bg-success ms-1">Inaktív</span> = új beköltöztetés,
+            <span class="badge bg-warning text-dark ms-1">Aktív</span> = átköltöztetés másik szobából
+          </small>
+        </div>
+        <div v-if="selectedBulkGender" class="alert alert-info mb-2">
+          <small>
+            <strong>Kiválasztott nem:</strong> {{ selectedBulkGender === 'férfi' ? 'Férfi' : 'Nő' }} |
+            <span class="text-muted">Csak azonos nemű diákokat választhat.</span>
+          </small>
+        </div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark sticky-top">
+              <tr>
+                <th style="width: 50px;">Választ</th>
+                <th>Név</th>
+                <th>Email</th>
+                <th>Nem</th>
+                <th>Státusz</th>
+                <th>Jelenlegi szoba</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="student in availableStudents" :key="student.diak_id" 
+                  :class="{ 
+                    'table-secondary': !isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id),
+                    'table-success': bulkTransferData.diak_ids.includes(student.diak_id) && !student.aktiv,
+                    'table-warning': bulkTransferData.diak_ids.includes(student.diak_id) && student.aktiv
+                  }">
+                <td class="text-center">
+                  <input type="checkbox" 
+                         class="form-check-input"
+                         :value="student.diak_id" 
+                         v-model="bulkTransferData.diak_ids"
+                         :disabled="!isStudentSelectable(student) && !bulkTransferData.diak_ids.includes(student.diak_id)">
+                </td>
+                <td>
+                  <strong v-text="student.nev"></strong>
+                  <span v-if="bulkTransferData.diak_ids.includes(student.diak_id)" class="ms-2">
+                    <span v-if="!student.aktiv" class="badge bg-success">Új beköltöztetés</span>
+                    <span v-else class="badge bg-warning text-dark">Átköltöztetés</span>
+                  </span>
+                </td>
+                <td>{{ student.email }}</td>
+                <td>{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td>
+                <td>
+                  <span class="badge" :class="student.aktiv ? 'bg-warning text-dark' : 'bg-success'">
+                    {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
+                  </span>
+                </td>
+                <td>
+                  <span v-if="student.szoba" class="badge bg-info">
+                    {{ student.szoba.szoba_szama }}
+                  </span>
+                  <span v-else class="text-muted">-</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="goBackToStep2">
+          <i class="bi bi-arrow-left"></i> Vissza
+        </button>
+        <button type="button" class="btn btn-primary" 
+                :disabled="bulkTransferLoading || bulkTransferData.diak_ids.length === 0"
+                @click="bulkTransfer">
+          <span v-if="bulkTransferLoading">Feldolgozás...</span>
+          <span v-else>
+            {{ getTransferButtonText() }}
+          </span>
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Törlés megerősítő modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showDeleteModal" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Szoba törlése</h5>
-            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <p>Biztosan törölni szeretné a következő szobát?</p>
-            <p><strong>{{ deleteRoomData?.szoba_szama }}</strong></p>
-            <p class="text-warning">
-              <small>
-                Figyelem: A szoba törlése csak akkor lehetséges, ha nincs benne aktív diák.
-              </small>
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
-            <button type="button" class="btn btn-danger" @click="confirmDeleteRoom" :disabled="deleteLoading">
-              {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <BaseModal
+      v-model:show="showDeleteModal"
+      title="Szoba törlése"
+      size="md"
+      @close="showDeleteModal = false"
+    >
+      <p>Biztosan törölni szeretné a következő szobát?</p>
+      <p><strong>{{ deleteRoomData?.szoba_szama }}</strong></p>
+      <p class="text-warning">
+        <small>
+          Figyelem: A szoba törlése csak akkor lehetséges, ha nincs benne aktív diák.
+        </small>
+      </p>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
+        <button type="button" class="btn btn-danger" @click="confirmDeleteRoom" :disabled="deleteLoading">
+          {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Szoba részletek modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showDetailsModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Szoba részletei: {{ selectedRoomDetails?.szoba_szama }}</h5>
-            <button type="button" class="btn-close" @click="showDetailsModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <div v-if="detailsLoading" class="text-center">
-              <div class="spinner-border" role="status">
-                <span class="visually-hidden">Betöltés...</span>
-              </div>
-            </div>
-            <div v-else>
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <p><strong>Férőhely:</strong> {{ selectedRoomDetails?.osszes_hely }} fő</p>
-                </div>
-                <div class="col-md-6">
-                  <p><strong>Jelenlegi lakók:</strong> {{ selectedRoomDetails?.currentOccupancy || 0 }} fő</p>
-                </div>
-              </div>
-              
-              <h6 class="mb-3">Bent lakó diákok:</h6>
-              <div v-if="selectedRoomDetails?.diakok && selectedRoomDetails.diakok.length > 0">
-                <div class="table-responsive">
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Név</th>
-                        <th>Email</th>
-                        <th>Telefon</th>
-                        <th>Beköltözés dátuma</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="student in selectedRoomDetails.diakok" :key="student.diak_id">
-                        <td v-text="student.nev"></td>
-                        <td v-text="student.email || '-'"></td>
-                        <td v-text="student.telefon || '-'"></td>
-                        <td>{{ formatDate(student.bekoltozes_datum) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div v-else class="alert alert-info">
-                Nincs bent lakó ebben a szobában.
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showDetailsModal = false">Bezárás</button>
-          </div>
+    <BaseModal
+      v-model:show="showDetailsModal"
+      title="Szoba részletei"
+      size="lg"
+      @close="showDetailsModal = false"
+    >
+      <div v-if="detailsLoading" class="text-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Betöltés...</span>
         </div>
       </div>
-    </div>
+      <div v-else>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Szoba száma:</strong> {{ selectedRoomDetails?.szoba_szama }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Férőhely:</strong> {{ selectedRoomDetails?.osszes_hely }} fő</p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Jelenlegi lakók:</strong> {{ selectedRoomDetails?.currentOccupancy || 0 }} fő</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Szabad helyek:</strong> {{ (selectedRoomDetails?.osszes_hely || 0) - (selectedRoomDetails?.currentOccupancy || 0) }} fő</p>
+          </div>
+        </div>
+        
+        <h6 class="mb-3">Bent lakó diákok:</h6>
+        <div v-if="selectedRoomDetails?.diakok && selectedRoomDetails.diakok.length > 0">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Név</th>
+                  <th>Email</th>
+                  <th>Telefon</th>
+                  <th>Beköltözés dátuma</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="student in selectedRoomDetails.diakok" :key="student.diak_id">
+                  <td v-text="student.nev"></td>
+                  <td v-text="student.email || '-'"></td>
+                  <td v-text="student.telefon || '-'"></td>
+                  <td>{{ formatDate(student.bekoltozes_datum) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div v-else class="alert alert-info">
+          Nincs bent lakó ebben a szobában.
+        </div>
+      </div>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showDetailsModal = false">Bezárás</button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -688,11 +659,11 @@ import { debounce } from 'lodash-es'
 import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
 import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
-import { RecycleScroller } from 'vue-virtual-scroller'
 import { toast } from 'vue3-toastify'
 
 // Lazy load heavy components
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
+const BaseModal = defineAsyncComponent(() => import('../components/BaseModal.vue'))
 const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
 
 export default {
@@ -700,7 +671,7 @@ export default {
   components: {
     LoadingOverlay,
     BaseInput,
-    RecycleScroller
+    BaseModal
   },
   setup() {
     const { createAbortController, isAbortError } = useApiCancel()
@@ -792,6 +763,11 @@ export default {
         return `${newCount} diák beköltöztetése`
       }
     }
+
+    // Refs for bulk transfer modals
+    const showBulkTransferModalStep1 = ref(false)
+    const showBulkTransferModalStep2 = ref(false)
+    const showBulkTransferModalStep3 = ref(false)
     
     const authStore = useAuthStore()
 
@@ -860,6 +836,9 @@ export default {
     // Tömeges beköltöztetés megnyitása - szobák betöltése
     const openBulkTransferModal = async () => {
       showBulkTransferModal.value = true
+      showBulkTransferModalStep1.value = true
+      showBulkTransferModalStep2.value = false
+      showBulkTransferModalStep3.value = false
       bulkTransferStep.value = 1
       selectedRoomForTransfer.value = null
       bulkTransferData.value = {
@@ -942,16 +921,41 @@ export default {
       selectedRoomForTransfer.value = room
       bulkTransferData.value.szoba_id = room.szoba_id
       bulkTransferStep.value = 2
+      showBulkTransferModalStep1.value = false
+      showBulkTransferModalStep2.value = true
+      showBulkTransferModalStep3.value = false
     }
 
     // Szoba megerősítése és továbblépés
     const confirmRoomAndProceed = () => {
       bulkTransferStep.value = 3
+      showBulkTransferModalStep1.value = false
+      showBulkTransferModalStep2.value = false
+      showBulkTransferModalStep3.value = true
+    }
+
+    // Visszalépés az 1. lépéshez
+    const goBackToStep1 = () => {
+      bulkTransferStep.value = 1
+      showBulkTransferModalStep1.value = true
+      showBulkTransferModalStep2.value = false
+      showBulkTransferModalStep3.value = false
+    }
+
+    // Visszalépés a 2. lépéshez
+    const goBackToStep2 = () => {
+      bulkTransferStep.value = 2
+      showBulkTransferModalStep1.value = false
+      showBulkTransferModalStep2.value = true
+      showBulkTransferModalStep3.value = false
     }
 
     // Tömeges beköltöztetés modal bezárása
     const closeBulkTransferModal = () => {
       showBulkTransferModal.value = false
+      showBulkTransferModalStep1.value = false
+      showBulkTransferModalStep2.value = false
+      showBulkTransferModalStep3.value = false
       bulkTransferStep.value = 1
       selectedRoomForTransfer.value = null
       bulkTransferData.value = {
@@ -1334,6 +1338,10 @@ export default {
       closeBulkTransferModal,
       selectRoomForBulkTransfer,
       confirmRoomAndProceed,
+      // Computed properties for bulk transfer modals
+      showBulkTransferModalStep1,
+      showBulkTransferModalStep2,
+      showBulkTransferModalStep3,
       // Szoba kártya függvények
       getTransferRoomOccupancyPercentage,
       getTransferRoomBadgeClass,

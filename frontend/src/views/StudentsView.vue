@@ -103,113 +103,88 @@
             </div>
           </div>
           <div class="card-body p-0">
-            <div class="table-responsive">
-        <!-- Enhanced loading state -->
-              <div v-if="loading" class="p-4">
-                <div class="d-flex justify-content-center py-5">
-                  <div class="text-center">
-                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                      <span class="visually-hidden">Diákok betöltése folyamatban</span>
-                    </div>
-                    <h5 class="mt-3 text-primary fw-semibold">Diákok betöltése...</h5>
-                    <p class="text-muted mb-0">Kérjük, várjon amíg betöltjük a diákok adatait</p>
+            <BaseTable
+              :columns="tableColumns"
+              :items="safeFilteredStudents"
+              :loading="loading"
+              :sort-key="sortKey"
+              :sort-order="sortOrder"
+              empty-text="Nincs megjeleníthető diák"
+              @sort="handleSort"
+              @row-click="viewStudent"
+            >
+              <template #cell-nev="{ item }">
+                <div class="d-flex align-items-center">
+                  <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3" 
+                       style="width: 40px; height: 40px;"
+                       v-text="getInitial(item.nev)">
+                  </div>
+                  <div>
+                    <div class="fw-semibold" v-text="item.nev"></div>
+                    <small class="text-muted">{{ item.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
                   </div>
                 </div>
-              </div>
+              </template>
               
-              <div v-else class="virtual-table-container">
-                <!-- Table Header -->
-                <table class="table table-hover mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Név</th>
-                      <th class="d-none d-md-table-cell">Email</th>
-                      <th class="d-none d-lg-table-cell">Telefonszám</th>
-                      <th>Szoba</th>
-                      <th>Státusz</th>
-                      <th class="text-center">Műveletek</th>
-                    </tr>
-                  </thead>
-                </table>
-                <!-- Virtual Scroller Body -->
-                <RecycleScroller
-                  class="scroller"
-                  :items="safeFilteredStudents"
-                  :item-size="72"
-                  key-field="diak_id"
-                  v-slot="{ item: student }"
-                >
-                  <div class="student-row">
-                    <div class="row g-0 align-items-center">
-                      <div class="col">
-                        <div class="d-flex align-items-center">
-                          <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3" 
-                               style="width: 40px; height: 40px;"
-                               v-text="getInitial(student.nev)">
-                          </div>
-                          <div>
-                            <div class="fw-semibold" v-text="student.nev"></div>
-                            <small class="text-muted">{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col d-none d-md-table-cell">
-                        <span class="badge" v-text="student.email"></span>
-                      </div>
-                      <div class="col d-none d-lg-table-cell">{{ student.telefonszam || '-' }}</div>
-                      <div class="col">
-                        <span v-if="student.szoba" class="badge">
-                          <i class="bi bi-door-closed me-1"></i>{{ student.szoba.szoba_szama }}
-                        </span>
-                        <span v-else class="text-muted">Nincs szoba</span>
-                      </div>
-                      <div class="col">
-                        <span class="badge">
-                          <i class="bi" :class="student.aktiv ? 'bi-check-circle' : 'bi-x-circle'"></i>
-                          {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
-                        </span>
-                      </div>
-                      <div class="col text-center">
-                        <div class="btn-group" role="group">
-                          <button 
-                            class="btn btn-outline-primary btn-sm" 
-                            @click="viewStudent(student)"
-                            title="Diák megtekintése"
-                            :disabled="loading"
-                          >
-                            <i class="bi bi-eye me-1"></i>Megtekintés
-                          </button>
-                          <button 
-                            class="btn btn-outline-warning btn-sm" 
-                            @click="editStudent(student)"
-                            title="Diák szerkesztése"
-                            :disabled="loading"
-                          >
-                            <i class="bi bi-pencil me-1"></i>Szerkesztés
-                          </button>
-                          <button 
-                            class="btn btn-outline-info btn-sm" 
-                            @click="transferStudent(student)"
-                            title="Diák költöztetése"
-                            :disabled="loading"
-                          >
-                            <i class="bi bi-arrow-right me-1"></i>Áthelyezés
-                          </button>
-                          <button 
-                            class="btn btn-outline-danger btn-sm" 
-                            @click="deleteStudent(student)"
-                            title="Diák törlése"
-                            :disabled="loading"
-                          >
-                            <i class="bi bi-trash me-1"></i>Törlés
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </RecycleScroller>
-              </div>
-            </div>
+              <template #cell-email="{ item }">
+                <span class="badge" v-text="item.email"></span>
+              </template>
+              
+              <template #cell-telefonszam="{ item }">
+                {{ item.telefonszam || '-' }}
+              </template>
+              
+              <template #cell-szoba="{ item }">
+                <span v-if="item.szoba" class="badge">
+                  <i class="bi bi-door-closed me-1"></i>{{ item.szoba.szoba_szama }}
+                </span>
+                <span v-else class="text-muted">Nincs szoba</span>
+              </template>
+              
+              <template #cell-aktiv="{ item }">
+                <span class="badge" :class="item.aktiv ? 'bg-success' : 'bg-secondary'">
+                  <i class="bi" :class="item.aktiv ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                  {{ item.aktiv ? 'Aktív' : 'Inaktív' }}
+                </span>
+              </template>
+              
+              <template #actions="{ item }">
+                <div class="btn-group" role="group">
+                  <button 
+                    class="btn btn-outline-primary btn-sm" 
+                    @click.stop="viewStudent(item)"
+                    title="Diák megtekintése"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-eye me-1"></i>Megtekintés
+                  </button>
+                  <button 
+                    class="btn btn-outline-warning btn-sm" 
+                    @click.stop="editStudent(item)"
+                    title="Diák szerkesztése"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-pencil me-1"></i>Szerkesztés
+                  </button>
+                  <button 
+                    class="btn btn-outline-info btn-sm" 
+                    @click.stop="transferStudent(item)"
+                    title="Diák költöztetése"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-arrow-right me-1"></i>Áthelyezés
+                  </button>
+                  <button 
+                    class="btn btn-outline-danger btn-sm" 
+                    @click.stop="deleteStudent(item)"
+                    title="Diák törlése"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-trash me-1"></i>Törlés
+                  </button>
+                </div>
+              </template>
+            </BaseTable>
           </div>
         </div>
       </div>
@@ -706,6 +681,7 @@ import { RecycleScroller } from 'vue-virtual-scroller'
 const BaseModal = defineAsyncComponent(() => import('../components/BaseModal.vue'))
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
 const BaseSelect = defineAsyncComponent(() => import('../components/forms/BaseSelect.vue'))
+const BaseTable = defineAsyncComponent(() => import('../components/BaseTable.vue'))
 const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
 
 /**
@@ -1104,6 +1080,24 @@ export default {
       selectedStatus.value = ''
     }
 
+    // Table sorting
+    const sortKey = ref('')
+    const sortOrder = ref('asc')
+
+    const handleSort = ({ key, order }) => {
+      sortKey.value = key
+      sortOrder.value = order
+    }
+
+    // Table columns configuration
+    const tableColumns = [
+      { key: 'nev', label: 'Név', sortable: true },
+      { key: 'email', label: 'Email', sortable: true },
+      { key: 'telefonszam', label: 'Telefonszám', sortable: false },
+      { key: 'szoba', label: 'Szoba', sortable: true },
+      { key: 'aktiv', label: 'Státusz', sortable: true }
+    ]
+
     // Validációs metódusok - átfogó validációs szabályokkal
     const validateFieldImmediate = (field, value) => {
       const error = validateField(field, value)
@@ -1322,6 +1316,11 @@ export default {
       filteredStudentsCount,
       isValid,
       isEditValid,
+      // Table sorting
+      sortKey,
+      sortOrder,
+      tableColumns,
+      handleSort,
       // Methods
       clearFilters,
       openEnrollModal,

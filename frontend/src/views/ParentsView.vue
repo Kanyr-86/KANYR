@@ -103,112 +103,91 @@
           </div>
         </div>
         
-        <!-- Szülők kártyák -->
-        <div v-else class="row">
-          <div class="col-md-6 col-lg-4" v-for="parent in filteredParents" :key="parent.szulo_id">
-            <div class="card shadow-sm h-100">
-              <div class="card-header border-0">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h5 class="mb-0">{{ parent.nev }}</h5>
-                    <small class="text-muted">{{ getRelationTypeLabel(parent.kapcsolat_tipusa) }}</small>
+        <!-- Szülők táblázat -->
+        <div v-else class="card shadow-sm">
+          <div class="card-header border-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Szülő lista</h6>
+              <span class="badge bg-light text-dark">
+                {{ filteredParents.length }} szülő
+              </span>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <BaseTable
+              :columns="tableColumns"
+              :items="filteredParents"
+              :loading="loading"
+              :sort-key="sortKey"
+              :sort-order="sortOrder"
+              empty-text="Nincs megjeleníthető szülő"
+              @sort="handleSort"
+              @row-click="viewParent"
+            >
+              <template #cell-nev="{ item }">
+                <div class="d-flex align-items-center">
+                  <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3" 
+                       style="width: 40px; height: 40px;"
+                       v-text="getInitial(item.nev)">
                   </div>
                   <div>
-                    <span class="badge">
-                    {{ parent.gyerekek ? parent.gyerekek.length : 0 }} gyerek
-                    </span>
+                    <div class="fw-semibold" v-text="item.nev"></div>
+                    <small class="text-muted">{{ getRelationTypeLabel(item.kapcsolat_tipusa) }}</small>
                   </div>
                 </div>
-              </div>
-              <div class="card-body">
-                <div class="row mb-3">
-                  <div class="col-6">
-                    <div class="d-flex align-items-center">
-                      <i class="bi bi-envelope-fill me-2"></i>
-                      <div>
-                        <div class="fw-semibold">{{ parent.email }}</div>
-                        <small class="text-muted">Email</small>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="d-flex align-items-center">
-                      <i class="bi bi-telephone-fill me-2"></i>
-                      <div>
-                        <div class="fw-semibold">{{ parent.telefonszam }}</div>
-                        <small class="text-muted">Telefon</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="mb-3">
-                  <div class="d-flex align-items-start">
-                    <i class="bi bi-geo-alt-fill me-2 mt-1"></i>
-                    <div>
-                      <div class="fw-semibold">
-                        {{ parent.lakcim ? `${parent.lakcim.varos}, ${parent.lakcim.utca_hazszam}` : 'Nincs megadva' }}
-                      </div>
-                      <small class="text-muted">Lakcím</small>
-                    </div>
-                  </div>
-                </div>
-                
-                <div v-if="parent.gyerekek && parent.gyerekek.length > 0">
-                  <h6 class="mb-2">Gyerekek:</h6>
-                  <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center" 
-                         v-for="diak in parent.gyerekek" :key="diak.diak_id">
-                      <div class="d-flex align-items-center">
-                        <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
-                          {{ diak.nev.charAt(0).toUpperCase() }}
-                        </div>
-                        <div>
-                          <div class="fw-semibold">{{ diak.nev }}</div>
-                          <small class="text-muted">{{ formatDate(diak.szuletesi_datum) }}</small>
-                        </div>
-                      </div>
-                      <span class="badge">
-                        {{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div v-else>
-                  <div class="alert alert-light border text-center mb-0">
-                    <i class="bi bi-emoji-frown me-2"></i>
-                    <span>Nincs hozzárendelve gyerek</span>
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer border-0">
-                <div class="d-flex justify-content-between">
+              </template>
+              
+              <template #cell-email="{ item }">
+                <span class="badge" v-text="item.email"></span>
+              </template>
+              
+              <template #cell-telefonszam="{ item }">
+                {{ item.telefonszam || '-' }}
+              </template>
+              
+              <template #cell-lakcim="{ item }">
+                <span v-if="item.lakcim" class="badge">
+                  <i class="bi bi-geo-alt me-1"></i>{{ item.lakcim.varos }}
+                </span>
+                <span v-else class="text-muted">Nincs lakcím</span>
+              </template>
+              
+              <template #cell-diaks="{ item }">
+                <span class="badge" :class="item.diaks?.length > 0 ? 'bg-success' : 'bg-secondary'">
+                  <i class="bi" :class="item.diaks?.length > 0 ? 'bi-people-fill' : 'bi-person'"></i>
+                  {{ item.diaks ? item.diaks.length : 0 }} gyerek
+                </span>
+              </template>
+              
+              <template #actions="{ item }">
+                <div class="btn-group" role="group">
                   <button 
                     class="btn btn-outline-primary btn-sm" 
-                    @click="viewParent(parent)"
+                    @click.stop="viewParent(item)"
+                    title="Szülő megtekintése"
                     :disabled="loading"
                   >
                     <i class="bi bi-eye me-1"></i>Megtekintés
                   </button>
-                  <div class="btn-group" role="group">
-                    <button 
-                      class="btn btn-outline-warning btn-sm" 
-                      @click="editParent(parent)"
-                      :disabled="loading"
-                    >
-                      <i class="bi bi-pencil me-1"></i>Szerkesztés
-                    </button>
-                    <button 
-                      class="btn btn-outline-danger btn-sm" 
-                      @click="deleteParent(parent)"
-                      :disabled="loading"
-                    >
-                      <i class="bi bi-trash me-1"></i>Törlés
-                    </button>
-                  </div>
+                  <button 
+                    class="btn btn-outline-warning btn-sm" 
+                    @click.stop="editParent(item)"
+                    title="Szülő szerkesztése"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-pencil me-1"></i>Szerkesztés
+                  </button>
+                  <button 
+                    class="btn btn-outline-danger btn-sm" 
+                    @click.stop="deleteParent(item)"
+                    title="Szülő törlése"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-trash me-1"></i>Törlés
+                  </button>
                 </div>
-              </div>
-            </div>
+              </template>
+            </BaseTable>
           </div>
         </div>
       </div>
@@ -459,8 +438,8 @@
                   @click="activeViewTab = 'gyerekek'"
                 >
                   Gyerekek 
-                  <span v-if="viewParentData?.gyerekek?.length > 0" class="badge">
-                    {{ viewParentData.gyerekek.length }}
+                  <span v-if="viewParentData?.diaks?.length > 0" class="badge">
+                    {{ viewParentData.diaks.length }}
                   </span>
                 </button>
               </li>
@@ -578,13 +557,15 @@ import { toast } from 'vue3-toastify'
 
 // Lazy load heavy components
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
+const BaseTable = defineAsyncComponent(() => import('../components/BaseTable.vue'))
 const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
 
 export default {
   name: 'ParentsView',
   components: {
     LoadingOverlay,
-    BaseInput
+    BaseInput,
+    BaseTable
   },
   setup() {
     // API request cancellation
@@ -679,7 +660,7 @@ export default {
 
     const totalChildrenCount = computed(() => {
       return parents.value.reduce((total, parent) => {
-        return total + (parent.gyerekek ? parent.gyerekek.length : 0)
+        return total + (parent.diaks ? parent.diaks.length : 0)
       }, 0)
     })
 
@@ -879,6 +860,57 @@ export default {
       selectedCity.value = ''
     }
 
+    // Table columns configuration
+    const tableColumns = [
+      { key: 'nev', label: 'Név', sortable: true },
+      { key: 'email', label: 'Email', sortable: true },
+      { key: 'telefonszam', label: 'Telefonszám', sortable: false },
+      { key: 'lakcim', label: 'Lakcím', sortable: false },
+      { key: 'diaks', label: 'Gyerekek', sortable: true }
+    ]
+
+    // Table sorting
+    const sortKey = ref('')
+    const sortOrder = ref('asc')
+
+    const handleSort = ({ key, order }) => {
+      sortKey.value = key
+      sortOrder.value = order
+      
+      // Sort the filteredParents array
+      filteredParents.value.sort((a, b) => {
+        let aVal = a[key]
+        let bVal = b[key]
+        
+        // Handle nested properties
+        if (key === 'lakcim') {
+          aVal = a.lakcim?.varos || ''
+          bVal = b.lakcim?.varos || ''
+        } else if (key === 'diaks') {
+          aVal = a.diaks?.length || 0
+          bVal = b.diaks?.length || 0
+        }
+        
+        // Handle string comparison
+        if (typeof aVal === 'string') {
+          aVal = aVal.toLowerCase()
+          bVal = bVal.toLowerCase()
+        }
+        
+        if (order === 'asc') {
+          return aVal > bVal ? 1 : -1
+        } else {
+          return aVal < bVal ? 1 : -1
+        }
+      })
+    }
+
+    // Helper function to get initial letter
+    const getInitial = (name) => {
+      if (!name || typeof name !== 'string') return '?'
+      return name.charAt(0).toUpperCase()
+    }
+
     onMounted(() => {
       fetchParents()
     })
@@ -919,7 +951,12 @@ export default {
       resetCreateForm,
       debouncedSearch,
       getRelationTypeLabel,
-      clearFilters
+      clearFilters,
+      tableColumns,
+      sortKey,
+      sortOrder,
+      handleSort,
+      getInitial
     }
   }
 }
