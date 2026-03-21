@@ -436,6 +436,17 @@ export default {
   margin-left: 0.5rem;
 }
 
+/* Dark theme unread indicator */
+[data-theme="dark"] .unread-indicator {
+  background-color: var(--primary-400);
+}
+
+/* High contrast unread indicator */
+[data-theme="high-contrast"] .unread-indicator {
+  background-color: #000000;
+  border: 1px solid #000000;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .dashboard-grid {

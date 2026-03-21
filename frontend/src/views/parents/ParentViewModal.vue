@@ -76,7 +76,7 @@
                 <strong>Utca, házszám:</strong>
                 <span class="ms-2">{{ parentData.lakcim.utca_hazszam || '-' }}</span>
               </div>
-              <div v-if="!parentData.lakcim" class="text-muted">
+<div v-if="!parentData.lakcim" style="color: var(--text-muted)">
                 Nincs megadva lakcím
               </div>
             </div>

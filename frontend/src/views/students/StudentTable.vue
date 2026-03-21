@@ -58,7 +58,7 @@
                     </div>
                     <div>
                       <div class="fw-semibold" v-text="student.nev"></div>
-                      <small class="text-muted">{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
+<small style="color: var(--text-muted)">{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
                     </div>
                   </div>
                 </div>

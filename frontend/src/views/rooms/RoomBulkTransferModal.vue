@@ -137,7 +137,7 @@
             </small>
           </div>
           <div v-if="transfersCount > 0">
-            <small class="text-muted">
+<small style="color: var(--text-muted)">
               Az átköltöztetett diákok régi szobája automatikusan felszabadul.
             </small>
           </div>

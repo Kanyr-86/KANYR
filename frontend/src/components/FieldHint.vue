@@ -39,7 +39,7 @@
     <!-- Interactive demo -->
     <div v-if="interactiveDemo" class="hint-interactive">
       <div class="demo-input-group">
-        <label class="form-label text-muted small">{{ demoLabel || 'Próbálja ki:' }}</label>
+<label class="form-label small" style="color: var(--text-muted)">{{ demoLabel || 'Próbálja ki:' }}</label>
         <div class="input-group">
           <input
             type="text"

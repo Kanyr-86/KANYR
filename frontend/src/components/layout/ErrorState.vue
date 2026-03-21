@@ -16,7 +16,7 @@
     </h5>
 
     <!-- Message -->
-    <p class="error-state-message text-muted mb-4">
+<p class="error-state-message mb-4" style="color: var(--text-muted)">
       {{ message || 'Váratlan hiba történt. Kérjük, próbálja újra.' }}
     </p>
 

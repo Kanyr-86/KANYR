@@ -44,6 +44,7 @@
 .table {
   background-color: var(--bg-card);
   border-color: var(--border-primary);
+  color: var(--text-primary);
 }
 
 .table-hover tbody tr:hover {
@@ -53,6 +54,7 @@
 .table-light {
   background-color: var(--bg-tertiary);
   border-bottom-color: var(--border-primary);
+  color: var(--text-primary);
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
@@ -79,11 +81,18 @@
 .table tbody td {
   border-top: 1px solid var(--border-primary);
   vertical-align: middle;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+}
+
+.table tbody tr {
+  background-color: var(--bg-card);
 }
 
 .table-responsive {
   border: 1px solid var(--border-primary);
   border-radius: var(--border-radius-md);
+  background-color: var(--bg-card);
 }
 
 /* High contrast table styles */

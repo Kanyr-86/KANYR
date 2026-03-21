@@ -1,6 +1,8 @@
 /* BaseCard Component Styles */
 .base-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .card-shadow {
@@ -15,10 +17,12 @@
 .card-title {
   font-weight: 600;
   margin-bottom: 0;
+  color: var(--text-heading);
 }
 
 .card-subtitle {
   font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
 .card-actions {
@@ -27,11 +31,17 @@
 }
 
 .card-header {
-  background-color: transparent;
+  background-color: var(--card-header-bg);
+  color: var(--text-primary);
 }
 
 .card-footer {
-  background-color: transparent;
+  background-color: var(--card-footer-bg);
+  color: var(--text-primary);
+}
+
+.card-body {
+  color: var(--text-primary);
 }
 
 /* Skeleton Loader Styles */

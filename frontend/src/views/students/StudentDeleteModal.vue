@@ -9,7 +9,7 @@
       <p>Biztosan törölni szeretné a következő diákot?</p>
       <p><strong v-text="student?.nev || 'N/A'"></strong></p>
       <p>
-        <small class="text-muted">
+<small style="color: var(--text-muted)">
           Figyelem: A diák törlése csak akkor lehetséges, ha nincs hozzárendelve aktív szoba.
         </small>
       </p>

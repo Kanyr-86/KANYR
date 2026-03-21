@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2 class="mb-1">Diákok kezelése</h2>
-            <p class="text-muted mb-0">Diák adatok kezelése és szobába költöztetés</p>
+            <p style="color: var(--text-muted)" class="mb-0">Diák adatok kezelése és szobába költöztetés</p>
           </div>
           <div class="d-flex gap-2">
             <button 
@@ -94,7 +94,7 @@
           <div class="card-header border-0">
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0">Diák lista</h6>
-              <span class="badge bg-light text-dark">
+              <span class="badge bg-tertiary text-primary">
                 <template v-if="loading">
                   <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 </template>
@@ -121,7 +121,7 @@
                   </div>
                   <div>
                     <div class="fw-semibold" v-text="item.nev"></div>
-                    <small class="text-muted">{{ item.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
+                    <small style="color: var(--text-muted)">{{ item.nem === 'férfi' ? 'Férfi' : 'Nő' }}</small>
                   </div>
                 </div>
               </template>
@@ -138,11 +138,11 @@
                 <span v-if="item.szoba" class="badge">
                   <i class="bi bi-door-closed me-1"></i>{{ item.szoba.szoba_szama }}
                 </span>
-                <span v-else class="text-muted">Nincs szoba</span>
+                <span v-else style="color: var(--text-muted)">Nincs szoba</span>
               </template>
               
               <template #cell-aktiv="{ item }">
-                <span class="badge" :class="item.aktiv ? 'bg-success' : 'bg-secondary'">
+                <span class="badge" :class="item.aktiv ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
                   <i class="bi" :class="item.aktiv ? 'bi-check-circle' : 'bi-x-circle'"></i>
                   {{ item.aktiv ? 'Aktív' : 'Inaktív' }}
                 </span>
@@ -233,7 +233,7 @@
               required
               @blur="validateFieldImmediate('telefonszam', enrollForm.telefonszam)"
             />
-            <small class="text-muted d-block mb-2">
+            <small style="color: var(--text-muted)" class="d-block mb-2">
               Formátum: +36 20 123 4567, 06 20 123 4567, vagy 06201234567
             </small>
             
@@ -271,7 +271,7 @@
               required
               @blur="validateFieldImmediate('szemelyi_igazolvany_szam', enrollForm.szemelyi_igazolvany_szam)"
             />
-            <small class="text-muted d-block mb-2">
+            <small style="color: var(--text-muted)" class="d-block mb-2">
               Formátum: 6 számjegy + 2 betű (pl: 123456AA)
             </small>
             
@@ -283,7 +283,7 @@
               required
               @blur="validateFieldImmediate('taj_szam', enrollForm.taj_szam)"
             />
-            <small class="text-muted d-block mb-2">
+            <small style="color: var(--text-muted)" class="d-block mb-2">
               Formátum: 9 számjegy (pl: 123456789)
             </small>
             
@@ -385,7 +385,7 @@
               required
               @blur="validateEditFieldImmediate('telefonszam', editForm.telefonszam)"
             />
-            <small class="text-muted d-block mb-2">
+            <small style="color: var(--text-muted)" class="d-block mb-2">
               Formátum: +36 20 123 4567, 06 20 123 4567, vagy 06201234567
             </small>
             
@@ -423,7 +423,7 @@
               required
               @blur="validateEditFieldImmediate('szemelyi_igazolvany_szam', editForm.szemelyi_igazolvany_szam)"
             />
-            <small class="text-muted d-block mb-2">
+            <small style="color: var(--text-muted)" class="d-block mb-2">
               Formátum: 6 számjegy + 2 betű (pl: 123456AA)
             </small>
             
@@ -435,7 +435,7 @@
               required
               @blur="validateEditFieldImmediate('taj_szam', editForm.taj_szam)"
             />
-            <small class="text-muted d-block mb-2">
+            <small style="color: var(--text-muted)" class="d-block mb-2">
               Formátum: 9 számjegy (pl: 123456789)
             </small>
             
@@ -588,7 +588,7 @@
                   <div class="mb-2">
                     <strong>Státusz:</strong>
                     <span class="ms-2">
-                      <span class="badge" :class="viewStudentData.aktiv ? 'bg-success' : 'bg-secondary'">
+                      <span class="badge" :class="viewStudentData.aktiv ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
                         {{ viewStudentData.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </span>
@@ -614,7 +614,7 @@
             </div>
           </div>
           <div v-else class="text-center py-4">
-            <div class="text-muted">
+            <div style="color: var(--text-muted)">
               <i class="bi bi-door-closed fs-1"></i>
               <p class="mt-2">Ehhez a diákhoz még nincs szoba hozzárendelve.</p>
             </div>
@@ -638,7 +638,7 @@
         <p>Biztosan törölni szeretné a következő diákot?</p>
             <p><strong v-text="deleteStudentData?.nev || 'N/A'"></strong></p>
         <p>
-          <small class="text-muted">
+          <small style="color: var(--text-muted)">
             Figyelem: A diák törlése csak akkor lehetséges, ha nincs hozzárendelve aktív szoba.
           </small>
         </p>
@@ -1350,7 +1350,7 @@ export default {
 <style scoped>
 .avatar {
   background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-  color: white;
+  color: var(--text-inverse, white);
   font-weight: bold;
 }
 
@@ -1359,6 +1359,12 @@ export default {
   background: var(--primary-600);
   color: var(--text-inverse);
   border: 2px solid var(--border-primary);
+}
+
+/* Dark theme avatar */
+[data-theme="dark"] .avatar {
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  color: var(--text-inverse);
 }
 
 /* Virtual Scroller Styles */
@@ -1374,13 +1380,13 @@ export default {
 
 .student-row {
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border-light, #dee2e6);
-  background: white;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-card);
   transition: background-color 0.2s ease;
 }
 
 .student-row:hover {
-  background-color: var(--bg-hover, #f8f9fa);
+  background-color: var(--bg-hover);
 }
 
 .student-row .col {
@@ -1422,11 +1428,21 @@ export default {
 
 /* Dark mode support */
 [data-theme="dark"] .student-row {
-  background: var(--bg-card, #2d3748);
-  border-bottom-color: var(--border-dark, #4a5568);
+  background: var(--bg-card);
+  border-bottom-color: var(--border-primary);
 }
 
 [data-theme="dark"] .student-row:hover {
-  background-color: var(--bg-hover, #374151);
+  background-color: var(--bg-hover);
+}
+
+/* Light mode specific */
+[data-theme="light"] .student-row {
+  background: var(--bg-card);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="light"] .student-row:hover {
+  background-color: var(--bg-hover);
 }
 </style>

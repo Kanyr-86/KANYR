@@ -100,6 +100,138 @@ h1 {
   color: var(--secondary-900);
 }
 
+/* Ensure proper heading colors in dark theme */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--text-heading);
+}
+
+/* Ensure proper body text colors in dark theme */
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] label {
+  color: var(--text-body);
+}
+
+/* Fix dark theme text contrast for specific elements */
+[data-theme="dark"] .text-primary {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-body {
+  color: var(--text-body) !important;
+}
+
+/* Fix dark theme card titles */
+[data-theme="dark"] .card-title {
+  color: var(--text-heading);
+}
+
+[data-theme="dark"] .card-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Fix dark theme navigation text */
+[data-theme="dark"] .nav-link:not(.btn) {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .nav-link:not(.btn):hover,
+[data-theme="dark"] .nav-link:not(.btn).active {
+  color: var(--text-primary);
+}
+
+/* Fix dark theme breadcrumb */
+[data-theme="dark"] .breadcrumb-item {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .breadcrumb-item.active {
+  color: var(--text-primary);
+}
+
+/* Fix dark theme list items */
+[data-theme="dark"] .list-group-item {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .list-group-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Fix dark theme dropdown items */
+[data-theme="dark"] .dropdown-item {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Fix dark theme form labels */
+[data-theme="dark"] .form-label {
+  color: var(--text-primary);
+}
+
+/* Fix dark theme table headers */
+[data-theme="dark"] .table thead th {
+  color: var(--text-heading);
+  background-color: var(--bg-tertiary);
+}
+
+/* Fix dark theme table cells */
+[data-theme="dark"] .table tbody td {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+}
+
+/* Fix dark theme modal titles */
+[data-theme="dark"] .modal-title {
+  color: var(--text-heading);
+}
+
+/* Fix dark theme alert headings */
+[data-theme="dark"] .alert-heading {
+  color: var(--text-heading);
+}
+
+/* Dark theme logo inversion - make black logos white */
+[data-theme="dark"] img[src$=".svg"],
+[data-theme="dark"] img[src*=".svg"],
+[data-theme="dark"] .logo img,
+[data-theme="dark"] img.logo,
+[data-theme="dark"] .brand-logo,
+[data-theme="dark"] .sidebar-brand img,
+[data-theme="dark"] .navbar-brand img,
+[data-theme="dark"] header img,
+[data-theme="dark"] .header img {
+  filter: invert(1) brightness(1);
+}
+
+/* Specific targeting for Kanyr logo */
+[data-theme="dark"] img[src*="Kanyr"],
+[data-theme="dark"] img[src*="kanyr"] {
+  filter: invert(1) brightness(1);
+}
+
+/* Ensure logo images maintain quality */
+[data-theme="dark"] img.logo,
+[data-theme="dark"] .logo img,
+[data-theme="dark"] .brand-logo img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
 /* Dark mode overrides for Bootstrap alerts used in ToastContainer */
 [data-theme="dark"] .alert-success {
   background-color: var(--success-200);

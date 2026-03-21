@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2 class="mb-1">Szülők kezelése</h2>
-            <p class="text-muted mb-0">Szülők adatainak kezelése és gyerekeik nyomon követése</p>
+            <p style="color: var(--text-muted)" class="mb-0">Szülők adatainak kezelése és gyerekeik nyomon követése</p>
           </div>
           <button 
             class="btn btn-primary btn-lg" 
@@ -97,7 +97,7 @@
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                   <span class="visually-hidden">Betöltés...</span>
                 </div>
-                <p class="mt-3 text-muted">Szülők betöltése...</p>
+                <p style="color: var(--text-muted)" class="mt-3">Szülők betöltése...</p>
               </div>
             </div>
           </div>
@@ -108,7 +108,7 @@
           <div class="card-header border-0">
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0">Szülő lista</h6>
-              <span class="badge bg-light text-dark">
+              <span class="badge bg-tertiary text-primary">
                 {{ filteredParents.length }} szülő
               </span>
             </div>
@@ -132,7 +132,7 @@
                   </div>
                   <div>
                     <div class="fw-semibold" v-text="item.nev"></div>
-                    <small class="text-muted">{{ getRelationTypeLabel(item.kapcsolat_tipusa) }}</small>
+                    <small style="color: var(--text-muted)">{{ getRelationTypeLabel(item.kapcsolat_tipusa) }}</small>
                   </div>
                 </div>
               </template>
@@ -149,11 +149,11 @@
                 <span v-if="item.lakcim" class="badge">
                   <i class="bi bi-geo-alt me-1"></i>{{ item.lakcim.varos }}
                 </span>
-                <span v-else class="text-muted">Nincs lakcím</span>
+                <span v-else style="color: var(--text-muted)">Nincs lakcím</span>
               </template>
               
               <template #cell-diaks="{ item }">
-                <span class="badge" :class="item.diaks?.length > 0 ? 'bg-success' : 'bg-secondary'">
+                <span class="badge" :class="item.diaks?.length > 0 ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
                   <i class="bi" :class="item.diaks?.length > 0 ? 'bi-people-fill' : 'bi-person'"></i>
                   {{ item.diaks ? item.diaks.length : 0 }} gyerek
                 </span>
@@ -491,7 +491,7 @@
                         <strong>Utca, házszám:</strong>
                         <span class="ms-2">{{ viewParentData.lakcim.utca_hazszam || '-' }}</span>
                       </div>
-                      <div v-if="!viewParentData.lakcim" class="text-muted">
+                      <div v-if="!viewParentData.lakcim" style="color: var(--text-muted)">
                         Nincs megadva lakcím
                       </div>
                     </div>
@@ -527,7 +527,7 @@
                 </div>
               </div>
               <div v-else class="text-center py-4">
-                <div class="text-muted">
+<div style="color: var(--text-muted)">
                   <i class="bi bi-people fs-1"></i>
                   <p class="mt-2">Ehhez a szülőhöz még nem tartozik gyerek.</p>
                 </div>

@@ -41,7 +41,7 @@
                   <i class="bi bi-people-fill text-primary me-2"></i>
                   <div>
                     <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
-                    <small class="text-muted">Férőhely</small>
+<small style="color: var(--text-muted)">Férőhely</small>
                   </div>
                 </div>
               </div>

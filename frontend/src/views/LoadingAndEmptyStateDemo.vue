@@ -5,7 +5,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2>Test: Loading és Empty State Javítások</h2>
-            <p class="text-muted mb-0">Demo a javított betöltési állapotokról és üres állapotokról</p>
+<p style="color: var(--text-muted)" class="mb-0">Demo a javított betöltési állapotokról és üres állapotokról</p>
           </div>
           <div class="d-flex gap-2">
             <button class="btn btn-primary" @click="toggleLoading">

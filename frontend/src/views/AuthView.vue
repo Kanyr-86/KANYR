@@ -76,7 +76,7 @@
 .card-header h5 {
   font-size: 1.1rem;
   line-height: 1.2;
-  color: white;
+  color: var(--text-inverse);
 }
 
 .form-label {

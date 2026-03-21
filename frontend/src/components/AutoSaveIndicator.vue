@@ -3,7 +3,7 @@
     <div class="indicator-content">
       <i :class="statusIcon" class="me-2"></i>
       <span class="indicator-text">{{ statusText }}</span>
-      <span v-if="lastSaved && saveStatus === 'saved'" class="last-saved text-muted ms-2">
+<span v-if="lastSaved && saveStatus === 'saved'" class="last-saved ms-2" style="color: var(--text-muted)">
         ({{ formatTimeAgo(lastSaved) }})
       </span>
     </div>

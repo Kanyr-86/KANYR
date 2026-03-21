@@ -106,7 +106,7 @@
           </div>
         </div>
         <div v-else class="text-center py-4">
-          <div class="text-muted">
+<div style="color: var(--text-muted)">
             <i class="bi bi-door-closed fs-1"></i>
             <p class="mt-2">Ehhez a diákhoz még nincs szoba hozzárendelve.</p>
           </div>

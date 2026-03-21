@@ -18,7 +18,7 @@
             <h5 v-if="title" class="card-title mb-1">
               {{ title }}
             </h5>
-            <p v-if="subtitle" class="card-subtitle text-muted mb-0 small">
+<p v-if="subtitle" class="card-subtitle mb-0 small" style="color: var(--text-muted)">
               {{ subtitle }}
             </p>
           </div>

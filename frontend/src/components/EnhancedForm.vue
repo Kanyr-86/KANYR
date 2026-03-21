@@ -66,7 +66,7 @@
         </div>
         
         <div v-if="showStats" class="col-md-6 text-md-end">
-          <small class="text-muted">
+<small style="color: var(--text-muted)">
             <span class="badge bg-light text-dark me-2">
               {{ fieldCount }} mező
             </span>

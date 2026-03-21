@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2 class="mb-1">Jelentések és statisztikák</h2>
-            <p class="text-muted mb-0">Részletes elemzések és statisztikák a kollégiumi élet nyomon követéséhez</p>
+            <p style="color: var(--text-muted)" class="mb-0">Részletes elemzések és statisztikák a kollégiumi élet nyomon követéséhez</p>
           </div>
           <div class="d-flex gap-2">
             <button 

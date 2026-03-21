@@ -26,7 +26,7 @@
         </div>
         <div class="user-info flex-grow-1">
           <div class="fw-semibold">{{ user.username }}</div>
-          <small class="text-muted">{{ user.admin ? 'Titkár' : 'Diák' }}</small>
+<small style="color: var(--text-muted)">{{ user.admin ? 'Titkár' : 'Diák' }}</small>
         </div>
       </div>
     </div>

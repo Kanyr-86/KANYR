@@ -20,7 +20,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
       <div>
         <h1 class="page-title h3 mb-1">{{ title }}</h1>
-        <p v-if="subtitle" class="page-subtitle text-muted mb-0">
+<p v-if="subtitle" class="page-subtitle mb-0" style="color: var(--text-muted)">
           {{ subtitle }}
         </p>
       </div>

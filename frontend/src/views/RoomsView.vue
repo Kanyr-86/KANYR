@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2 class="mb-1">Szobák kezelése</h2>
-            <p class="text-muted mb-0">Szobák kezelése és tömeges beköltöztetés</p>
+            <p style="color: var(--text-muted)" class="mb-0">Szobák kezelése és tömeges beköltöztetés</p>
           </div>
           <div class="d-flex gap-2">
             <button 
@@ -117,7 +117,7 @@
                   <span class="visually-hidden">Szobák betöltése folyamatban</span>
                 </div>
                 <h5 class="mt-3 text-primary fw-semibold">Szobák betöltése...</h5>
-                <p class="text-muted mb-0">Kérjük, várjon amíg betöltjük a szobák adatait</p>
+<p style="color: var(--text-muted)" class="mb-0">Kérjük, várjon amíg betöltjük a szobák adatait</p>
               </div>
             </div>
           </div>
@@ -150,7 +150,7 @@
                       <i class="bi bi-people-fill text-primary me-2"></i>
                       <div>
                         <div class="fw-semibold">{{ room.osszes_hely }} fő</div>
-                        <small class="text-muted">Férőhely</small>
+                        <small style="color: var(--text-muted)">Férőhely</small>
                       </div>
                     </div>
                   </div>
@@ -159,7 +159,7 @@
                       <i class="bi bi-person-fill text-success me-2"></i>
                       <div>
                         <div class="fw-semibold">{{ room.currentOccupancy || 0 }} fő</div>
-                        <small class="text-muted">Jelenlegi lakók</small>
+                        <small style="color: var(--text-muted)">Jelenlegi lakók</small>
                       </div>
                     </div>
                   </div>
@@ -174,8 +174,8 @@
                 
                 <div class="mb-3">
                   <div class="d-flex justify-content-between">
-                    <small class="text-muted">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
-                    <small class="text-muted">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                    <small style="color: var(--text-muted)">Foglaltság: {{ getOccupancyPercentage(room) }}%</small>
+                    <small style="color: var(--text-muted)">Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
                   </div>
                 </div>
                 
@@ -196,15 +196,15 @@
                         {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                       </span>
                     </div>
-                    <div v-if="room.diakok.length > 3" class="list-group-item text-center text-muted">
+                    <div v-if="room.diakok.length > 3" class="list-group-item text-center" style="color: var(--text-muted)">
                       <small>+{{ room.diakok.length - 3 }} további lakó</small>
                     </div>
                   </div>
                 </div>
                 <div v-else>
                   <div class="alert alert-light border text-center mb-0">
-                    <i class="bi bi-emoji-smile text-muted me-2"></i>
-                    <span class="text-muted">Nincs bent lakó</span>
+                    <i class="bi bi-emoji-smile me-2" style="color: var(--text-muted)"></i>
+                    <span style="color: var(--text-muted)">Nincs bent lakó</span>
                   </div>
                 </div>
               </div>
@@ -472,7 +472,7 @@
             </small>
           </div>
           <div v-if="selectedTransfers.length > 0">
-            <small class="text-muted">
+            <small style="color: var(--text-muted)">
               Az átköltöztetett diákok régi szobája automatikusan felszabadul.
             </small>
           </div>
@@ -482,7 +482,7 @@
       <div class="mb-3">
         <label class="form-label">Diákok kiválasztása</label>
         <div class="alert alert-light border mb-2">
-          <small class="text-muted">
+          <small style="color: var(--text-muted)">
             <i class="bi bi-info-circle"></i>
             <strong>Útmutató:</strong>
             <span class="badge bg-success ms-1">Inaktív</span> = új beköltöztetés,
@@ -531,7 +531,7 @@
                 <td>{{ student.email }}</td>
                 <td>{{ student.nem === 'férfi' ? 'Férfi' : 'Nő' }}</td>
                 <td>
-                  <span class="badge" :class="student.aktiv ? 'bg-warning text-dark' : 'bg-success'">
+                    <span class="badge" :class="student.aktiv ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success'">
                     {{ student.aktiv ? 'Aktív' : 'Inaktív' }}
                   </span>
                 </td>

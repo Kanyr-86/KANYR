@@ -4,7 +4,7 @@
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <h5 class="mb-0">{{ parent.nev }}</h5>
-          <small class="text-muted">{{ getRelationTypeLabel(parent.kapcsolat_tipusa) }}</small>
+<small style="color: var(--text-muted)">{{ getRelationTypeLabel(parent.kapcsolat_tipusa) }}</small>
         </div>
         <div>
           <span class="badge">

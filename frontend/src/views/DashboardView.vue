@@ -20,7 +20,7 @@
                   </template>
                   <template v-else>{{ statistics.totalStudents || 0 }}</template>
                 </p>
-                <span class="badge bg-primary px-3 py-2">Összes</span>
+                <span class="badge bg-primary-subtle text-primary px-3 py-2">Összes</span>
               </div>
             </div>
           </div>
@@ -35,7 +35,7 @@
                   </template>
                   <template v-else>{{ statistics.activeStudents || 0 }}</template>
                 </p>
-                <span class="badge bg-success px-3 py-2">Lakók</span>
+                <span class="badge bg-success-subtle text-success px-3 py-2">Lakók</span>
               </div>
             </div>
           </div>
@@ -50,7 +50,7 @@
                   </template>
                   <template v-else>{{ statistics.totalRooms || 0 }}</template>
                 </p>
-                <span class="badge bg-info px-3 py-2">Összes</span>
+                <span class="badge bg-info-subtle text-info px-3 py-2">Összes</span>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@
                   </template>
                   <template v-else>{{ statistics.averageOccupancy || 0 }}%</template>
                 </p>
-                <span class="badge bg-warning text-dark px-3 py-2">Átlag</span>
+                <span class="badge bg-warning-subtle text-warning px-3 py-2">Átlag</span>
               </div>
             </div>
           </div>

@@ -13,43 +13,43 @@
 /* Badge Color Variants */
 .badge.bg-primary {
   background-color: var(--primary-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 .badge.bg-success {
   background-color: var(--success-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 .badge.bg-danger {
   background-color: var(--danger-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 .badge.bg-warning {
   background-color: var(--warning-600) !important;
-  color: var(--text-dark) !important;
+  color: #000000 !important;
 }
 
 .badge.bg-info {
   background-color: var(--info-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 .badge.bg-secondary {
   background-color: var(--secondary-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 /* Status Badge Variants */
 .status-active {
   background-color: var(--success-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 .status-inactive {
   background-color: var(--danger-600) !important;
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
 }
 
 /* Badge Icons */

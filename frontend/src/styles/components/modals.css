@@ -7,6 +7,7 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, var(--shadow-alpha-lg));
   background-color: var(--bg-card);
   border: 1px solid var(--border-primary);
+  color: var(--text-primary);
 }
 
 /* Element: Header */
@@ -14,6 +15,7 @@
   background-color: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-primary);
   padding: 1rem 1.5rem;
+  color: var(--text-primary);
 }
 
 .modal__title {
@@ -27,6 +29,7 @@
 .modal__body {
   padding: 1.5rem;
   background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
 /* Element: Footer */
@@ -34,6 +37,7 @@
   background-color: var(--bg-tertiary);
   border-top: 1px solid var(--border-primary);
   padding: 1rem 1.5rem;
+  color: var(--text-primary);
 }
 
 /* Backdrop */

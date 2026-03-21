@@ -19,6 +19,8 @@
   border-color: var(--border-focus);
   box-shadow: var(--focus-ring);
   outline: none;
+  background-color: var(--bg-input);
+  color: var(--text-primary);
 }
 
 .form-control::placeholder,
@@ -31,6 +33,16 @@
   color: var(--text-primary);
   font-weight: var(--font-weight-medium);
   margin-bottom: var(--space-2);
+}
+
+/* Form text and help text */
+.form-text {
+  color: var(--text-secondary);
+}
+
+/* Form check labels */
+.form-check-label {
+  color: var(--text-primary);
 }
 
 /* Validation states */

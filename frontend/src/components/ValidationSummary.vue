@@ -43,7 +43,7 @@
           aria-valuemax="100"
         ></div>
       </div>
-      <small class="text-muted">{{ progress }}% érvényes</small>
+<small style="color: var(--text-muted)">{{ progress }}% érvényes</small>
     </div>
 
     <!-- Error list -->

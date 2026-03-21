@@ -4,8 +4,8 @@
       <i :class="iconClass" style="font-size: 3rem; opacity: 0.5;"></i>
     </div>
     <h5 class="empty-state-title mb-2">{{ title }}</h5>
-    <p class="empty-state-description text-muted mb-3">{{ description }}</p>
-    <p class="empty-state-context text-muted mb-4" v-if="contextText">{{ contextText }}</p>
+<p class="empty-state-description mb-3" style="color: var(--text-muted)">{{ description }}</p>
+<p class="empty-state-context mb-4" v-if="contextText" style="color: var(--text-muted)">{{ contextText }}</p>
     
     <div class="empty-state-actions">
       <button 

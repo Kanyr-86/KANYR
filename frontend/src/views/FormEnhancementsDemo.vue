@@ -5,7 +5,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h2 class="mb-1">Űrlap Fejlesztések Demo</h2>
-            <p class="text-muted mb-0">Auto-mentés, mező súgók és inline validáció bemutatása</p>
+<p style="color: var(--text-muted)" class="mb-0">Auto-mentés, mező súgók és inline validáció bemutatása</p>
           </div>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-secondary" @click="resetForm">
@@ -424,7 +424,7 @@
                   </div>
                 </div>
                 <div class="col-md-6 text-md-end">
-                  <small class="text-muted">
+                  <small style="color: var(--text-muted)">
                     <span class="badge bg-light text-dark me-2">Alap űrlap</span>
                     <span class="badge bg-warning-subtle text-warning">Nincs auto-mentés</span>
                     <span class="badge bg-warning-subtle text-warning">Nincs mező súgó</span>

@@ -99,8 +99,15 @@ export default {
 }
 
 .theme-toggle-collapsed {
-  padding: 12px;
-  gap: 8px;
+  padding: 10px;
+  gap: 6px;
+}
+
+.theme-toggle-collapsed .theme-controls {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
 }
 
 .theme-toggle-header {
@@ -163,6 +170,9 @@ export default {
 .theme-btn-collapsed {
   justify-content: center;
   padding: 8px;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
 }
 
 .theme-name {

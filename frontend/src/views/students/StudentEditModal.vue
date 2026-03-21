@@ -41,7 +41,7 @@
             required
             @blur="validateField('telefonszam', form.telefonszam)"
           />
-          <small class="text-muted d-block mb-2">
+<small style="color: var(--text-muted)" class="d-block mb-2">
             Formátum: +36 20 123 4567, 06 20 123 4567, vagy 06201234567
           </small>
           
