@@ -772,6 +772,60 @@ export default defineComponent({
   background-color: var(--bg-page);
 }
 
+[data-theme="dark"] strong {
+  color: var(--text-primary);
+}
+
+/* Fix icon colors in dark theme */
+[data-theme="dark"] .bi {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-primary .bi,
+[data-theme="dark"] .btn-secondary .bi,
+[data-theme="dark"] .btn-success .bi,
+[data-theme="dark"] .btn-danger .bi,
+[data-theme="dark"] .btn-warning .bi,
+[data-theme="dark"] .btn-info .bi {
+  color: inherit;
+}
+
+[data-theme="dark"] .badge .bi {
+  color: inherit;
+}
+
+[data-theme="dark"] .input-group-text .bi {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .alert .bi {
+  color: inherit;
+}
+
+[data-theme="dark"] .text-primary.bi {
+  color: var(--primary-600) !important;
+}
+
+[data-theme="dark"] .text-success.bi {
+  color: var(--success-500) !important;
+}
+
+[data-theme="dark"] .text-warning.bi {
+  color: var(--warning-500) !important;
+}
+
+[data-theme="dark"] .text-danger.bi {
+  color: var(--danger-500) !important;
+}
+
+[data-theme="dark"] .text-info.bi {
+  color: var(--info-500) !important;
+}
+
+[data-theme="dark"] .text-secondary.bi {
+  color: var(--secondary-500) !important;
+}
+
 [data-theme="dark"] .card {
   background-color: var(--bg-card);
   border-color: var(--border-primary);
