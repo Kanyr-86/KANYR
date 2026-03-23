@@ -1,12 +1,5 @@
 <template>
   <div class="student-dashboard">
-    <div class="dashboard-header">
-      <h1>Diák Irányítópult</h1>
-      <div class="user-info">
-        <span class="welcome-text">Üdvözöljük, {{ user?.username }}!</span>
-      </div>
-    </div>
-
     <div class="dashboard-content">
       <div class="dashboard-grid">
         <!-- Current Room Card -->

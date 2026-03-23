@@ -1,13 +1,5 @@
 <template>
   <div class="student-rooms">
-    <div class="page-header">
-      <h1>Szobám</h1>
-      <div class="user-info">
-        <span class="welcome-text">Üdvözöljük, {{ user?.username }}!</span>
-        <button @click="logout" class="logout-btn">Kijelentkezés</button>
-      </div>
-    </div>
-
     <div class="room-content">
       <div class="card">
         <div class="card-header">

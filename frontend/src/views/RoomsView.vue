@@ -244,9 +244,9 @@
     <!-- Szoba felvétel modal -->
     <BaseModal
       v-model:show="showCreateModal"
-      title="Szoba felvétele"
-      size="md"
-      @close="showCreateModal = false"
+      :title="'Szoba felvétele' + (isCreateFormDirty ? ' *' : '')"
+      size="lg"
+      @close="closeCreateModal"
     >
       <form @submit.prevent="createRoom" id="createRoomForm">
         <div class="mb-3">
@@ -279,9 +279,9 @@
     <!-- Szoba szerkesztés modal -->
     <BaseModal
       v-model:show="showEditModal"
-      title="Szoba szerkesztése"
-      size="md"
-      @close="showEditModal = false"
+      :title="'Szoba szerkesztése' + (isEditFormDirty ? ' *' : '')"
+      size="lg"
+      @close="closeEditModal"
     >
       <form @submit.prevent="updateRoom" id="editRoomForm">
         <div class="mb-3">
@@ -656,9 +656,10 @@ import { useAuthStore } from '../store/auth'
 import { useToastStore } from '../store/toast'
 import api from '../services/api'
 import { debounce } from 'lodash-es'
-import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES } from '@/i18n'
+import { getSuccessMessage, getErrorMessage, ROOM_MESSAGES, DIRTY_FORM_MESSAGES } from '@/i18n'
 import { handleError, handleSuccess } from '@/services/errorHandler'
 import { useApiCancel } from '../composables/useApiCancel'
+import { useDirtyForm } from '../composables/useDirtyForm'
 import { toast } from 'vue3-toastify'
 
 // Lazy load heavy components
@@ -770,6 +771,45 @@ export default {
     const showBulkTransferModalStep3 = ref(false)
     
     const authStore = useAuthStore()
+
+    // Dirty form tracking for create form
+    const {
+      isDirty: isCreateFormDirty,
+      resetForm: resetCreateFormToInitial,
+      markAsClean: markCreateFormAsClean
+    } = useDirtyForm(roomData, {
+      enableNavigationGuard: false,
+      confirmMessage: DIRTY_FORM_MESSAGES.CONFIRM_DISCARD
+    })
+
+    // Dirty form tracking for edit form
+    const {
+      isDirty: isEditFormDirty,
+      resetForm: resetEditFormToInitial,
+      markAsClean: markEditFormAsClean
+    } = useDirtyForm(editRoomData, {
+      enableNavigationGuard: false,
+      confirmMessage: DIRTY_FORM_MESSAGES.CONFIRM_DISCARD
+    })
+
+    // Modal close handlers with dirty check
+    const closeCreateModal = () => {
+      if (isCreateFormDirty.value) {
+        const shouldClose = window.confirm(DIRTY_FORM_MESSAGES.CONFIRM_DISCARD)
+        if (!shouldClose) return
+      }
+      showCreateModal.value = false
+      resetCreateForm()
+    }
+
+    const closeEditModal = () => {
+      if (isEditFormDirty.value) {
+        const shouldClose = window.confirm(DIRTY_FORM_MESSAGES.CONFIRM_DISCARD)
+        if (!shouldClose) return
+      }
+      showEditModal.value = false
+      currentEditRoomId.value = null
+    }
 
     const fetchRooms = async () => {
       loading.value = true
@@ -1087,6 +1127,7 @@ export default {
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
+          markCreateFormAsClean()
           fetchRooms()
           handleSuccess('Szoba sikeresen felvéve')
         }
@@ -1112,6 +1153,7 @@ export default {
         const response = await api.put(`/rooms/${currentEditRoomId.value}`, editRoomData.value)
         if (response.data.success) {
           showEditModal.value = false
+          markEditFormAsClean()
           fetchRooms()
           handleSuccess('Szoba adatai sikeresen módosítva')
         }
@@ -1342,6 +1384,11 @@ export default {
       showBulkTransferModalStep1,
       showBulkTransferModalStep2,
       showBulkTransferModalStep3,
+      // Dirty form tracking
+      isCreateFormDirty,
+      isEditFormDirty,
+      closeCreateModal,
+      closeEditModal,
       // Szoba kártya függvények
       getTransferRoomOccupancyPercentage,
       getTransferRoomBadgeClass,

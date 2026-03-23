@@ -1,13 +1,5 @@
 <template>
   <div class="student-notifications">
-    <div class="page-header">
-      <h1>Értesítések</h1>
-      <div class="user-info">
-        <span class="welcome-text">Üdvözöljük, {{ user?.username }}!</span>
-        <button @click="logout" class="logout-btn">Kijelentkezés</button>
-      </div>
-    </div>
-
     <div class="notifications-content">
       <div class="card">
         <div class="card-header">

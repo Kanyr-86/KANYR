@@ -393,6 +393,7 @@ export default defineComponent({
 }
 
 .modal-dialog {
+  /* Override Bootstrap's modal-dialog styles to ensure proper centering */
   background: none;
   max-width: min(90vw, 600px);
   /* Responsive max-width */
@@ -401,6 +402,11 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  /* Override Bootstrap's margin and pointer-events to allow grid centering */
+  margin: 0 !important;
+  position: relative !important;
+  pointer-events: auto !important;
+  width: auto !important;
 }
 
 .modal-content {

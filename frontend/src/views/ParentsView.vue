@@ -194,352 +194,318 @@
     </div>
     
     <!-- Szülő felvétel modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showCreateModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              Szülő felvétele
-              <span v-if="isCreateFormDirty" class="badge bg-warning text-dark ms-2" title="Mentetlen változtatások">
-                <i class="bi bi-pencil-square"></i>
-              </span>
-            </h5>
-            <button type="button" class="btn-close" @click="closeCreateModal"></button>
+    <BaseModal
+      v-model:show="showCreateModal"
+      :title="'Szülő felvétele' + (isCreateFormDirty ? ' *' : '')"
+      size="lg"
+      @close="closeCreateModal"
+    >
+      <form @submit.prevent="createParent" id="createParentForm">
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Szülő adatai</h6>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.nev"
+                label="Név"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.email"
+                label="Email"
+                type="email"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.telefonszam"
+                label="Telefonszám"
+                type="tel"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.szemelyi_igazolvany_szam"
+                label="Személyi igazolvány szám"
+                required
+              />
+            </div>
           </div>
-          <div class="modal-body">
-            <form @submit.prevent="createParent">
-              <div class="row">
-                <div class="col-md-6">
-                  <h6>Szülő adatai</h6>
-                  <div class="mb-3">
-                    <label class="form-label">Név</label>
-                    <BaseInput
-                      v-model="parentData.nev"
-                      label="Név"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <BaseInput
-                      v-model="parentData.email"
-                      label="Email"
-                      type="email"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Telefonszám</label>
-                    <BaseInput
-                      v-model="parentData.telefonszam"
-                      label="Telefonszám"
-                      type="tel"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="parentData.szemelyi_igazolvany_szam"
-                      label="Személyi igazolvány szám"
-                      required
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <h6>Lakcím adatai</h6>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="parentData.lakcimData.orszag"
-                      label="Ország"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="parentData.lakcimData.iranyitoszam"
-                      label="Irányítószám"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="parentData.lakcimData.varos"
-                      label="Város"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="parentData.lakcimData.utca_hazszam"
-                      label="Utca, házszám"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="closeCreateModal">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="createLoading">
-                  {{ createLoading ? 'Mentés...' : 'Mentés' }}
-                </button>
-              </div>
-            </form>
+          <div class="col-md-6">
+            <h6>Lakcím adatai</h6>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.lakcimData.orszag"
+                label="Ország"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.lakcimData.iranyitoszam"
+                label="Irányítószám"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.lakcimData.varos"
+                label="Város"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="parentData.lakcimData.utca_hazszam"
+                label="Utca, házszám"
+                required
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </form>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeCreateModal">Mégse</button>
+        <button type="submit" form="createParentForm" class="btn btn-primary" :disabled="createLoading">
+          {{ createLoading ? 'Mentés...' : 'Mentés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Szülő szerkesztés modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showEditModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              Szülő szerkesztése
-              <span v-if="isEditFormDirty" class="badge bg-warning text-dark ms-2" title="Mentetlen változtatások">
-                <i class="bi bi-pencil-square"></i>
-              </span>
-            </h5>
-            <button type="button" class="btn-close" @click="closeEditModal"></button>
+    <BaseModal
+      v-model:show="showEditModal"
+      :title="'Szülő szerkesztése' + (isEditFormDirty ? ' *' : '')"
+      size="lg"
+      @close="closeEditModal"
+    >
+      <form @submit.prevent="updateParent" id="editParentForm">
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Szülő adatai</h6>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.nev"
+                label="Név"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.email"
+                label="Email"
+                type="email"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.telefonszam"
+                label="Telefonszám"
+                type="tel"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.szemelyi_igazolvany_szam"
+                label="Személyi igazolvány szám"
+                required
+              />
+            </div>
           </div>
-          <div class="modal-body">
-            <form @submit.prevent="updateParent">
-              <div class="row">
-                <div class="col-md-6">
-                  <h6>Szülő adatai</h6>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.nev"
-                      label="Név"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.email"
-                      label="Email"
-                      type="email"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.telefonszam"
-                      label="Telefonszám"
-                      type="tel"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.szemelyi_igazolvany_szam"
-                      label="Személyi igazolvány szám"
-                      required
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <h6>Lakcím adatai</h6>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.lakcimData.orszag"
-                      label="Ország"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.lakcimData.iranyitoszam"
-                      label="Irányítószám"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.lakcimData.varos"
-                      label="Város"
-                      required
-                    />
-                  </div>
-                  <div class="mb-3">
-                    <BaseInput
-                      v-model="editParentData.lakcimData.utca_hazszam"
-                      label="Utca, házszám"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="closeEditModal">Mégse</button>
-                <button type="submit" class="btn btn-primary" :disabled="updateLoading">
-                  {{ updateLoading ? 'Mentés...' : 'Mentés' }}
-                </button>
-              </div>
-            </form>
+          <div class="col-md-6">
+            <h6>Lakcím adatai</h6>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.lakcimData.orszag"
+                label="Ország"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.lakcimData.iranyitoszam"
+                label="Irányítószám"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.lakcimData.varos"
+                label="Város"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <BaseInput
+                v-model="editParentData.lakcimData.utca_hazszam"
+                label="Utca, házszám"
+                required
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </form>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeEditModal">Mégse</button>
+        <button type="submit" form="editParentForm" class="btn btn-primary" :disabled="updateLoading">
+          {{ updateLoading ? 'Mentés...' : 'Mentés' }}
+        </button>
+      </template>
+    </BaseModal>
     
     <!-- Törlés megerősítő modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showDeleteModal" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Szülő törlése</h5>
-            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <p>Biztosan törölni szeretné a következő szülőt?</p>
-            <p><strong>{{ deleteParentData?.nev }}</strong></p>
-            <p>
-              <small>
-                Figyelem: A szülő törlése csak akkor lehetséges, ha nincs hozzárendelve aktív diák.
-              </small>
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
-            <button type="button" class="btn btn-danger" @click="confirmDeleteParent" :disabled="deleteLoading">
-              {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <BaseModal
+      v-model:show="showDeleteModal"
+      title="Szülő törlése"
+      size="md"
+      @close="showDeleteModal = false"
+    >
+      <p>Biztosan törölni szeretné a következő szülőt?</p>
+      <p><strong>{{ deleteParentData?.nev }}</strong></p>
+      <p class="text-warning">
+        <small>
+          Figyelem: A szülő törlése csak akkor lehetséges, ha nincs hozzárendelve aktív diák.
+        </small>
+      </p>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Mégse</button>
+        <button type="button" class="btn btn-danger" @click="confirmDeleteParent" :disabled="deleteLoading">
+          {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
+        </button>
+      </template>
+    </BaseModal>
 
     <!-- Megtekintés modal -->
-    <div class="modal fade show" tabindex="-1" v-if="showViewModal" style="display: block;">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Szülő adatai - {{ viewParentData?.nev }}</h5>
-            <button type="button" class="btn-close" @click="closeViewModal"></button>
-          </div>
-          <div class="modal-body">
-            <!-- Tab navigáció -->
-            <ul class="nav nav-tabs mb-3">
-              <li class="nav-item">
-                <button 
-                  class="nav-link" 
-                  :class="{ active: activeViewTab === 'adatok' }"
-                  @click="activeViewTab = 'adatok'"
-                >
-                  Adatok
-                </button>
-              </li>
-              <li class="nav-item">
-                <button 
-                  class="nav-link" 
-                  :class="{ active: activeViewTab === 'gyerekek' }"
-                  @click="activeViewTab = 'gyerekek'"
-                >
-                  Gyerekek 
-                  <span v-if="viewParentData?.diaks?.length > 0" class="badge">
-                    {{ viewParentData.diaks.length }}
-                  </span>
-                </button>
-              </li>
-            </ul>
+    <BaseModal
+      v-model:show="showViewModal"
+      :title="'Szülő adatai - ' + (viewParentData?.nev || '')"
+      size="lg"
+      @close="closeViewModal"
+    >
+      <!-- Tab navigáció -->
+      <div class="d-flex align-items-center mb-3 gap-2">
+        <button 
+          class="btn btn-sm" 
+          :class="activeViewTab === 'adatok' ? 'btn-primary' : 'btn-outline-secondary'"
+          @click="activeViewTab = 'adatok'"
+        >
+          Adatok
+        </button>
+        <span class="text-muted">|</span>
+        <button 
+          class="btn btn-sm" 
+          :class="activeViewTab === 'gyerekek' ? 'btn-primary' : 'btn-outline-secondary'"
+          @click="activeViewTab = 'gyerekek'"
+        >
+          Gyerekek 
+          <span v-if="viewParentData?.diaks?.length > 0" class="badge bg-light text-dark ms-1">
+            {{ viewParentData.diaks.length }}
+          </span>
+        </button>
+      </div>
 
-            <!-- Adatok tab -->
-            <div v-if="activeViewTab === 'adatok' && viewParentData">
-              <div class="row">
-                <div class="col-md-6">
-                  <h6 class="mb-3">Személyes adatok</h6>
-                  <div class="card mb-3">
-                    <div class="card-body">
-                      <div class="mb-2">
-                        <strong>Név:</strong>
-                        <span class="ms-2">{{ viewParentData.nev }}</span>
-                      </div>
-                      <div class="mb-2">
-                        <strong>Email:</strong>
-                        <span class="ms-2">{{ viewParentData.email }}</span>
-                      </div>
-                      <div class="mb-2">
-                        <strong>Telefonszám:</strong>
-                        <span class="ms-2">{{ viewParentData.telefonszam }}</span>
-                      </div>
-                      <div class="mb-2">
-                        <strong>Személyi igazolvány szám:</strong>
-                        <span class="ms-2">{{ viewParentData.szemelyi_igazolvany_szam }}</span>
-                      </div>
-                    </div>
-                  </div>
+      <!-- Adatok tab -->
+      <div v-if="activeViewTab === 'adatok' && viewParentData">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="mb-3">Személyes adatok</h6>
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="mb-2">
+                  <strong>Név:</strong>
+                  <span class="ms-2">{{ viewParentData.nev }}</span>
                 </div>
-                <div class="col-md-6">
-                  <h6 class="mb-3">Lakcím</h6>
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="mb-2" v-if="viewParentData.lakcim">
-                        <strong>Ország:</strong>
-                        <span class="ms-2">{{ viewParentData.lakcim.orszag || '-' }}</span>
-                      </div>
-                      <div class="mb-2" v-if="viewParentData.lakcim">
-                        <strong>Irányítószám:</strong>
-                        <span class="ms-2">{{ viewParentData.lakcim.iranyitoszam || '-' }}</span>
-                      </div>
-                      <div class="mb-2" v-if="viewParentData.lakcim">
-                        <strong>Város:</strong>
-                        <span class="ms-2">{{ viewParentData.lakcim.varos || '-' }}</span>
-                      </div>
-                      <div class="mb-2" v-if="viewParentData.lakcim">
-                        <strong>Utca, házszám:</strong>
-                        <span class="ms-2">{{ viewParentData.lakcim.utca_hazszam || '-' }}</span>
-                      </div>
-                      <div v-if="!viewParentData.lakcim" style="color: var(--text-muted)">
-                        Nincs megadva lakcím
-                      </div>
-                    </div>
-                  </div>
+                <div class="mb-2">
+                  <strong>Email:</strong>
+                  <span class="ms-2">{{ viewParentData.email }}</span>
                 </div>
-              </div>
-            </div>
-
-            <!-- Gyerekek tab -->
-            <div v-if="activeViewTab === 'gyerekek' && viewParentData">
-              <div v-if="viewParentData.gyerekek && viewParentData.gyerekek.length > 0">
-                <div class="table-responsive">
-                  <table class="table table-striped table-hover">
-                    <thead>
-                      <tr>
-                        <th>Név</th>
-                        <th>Email</th>
-                        <th>Születési dátum</th>
-                        <th>Kapcsolat típusa</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="diak in viewParentData.gyerekek" :key="diak.diak_id">
-                        <td>{{ diak.nev }}</td>
-                        <td>{{ diak.email }}</td>
-                        <td>{{ formatDate(diak.szuletesi_datum) }}</td>
-                        <td>
-                          <span class="badge">{{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div class="mb-2">
+                  <strong>Telefonszám:</strong>
+                  <span class="ms-2">{{ viewParentData.telefonszam }}</span>
                 </div>
-              </div>
-              <div v-else class="text-center py-4">
-<div style="color: var(--text-muted)">
-                  <i class="bi bi-people fs-1"></i>
-                  <p class="mt-2">Ehhez a szülőhöz még nem tartozik gyerek.</p>
+                <div class="mb-2">
+                  <strong>Személyi igazolvány szám:</strong>
+                  <span class="ms-2">{{ viewParentData.szemelyi_igazolvany_szam }}</span>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeViewModal">Bezárás</button>
+          <div class="col-md-6">
+            <h6 class="mb-3">Lakcím</h6>
+            <div class="card">
+              <div class="card-body">
+                <div class="mb-2" v-if="viewParentData.lakcim">
+                  <strong>Ország:</strong>
+                  <span class="ms-2">{{ viewParentData.lakcim.orszag || '-' }}</span>
+                </div>
+                <div class="mb-2" v-if="viewParentData.lakcim">
+                  <strong>Irányítószám:</strong>
+                  <span class="ms-2">{{ viewParentData.lakcim.iranyitoszam || '-' }}</span>
+                </div>
+                <div class="mb-2" v-if="viewParentData.lakcim">
+                  <strong>Város:</strong>
+                  <span class="ms-2">{{ viewParentData.lakcim.varos || '-' }}</span>
+                </div>
+                <div class="mb-2" v-if="viewParentData.lakcim">
+                  <strong>Utca, házszám:</strong>
+                  <span class="ms-2">{{ viewParentData.lakcim.utca_hazszam || '-' }}</span>
+                </div>
+                <div v-if="!viewParentData.lakcim" style="color: var(--text-muted)">
+                  Nincs megadva lakcím
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Gyerekek tab -->
+      <div v-if="activeViewTab === 'gyerekek' && viewParentData">
+        <div v-if="viewParentData.gyerekek && viewParentData.gyerekek.length > 0">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Név</th>
+                  <th>Email</th>
+                  <th>Születési dátum</th>
+                  <th>Kapcsolat típusa</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="diak in viewParentData.gyerekek" :key="diak.diak_id">
+                  <td>{{ diak.nev }}</td>
+                  <td>{{ diak.email }}</td>
+                  <td>{{ formatDate(diak.szuletesi_datum) }}</td>
+                  <td>
+                    <span class="badge">{{ getRelationTypeLabel(diak.kapcsolat_tipusa) }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div v-else class="text-center py-4">
+          <div style="color: var(--text-muted)">
+            <i class="bi bi-people fs-1"></i>
+            <p class="mt-2">Ehhez a szülőhöz még nem tartozik gyerek.</p>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeViewModal">Bezárás</button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -559,13 +525,15 @@ import { toast } from 'vue3-toastify'
 const BaseInput = defineAsyncComponent(() => import('../components/forms/BaseInput.vue'))
 const BaseTable = defineAsyncComponent(() => import('../components/BaseTable.vue'))
 const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
+const BaseModal = defineAsyncComponent(() => import('../components/BaseModal.vue'))
 
 export default {
   name: 'ParentsView',
   components: {
     LoadingOverlay,
     BaseInput,
-    BaseTable
+    BaseTable,
+    BaseModal
   },
   setup() {
     // API request cancellation
