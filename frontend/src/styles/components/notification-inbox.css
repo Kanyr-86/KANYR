@@ -64,6 +64,12 @@
 
 /* Note: Theme overrides are now handled in base.css */
 
+/* Dark mode notification overrides - bright blue for sender and date */
+[data-theme="dark"] .notification-inbox .list-group-item .text-muted,
+[data-theme="dark"] .notification-inbox .list-group-item small.text-muted {
+  color: var(--primary-400) !important;
+}
+
 /* High contrast notification overrides */
 [data-theme="high-contrast"] .notification-inbox .card-header {
   background-color: var(--bg-page);

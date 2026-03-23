@@ -6,9 +6,10 @@ const logger = require('./utils/logger');
 /**
  * Komprehenzív seed script az SQLite adatbázis feltöltéséhez
  * Reálisztikus tesztadatokat hoz létre a kollégiumi nyilvántartó rendszerhez
+ * @param {boolean} keepConnectionOpen - Ha true, nem zárja le a DB kapcsolatot (fejlesztői módhoz)
  */
 
-async function seedDatabase() {
+async function seedDatabase(keepConnectionOpen = false) {
   try {
     logger.info('🔄 Adatbázis szinkronizálása...');
     
@@ -406,12 +407,35 @@ async function seedDatabase() {
 
   } catch (error) {
     logger.error('❌ Hiba az adatbázis feltöltésekor', { error: error.message, stack: error.stack });
-    process.exit(1);
+    if (!keepConnectionOpen) {
+      await sequelize.close();
+      process.exit(1);
+    }
+    throw error;
   } finally {
-    await sequelize.close();
-    process.exit(0);
+    // Csak akkor zárjuk le a kapcsolatot, ha nem fejlesztői módban futunk
+    if (!keepConnectionOpen) {
+      await sequelize.close();
+      process.exit(0);
+    }
   }
 }
 
-// Script futtatása
-seedDatabase();
+// Script futtatása - csak akkor zárjuk le a kapcsolatot, ha nem fejlesztői módban futunk
+// A fejlesztői módban (npm run dev) a szerver újrahasználja a kapcsolatot
+const isDevMode = process.env.NODE_ENV === 'development' || process.env.KEEP_DB_OPEN === 'true';
+
+if (isDevMode) {
+  // Fejlesztői módban csak a seed-elés fut le, a kapcsolat nyitva marad
+  seedDatabase(true).then(() => {
+    logger.info('✅ Adatbázis seed kész, kapcsolat nyitva hagyva (fejlesztői mód)');
+    // Ne hívjuk meg a sequelize.close()-t, ne hívjuk meg a process.exit(0)-t
+    // A szerver folyamat újrahasználja ezt a kapcsolatot
+  }).catch(error => {
+    logger.error('❌ Hiba az adatbázis seed-elésekor', { error: error.message, stack: error.stack });
+    process.exit(1);
+  });
+} else {
+  // Éles/standalone módban a megszokott módon fut
+  seedDatabase(false);
+}
