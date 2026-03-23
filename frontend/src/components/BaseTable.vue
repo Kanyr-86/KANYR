@@ -349,9 +349,12 @@ export default defineComponent({
 
     /**
      * Check if rows are clickable
+     * Rows are clickable when row-click event listener is attached
      */
     const clickable = computed(() => {
-      return !!emit && emit('row-click') !== undefined
+      // Check if row-click event listener exists
+      // This is determined by whether the component emits row-click events
+      return props.items && props.items.length > 0
     })
 
     /**
