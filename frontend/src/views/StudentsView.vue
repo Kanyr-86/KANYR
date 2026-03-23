@@ -957,7 +957,11 @@ export default {
         return []
       }
       
-      let result = [...students.value]
+      // Ensure we have valid students array
+      const studentsArray = Array.isArray(students.value) ? students.value : []
+      
+      // Filter out any null or undefined students
+      let result = studentsArray.filter(student => student && typeof student === 'object')
       
       // Filter by search query
       if (searchQuery.value) {
@@ -978,6 +982,7 @@ export default {
         result = result.filter(student => student && Boolean(student.aktiv) === statusBool)
       }
       
+      console.log('safeFilteredStudents result:', result.length, 'items')
       return result
     })
 

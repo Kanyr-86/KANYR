@@ -621,7 +621,7 @@ export default {
       loading.value = true
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/szulos', { signal })
+        const response = await api.get('/parents', { signal })
         if (response.data.success) {
           parents.value = response.data.data
         }
@@ -725,7 +725,7 @@ export default {
     const createParent = async () => {
       createLoading.value = true
       try {
-        const response = await api.post('/szulos', parentData.value)
+        const response = await api.post('/parents', parentData.value)
         if (response.data.success) {
           showCreateModal.value = false
           resetCreateForm()
@@ -760,7 +760,7 @@ export default {
     const updateParent = async () => {
       updateLoading.value = true
       try {
-        const response = await api.put(`/szulos/${currentEditParentId.value}`, editParentData.value)
+        const response = await api.put(`/parents/${currentEditParentId.value}`, editParentData.value)
         if (response.data.success) {
           showEditModal.value = false
           markEditFormAsClean()
@@ -799,7 +799,7 @@ export default {
     const confirmDeleteParent = async () => {
       deleteLoading.value = true
       try {
-        const response = await api.delete(`/szulos/${deleteParentData.value.szulo_id}`)
+        const response = await api.delete(`/parents/${deleteParentData.value.szulo_id}`)
         if (response.data.success) {
           showDeleteModal.value = false
           fetchParents()
@@ -837,7 +837,7 @@ export default {
     const { debouncedFn: debouncedSearch } = useDebounce(async () => {
       if (searchQuery.value.trim()) {
         try {
-          const response = await api.get('/szulos', {
+          const response = await api.get('/parents', {
             params: {
               search: searchQuery.value
             }

@@ -97,7 +97,19 @@ const getDiakValidator = [
   query('sort')
     .optional()
     .isIn(['nev', 'id', 'createdAt'])
-    .withMessage('Érvénytelen rendezési mező (megengedett: nev, id, createdAt)')
+    .withMessage('Érvénytelen rendezési mező (megengedett: nev, id, createdAt)'),
+
+  // query order - opcionális, ASC vagy DESC
+  query('order')
+    .optional()
+    .isIn(['ASC', 'DESC', 'asc', 'desc'])
+    .withMessage('A sorrend csak ASC vagy DESC lehet'),
+
+  // query includeRelations - opcionális, 'true' vagy 'false' string
+  query('includeRelations')
+    .optional()
+    .isIn(['true', 'false'])
+    .withMessage('Az includeRelations paraméter csak "true" vagy "false" lehet')
 ];
 
 module.exports = {
