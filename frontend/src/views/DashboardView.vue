@@ -238,6 +238,18 @@
   color: var(--text-primary);
 }
 
+/* Dark mode icon colors - make icons white for visibility */
+[data-theme="dark"] .card-body i.bi,
+[data-theme="dark"] .card-header i.bi {
+  color: #ffffff;
+}
+
+/* High contrast mode icon colors */
+[data-theme="high-contrast"] .card-body i.bi,
+[data-theme="high-contrast"] .card-header i.bi {
+  color: #000000;
+}
+
 /* Dark theme override for text-shadow */
 [data-theme="dark"] .dashboard-title {
   text-shadow: none;
