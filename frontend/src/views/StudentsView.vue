@@ -514,26 +514,23 @@
       @close="closeViewModal"
     >
       <div v-if="viewStudentData">
-        <ul class="nav nav-tabs mb-3">
-          <li class="nav-item">
-            <button 
-              class="nav-link" 
-              :class="{ active: activeViewTab === 'adatok' }"
-              @click="activeViewTab = 'adatok'"
-            >
-              Adatok
-            </button>
-          </li>
-          <li class="nav-item">
-            <button 
-              class="nav-link" 
-              :class="{ active: activeViewTab === 'szoba' }"
-              @click="activeViewTab = 'szoba'"
-            >
-              Szoba
-            </button>
-          </li>
-        </ul>
+        <div class="d-flex align-items-center mb-3 gap-2">
+          <button 
+            class="btn btn-sm" 
+            :class="activeViewTab === 'adatok' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="activeViewTab = 'adatok'"
+          >
+            Adatok
+          </button>
+          <span class="text-muted">|</span>
+          <button 
+            class="btn btn-sm" 
+            :class="activeViewTab === 'szoba' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="activeViewTab = 'szoba'"
+          >
+            Szoba
+          </button>
+        </div>
 
         <!-- Adatok tab -->
         <div v-if="activeViewTab === 'adatok'">
@@ -661,6 +658,139 @@
         >
           <span v-if="deleteLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
           {{ deleteLoading ? 'Törlés...' : 'Törlés' }}
+        </button>
+      </template>
+    </BaseModal>
+
+    <!-- Áthelyezés modal - 1. lépés: Szoba kiválasztása -->
+    <BaseModal
+      v-model:show="showTransferModal"
+      :title="transferStep === 1 ? 'Diák áthelyezése - Szoba kiválasztása' : 'Diák áthelyezése - Megerősítés'"
+      size="xl"
+      @close="closeTransferModal"
+    >
+      <!-- Step 1: Room Selection -->
+      <div v-if="transferStep === 1">
+        <div class="alert alert-info mb-3">
+          <i class="bi bi-info-circle me-2"></i>
+          Válassza ki a szobát, ahová <strong>{{ transferStudentData?.nev }}</strong> diákot át szeretné helyezni.
+        </div>
+        
+        <div v-if="availableRoomsForTransfer.length === 0" class="alert alert-warning">
+          <strong>Nincs elérhető szoba!</strong><br>
+          Minden szoba tele van, vagy nincs elegendő szabad hely.
+        </div>
+        
+        <div class="row" v-else>
+          <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
+            <div class="card mb-3 room-card" :class="{ 'border-primary': selectedRoomForTransfer?.szoba_id === room.szoba_id }">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">{{ room.szoba_szama }}</h6>
+                <div class="d-flex gap-1">
+                  <span class="badge" :class="getTransferRoomBadgeClass(room)">
+                    {{ getTransferRoomBadgeText(room) }}
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-text mb-1">
+                  <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
+                </p>
+                <p class="card-text mb-1">
+                  <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
+                </p>
+                <p class="card-text mb-2">
+                  <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                </p>
+                <div class="progress mb-3" style="height: 8px;">
+                  <div class="progress-bar" 
+                       :class="getTransferRoomProgressClass(room)"
+                       :style="{ width: getTransferRoomOccupancyPercentage(room) + '%' }"
+                       :aria-valuenow="getTransferRoomOccupancyPercentage(room)" 
+                       aria-valuemin="0" 
+                       aria-valuemax="100">
+                  </div>
+                </div>
+                <button 
+                  class="btn btn-sm w-100" 
+                  :class="selectedRoomForTransfer?.szoba_id === room.szoba_id ? 'btn-primary' : 'btn-outline-primary'"
+                  @click="selectRoomForTransfer(room)">
+                  {{ selectedRoomForTransfer?.szoba_id === room.szoba_id ? 'Kiválasztva' : 'Kiválaszt' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 2: Confirmation -->
+      <div v-if="transferStep === 2">
+        <div class="alert alert-info mb-3">
+          <i class="bi bi-check-circle me-2"></i>
+          Kérjük, erősítse meg az áthelyezést:
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="bi bi-person me-2"></i>Diák</h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-1"><strong>Név:</strong> {{ transferStudentData?.nev }}</p>
+                <p class="mb-1"><strong>Email:</strong> {{ transferStudentData?.email }}</p>
+                <p class="mb-0">
+                  <strong>Jelenlegi szoba:</strong> 
+                  <span v-if="transferStudentData?.szoba" class="badge bg-info ms-1">
+                    {{ transferStudentData.szoba.szoba_szama }}
+                  </span>
+                  <span v-else class="text-muted ms-1">Nincs szoba</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mb-3 border-primary">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-arrow-right me-2"></i>Cél szoba</h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-1"><strong>Szoba száma:</strong> {{ selectedRoomForTransfer?.szoba_szama }}</p>
+                <p class="mb-1"><strong>Férőhely:</strong> {{ selectedRoomForTransfer?.osszes_hely }} fő</p>
+                <p class="mb-1"><strong>Jelenlegi lakók:</strong> {{ selectedRoomForTransfer?.currentOccupancy || 0 }} fő</p>
+                <p class="mb-0 text-success">
+                  <strong>Szabad helyek:</strong> {{ (selectedRoomForTransfer?.osszes_hely || 0) - (selectedRoomForTransfer?.currentOccupancy || 0) }} fő
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert alert-warning mt-3">
+          <small>
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Az áthelyezés végrehajtása után a diák automatikusan a kiválasztott szobába kerül.
+          </small>
+        </div>
+      </div>
+      
+      <template #footer>
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          @click="transferStep === 1 ? closeTransferModal() : goBackToTransferStep1()"
+        >
+          {{ transferStep === 1 ? 'Mégse' : 'Vissza' }}
+        </button>
+        <button 
+          v-if="transferStep === 2"
+          type="button" 
+          class="btn btn-primary" 
+          @click="confirmTransfer"
+          :disabled="transferLoading"
+        >
+          <span v-if="transferLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          {{ transferLoading ? 'Áthelyezés...' : 'Áthelyezés megerősítése' }}
         </button>
       </template>
     </BaseModal>
@@ -851,6 +981,7 @@ export default {
     BaseModal,
     BaseInput,
     BaseSelect,
+    BaseTable,
     LoadingOverlay,
     RecycleScroller
   },
@@ -884,6 +1015,14 @@ export default {
     
     // Törlés modal adatok
     const deleteStudentData = ref(null)
+    
+    // Áthelyezés modal adatok
+    const showTransferModal = ref(false)
+    const transferStep = ref(1) // 1: szoba választás, 2: megerősítés
+    const selectedRoomForTransfer = ref(null)
+    const availableRoomsForTransfer = ref([])
+    const transferStudentData = ref(null)
+    const transferLoading = ref(false)
     
     // Űrlap adatok
     const enrollForm = ref({
@@ -1238,9 +1377,130 @@ export default {
     }
 
     // Modal metódusok - Áthelyezés
-    const transferStudent = (student) => {
-      // Placeholder for transfer functionality
-      toast.info(`${student.nev} költöztetése - funkció fejlesztés alatt`)
+    const transferStudent = async (student) => {
+      transferStudentData.value = student
+      transferStep.value = 1
+      selectedRoomForTransfer.value = null
+      showTransferModal.value = true
+      
+      // Fetch available rooms
+      await fetchAvailableRoomsForTransfer()
+    }
+    
+    const closeTransferModal = () => {
+      showTransferModal.value = false
+      transferStudentData.value = null
+      selectedRoomForTransfer.value = null
+      transferStep.value = 1
+      availableRoomsForTransfer.value = []
+    }
+    
+    const fetchAvailableRoomsForTransfer = async () => {
+      const { signal } = createAbortController()
+      try {
+        const response = await api.get('/rooms', { signal })
+        if (response.data.success) {
+          const roomsData = response.data.data
+          
+          // Fetch occupancy for each room
+          const roomsWithOccupancy = await Promise.all(roomsData.map(async (room) => {
+            try {
+              const occupancyResponse = await api.get(`/rooms/${room.szoba_id}/occupancy`, { signal })
+              if (occupancyResponse.data.success) {
+                return {
+                  ...room,
+                  currentOccupancy: occupancyResponse.data.data.currentOccupancy || 0,
+                  diakok: occupancyResponse.data.data.students || []
+                }
+              }
+            } catch (error) {
+              if (!isAbortError(error)) {
+                console.error(`Hiba a szoba ${room.szoba_id} elfoglaltságának lekérése közben:`, error)
+              }
+            }
+            return { ...room, currentOccupancy: 0, diakok: [] }
+          }))
+          
+          // Filter rooms with available spots
+          availableRoomsForTransfer.value = roomsWithOccupancy.filter(room => {
+            const occupancy = room.currentOccupancy || 0
+            return occupancy < room.osszes_hely
+          })
+        }
+      } catch (error) {
+        if (isAbortError(error)) return
+        console.error('Hiba a szobák lekérése közben:', error)
+        handleError(error, { context: 'StudentsView/fetchAvailableRoomsForTransfer' })
+      }
+    }
+    
+    const selectRoomForTransfer = (room) => {
+      selectedRoomForTransfer.value = room
+      transferStep.value = 2
+    }
+    
+    const goBackToTransferStep1 = () => {
+      transferStep.value = 1
+      selectedRoomForTransfer.value = null
+    }
+    
+    const confirmTransfer = async () => {
+      if (!transferStudentData.value || !selectedRoomForTransfer.value) return
+      
+      transferLoading.value = true
+      try {
+        const response = await api.post(`/students/${transferStudentData.value.diak_id}/transfer`, {
+          szoba_id: selectedRoomForTransfer.value.szoba_id,
+          bekoltozes_datum: new Date().toISOString().split('T')[0]
+        })
+        
+        if (response.data.success) {
+          handleSuccess(`${transferStudentData.value.nev} sikeresen áthelyezve a(z) ${selectedRoomForTransfer.value.szoba_szama} szobába`)
+          closeTransferModal()
+          fetchStudents()
+        }
+      } catch (error) {
+        handleError(error, { context: 'StudentsView/confirmTransfer' })
+      } finally {
+        transferLoading.value = false
+      }
+    }
+    
+    // Segédfüggvények a transfer modalhoz
+    const getTransferRoomOccupancyPercentage = (room) => {
+      if (!room?.osszes_hely) return 0
+      const current = room.currentOccupancy || 0
+      return Math.round((current / room.osszes_hely) * 100)
+    }
+    
+    const getTransferRoomProgressClass = (room) => {
+      const percentage = getTransferRoomOccupancyPercentage(room)
+      if (percentage < 50) return 'bg-success'
+      if (percentage < 80) return 'bg-info'
+      if (percentage < 100) return 'bg-warning'
+      return 'bg-danger'
+    }
+    
+    const getTransferRoomBadgeClass = (room) => {
+      if (!room) return 'bg-secondary'
+      const occupancy = room.currentOccupancy || 0
+      const capacity = room.osszes_hely
+      
+      if (occupancy === 0) return 'bg-secondary'
+      if (occupancy === capacity) return 'bg-danger'
+      if (occupancy >= capacity * 0.8) return 'bg-warning'
+      return 'bg-success'
+    }
+    
+    const getTransferRoomBadgeText = (room) => {
+      if (!room) return '-'
+      const occupancy = room.currentOccupancy || 0
+      const capacity = room.osszes_hely
+      
+      if (occupancy === 0) return 'Üres'
+      if (occupancy === capacity) return 'Tele'
+      if (occupancy >= capacity * 0.8) return 'Majdnem tele'
+      return 'Elérhető'
     }
 
     // Modal metódusok - Törlés
@@ -1293,15 +1553,22 @@ export default {
       enrollLoading,
       editLoading,
       deleteLoading,
+      transferLoading,
       // Modal visibility states
       showEnrollModal,
       showEditModal,
       showViewModal,
       showDeleteModal,
+      showTransferModal,
       // Modal data
       viewStudentData,
       deleteStudentData,
       activeViewTab,
+      // Transfer modal
+      transferStep,
+      selectedRoomForTransfer,
+      availableRoomsForTransfer,
+      transferStudentData,
       // Forms
       enrollForm,
       editForm,
@@ -1337,6 +1604,14 @@ export default {
       closeEditModal,
       submitEdit,
       transferStudent,
+      closeTransferModal,
+      selectRoomForTransfer,
+      goBackToTransferStep1,
+      confirmTransfer,
+      getTransferRoomOccupancyPercentage,
+      getTransferRoomProgressClass,
+      getTransferRoomBadgeClass,
+      getTransferRoomBadgeText,
       deleteStudent,
       closeDeleteModal,
       confirmDelete,
