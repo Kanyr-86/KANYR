@@ -98,6 +98,12 @@ watch(() => route.name, () => {
 }
 
 .breadcrumb {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  counter-reset: none;
   background-color: transparent;
   padding: 0;
   margin: 0;
