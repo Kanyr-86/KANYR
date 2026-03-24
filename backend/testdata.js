@@ -370,20 +370,56 @@ async function seedDatabase(keepConnectionOpen = false) {
       {
         diak_id: diaks[0].diak_id,
         tipus: 'room_change_pending',
+        cimzettkor: 'student',
+        prioritas: 'medium',
         uzenet: 'A szoba változtatási kérelmedet feldolgoztuk. Kérjük, várj türelmesen a döntésre.',
-        elolvasva: false
+        elolvasva: false,
+        olvasva_datum: null
       },
       {
         diak_id: diaks[4].diak_id,
         tipus: 'room_change_approved',
+        cimzettkor: 'student',
+        prioritas: 'high',
         uzenet: 'Gratulálunk! A szoba változtatási kérelmedet elfogadtuk. Az új szobaszámod: A-101. Kérjük, 3 munkanapon belül költözz át.',
-        elolvasva: false
+        elolvasva: false,
+        olvasva_datum: null
       },
       {
         diak_id: diaks[1].diak_id,
-        tipus: 'room_change_pending',
-        uzenet: 'Ne feledd, hogy a következő hónapban esedékes a szobafoglalás. Kérjük, ellenőrizd a számládat.',
-        elolvasva: false
+        tipus: 'room_change_denied',
+        cimzettkor: 'student',
+        prioritas: 'high',
+        uzenet: 'Sajnáljuk, de a szoba változtatási kérelmedet elutasítottuk. Az indok: A kívánt szoba már teljesen foglalt. Kérjük, válassz másik szobát.',
+        elolvasva: true,
+        olvasva_datum: '2024-09-15T10:30:00.000Z'
+      },
+      {
+        diak_id: diaks[2].diak_id,
+        tipus: 'system_announcement',
+        cimzettkor: 'both',
+        prioritas: 'urgent',
+        uzenet: 'FONTOS: Karbantartás miatt a rendszer 2024-10-01 22:00 és 2024-10-02 02:00 között nem lesz elérhető. Kérjük, időben intézd ügyeidet!',
+        elolvasva: false,
+        olvasva_datum: null
+      },
+      {
+        diak_id: diaks[3].diak_id,
+        tipus: 'parent_notification',
+        cimzettkor: 'student',
+        prioritas: 'medium',
+        uzenet: 'Értesítjük, hogy szülője, Szabó Péter megtekintette a legutóbbi tanulmányi eredményeit. Ha kérdése van, forduljon hozzánk bizalommal.',
+        elolvasva: false,
+        olvasva_datum: null
+      },
+      {
+        diak_id: diaks[5].diak_id,
+        tipus: 'general_alert',
+        cimzettkor: 'student',
+        prioritas: 'low',
+        uzenet: 'Emlékeztető: A kollégiumi díj befizetési határideje október 15. Kérjük, időben gondoskodj a befizetésről.',
+        elolvasva: true,
+        olvasva_datum: '2024-09-20T14:15:00.000Z'
       }
     ]);
     logger.info(`✓ ${notifikaciok.length} értesítés létrehozva`);

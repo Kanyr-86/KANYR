@@ -1613,7 +1613,12 @@ export default {
     const fetchAvailableRoomsForTransfer = async () => {
       const { signal } = createAbortController()
       try {
-        const response = await api.get('/rooms', { signal })
+        // Get student's gender to filter compatible rooms
+        const studentGender = transferStudentData.value?.nem
+        const params = studentGender ? { gender: studentGender } : {}
+        
+        // Use /rooms/available endpoint with gender filter
+        const response = await api.get('/rooms/available', { signal, params })
         if (response.data.success) {
           const roomsData = response.data.data
           

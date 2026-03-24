@@ -2,7 +2,18 @@
 
 ## ✅ Végzett Javítások (2025. február 13.)
 
-### 1. **JWT_SECRET Környezeti Változó** 
+### 1. **Admin Értesítési Oldal - Új Üzenet Gomb**
+**Fájl**: `frontend/src/views/AdminNotificationsView.vue`
+
+- ❌ Az "Új üzenet" gomb nem működött a modális ablak nem nyílt meg
+- ✅ `v-model="showCreateModal"` módosítva `v-model:show="showCreateModal"`-ra
+- ✅ A BaseModal komponens `show` prop-ot vár, nem `modelValue`-t
+
+**Státusz**: 🟢 **MŰKÖDIK** - A modális ablak megfelelően nyílik
+
+---
+
+### 2. **JWT_SECRET Környezeti Változó** 
 **Fájl**: `backend/.env` (új), `backend/utils/authUtils.js`
 
 - ✅ `.env` fájl létrehozása a backend mappában
@@ -14,7 +25,7 @@
 
 ---
 
-### 2. **CORS Konfiguráció**
+### 3. **CORS Konfiguráció**
 **Fájl**: `backend/app.js`
 
 - ✅ CORS origins hardcoded értékről `ALLOWED_ORIGINS` környezeti változóra módosítva
@@ -25,7 +36,7 @@
 
 ---
 
-### 3. **Adatbázis Naplózás Konfiguráció**
+### 4. **Adatbázis Naplózás Konfiguráció**
 **Fájl**: `backend/config/database.js`
 
 - ✅ SQL naplózás ki van kapcsolva production-ben (`NODE_ENV === 'production'`)
@@ -35,7 +46,7 @@
 
 ---
 
-### 4. **Admin Felhasználó Seed Script**
+### 5. **Admin Felhasználó Seed Script**
 **Fájl**: `backend/seed_database.js` (meglévő)
 
 - ✅ Admin (főtitkár) felhasználó: `admin@kanyr.hu` / `admin123`
@@ -46,7 +57,7 @@
 
 ---
 
-### 5. **.env Fájl Biztonság**
+### 6. **.env Fájl Biztonság**
 **Fájl**: `.gitignore`
 
 - ✅ `.env` hozzáadva a `.gitignore`-hoz
@@ -56,7 +67,7 @@
 
 ---
 
-### 6. **Hiba Formátum Konzisztencia**
+### 7. **Hiba Formátum Konzisztencia**
 **Státusz**: 🟢 **MEGLÉVŐ** - A SzobaController már `error` mezőt használ
 
 - ✅ Frontend api.js már konzisztensen `error` mezőt vár

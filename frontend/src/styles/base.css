@@ -1168,7 +1168,7 @@ h1, h2, h3, h4, h5, h6 {
   
   /* Text elements - exclude buttons and button-like elements */
   p, h1, h2, h3, h4, h5, h6, label:not(.btn):not([class*="btn-"]), small:not(.btn):not([class*="btn-"]), 
-  li, td, th, .card-title, .card-subtitle, .card-text {
+  li, td, th, .card-title, .card-subtitle, .card-text, strong, span {
     color: var(--text-primary);
   }
   

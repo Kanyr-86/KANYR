@@ -635,6 +635,44 @@ class DiakController {
       message: 'Összes értesítés sikeresen olvasottnak jelölve'
     });
   });
+
+  /**
+   * GET /api/diaks/profile
+   * Bejelentkezett diák profiljának lekérése (beleértve a nem-et)
+   */
+  getStudentProfile = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const diakId = parseInt(id);
+
+    if (!id || isNaN(diakId)) {
+      throw new ValidationError('Érvénytelen diák ID');
+    }
+
+    const student = await this.diakService.getStudentWithFullHistory(diakId);
+    
+    if (!student) {
+      throw new NotFoundError('Diák');
+    }
+
+    // Visszaadjuk a diák adatait, beleértve a nem-et
+    res.json({
+      success: true,
+      data: {
+        diak: {
+          diak_id: student.diak_id,
+          nev: student.nev,
+          email: student.email,
+          telefonszam: student.telefonszam,
+          szuletesi_datum: student.szuletesi_datum,
+          nem: student.nem,  // Fontos: ez szükséges a szobaváltási szűréshez
+          szemelyi_igazolvany_szam: student.szemelyi_igazolvany_szam,
+          taj_szam: student.taj_szam,
+          diakigazolvany_szam: student.diakigazolvany_szam,
+          kapcsolat_tipusa: student.kapcsolat_tipusa
+        }
+      }
+    });
+  });
 }
 
 module.exports = DiakController;

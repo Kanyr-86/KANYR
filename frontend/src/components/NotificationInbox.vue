@@ -51,31 +51,55 @@
               :key="notification.notification_id"
               class="list-group-item list-group-item-action"
               :class="{ 'unread': !notification.elolvasva }"
-              @click="debouncedMarkAsRead(notification)"
+              @click="openNotificationDetail(notification)"
             >
-              <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">
-                  <span :class="getNotificationIconClass(notification.tipus)">
-                    {{ getNotificationTypeText(notification.tipus) }}
-                  </span>
-                </h6>
-                <small class="text-muted">{{ formatDate(notification.created_at) }}</small>
-              </div>
-              <p class="mb-1">{{ notification.uzenet }}</p>
-              <div v-if="notification.diak" class="text-muted small">
-                <i class="bi bi-person"></i> {{ notification.diak.nev }}
-                <span v-if="notification.diak.email"> • {{ notification.diak.email }}</span>
-              </div>
-              <div v-if="notification.szoba_valtoztatas" class="text-muted small mt-1">
-                <i class="bi bi-door-closed"></i> 
-                Szoba: {{ notification.szoba_valtoztatas.jelenlegi_szoba?.szoba_szama }} 
-                → {{ notification.szoba_valtoztatas.kivant_szoba?.szoba_szama }}
+              <div class="d-flex w-100 justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center mb-1">
+                    <span :class="getNotificationIconClass(notification.tipus)" class="me-2">
+                      {{ getNotificationTypeText(notification.tipus) }}
+                    </span>
+                    <span 
+                      v-if="notification.prioritas"
+                      :class="getPriorityBadgeClass(notification.prioritas)"
+                      class="me-2"
+                    >
+                      {{ getPriorityText(notification.prioritas) }}
+                    </span>
+                  </div>
+                  <p class="mb-1">{{ notification.uzenet }}</p>
+                  <div v-if="notification.diak" class="text-muted small">
+                    <i class="bi bi-person"></i> {{ notification.diak.nev }}
+                    <span v-if="notification.diak.email"> • {{ notification.diak.email }}</span>
+                  </div>
+                  <div v-if="notification.szoba_valtoztatas" class="text-muted small mt-1">
+                    <i class="bi bi-door-closed"></i> 
+                    Szoba: {{ notification.szoba_valtoztatas.jelenlegi_szoba?.szoba_szama }} 
+                    → {{ notification.szoba_valtoztatas.kivant_szoba?.szoba_szama }}
+                  </div>
+                </div>
+                <small class="text-muted ms-2">{{ formatDate(notification.created_at) }}</small>
               </div>
             </div>
+          </div>
+          
+          <!-- View All Link -->
+          <div class="card-footer text-center" v-if="notifications.length > 5">
+            <router-link to="/notifications" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-list-ul me-1"></i>
+              Összes értesítés megtekintése
+            </router-link>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Notification Detail Modal -->
+    <NotificationDetailModal
+      v-model="showNotificationDetail"
+      :notification="selectedNotification"
+      @mark-as-read="handleModalMarkAsRead"
+    />
   </div>
 </template>
 
@@ -83,14 +107,22 @@
 import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { toast } from 'vue3-toastify'
 import api from '../services/api'
+import NotificationDetailModal from './NotificationDetailModal.vue'
 
 export default {
   name: 'NotificationInbox',
+  components: {
+    NotificationDetailModal
+  },
   setup() {
     const notifications = ref([])
     const loading = ref(false)
     const markingAllAsRead = ref(false)
     const lastFetchTime = ref(0)
+    
+    // Modal state
+    const showNotificationDetail = ref(false)
+    const selectedNotification = ref(null)
 
     // Memoized computed properties for better performance
     const unreadCount = computed(() => {
@@ -106,13 +138,42 @@ export default {
     const notificationTypeMap = {
       'room_change_approved': 'Szobaváltás jóváhagyva',
       'room_change_denied': 'Szobaváltás elutasítva',
-      'room_change_pending': 'Szobaváltás függőben'
+      'room_change_pending': 'Szobaváltás függőben',
+      'system_announcement': 'Rendszer bejelentés',
+      'student_notification': 'Diák értesítés',
+      'general_alert': 'Általános figyelmeztetés'
     }
 
     const notificationIconMap = {
       'room_change_approved': 'badge bg-success',
       'room_change_denied': 'badge bg-danger',
-      'room_change_pending': 'badge bg-warning'
+      'room_change_pending': 'badge bg-warning',
+      'system_announcement': 'badge bg-info',
+      'student_notification': 'badge bg-primary',
+      'general_alert': 'badge bg-secondary'
+    }
+
+    // Priority mappings
+    const priorityBadgeMap = {
+      'high': 'badge bg-danger',
+      'medium': 'badge bg-warning',
+      'low': 'badge bg-info',
+      'normal': 'badge bg-secondary'
+    }
+
+    const priorityTextMap = {
+      'high': 'Magas',
+      'medium': 'Közepes',
+      'low': 'Alacsony',
+      'normal': 'Normál'
+    }
+
+    const getPriorityBadgeClass = (priority) => {
+      return priorityBadgeMap[priority] || 'badge bg-secondary'
+    }
+
+    const getPriorityText = (priority) => {
+      return priorityTextMap[priority] || 'Normál'
     }
 
     // Debounced functions to prevent excessive API calls
@@ -254,6 +315,16 @@ export default {
       }
     })
 
+    // Modal functions
+    const openNotificationDetail = (notification) => {
+      selectedNotification.value = notification
+      showNotificationDetail.value = true
+    }
+
+    const handleModalMarkAsRead = (notification) => {
+      markAsRead(notification)
+    }
+
     onMounted(() => {
       fetchNotifications()
       startAutoRefresh()
@@ -278,7 +349,13 @@ export default {
       debouncedMarkAllAsRead,
       getNotificationTypeText,
       getNotificationIconClass,
-      formatDate
+      getPriorityBadgeClass,
+      getPriorityText,
+      formatDate,
+      showNotificationDetail,
+      selectedNotification,
+      openNotificationDetail,
+      handleModalMarkAsRead
     }
   }
 }

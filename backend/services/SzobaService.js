@@ -231,15 +231,16 @@ class SzobaService {
    * @param {string} options.sort - Rendezési mező
    * @param {string} options.order - Rendezési irány (ASC/DESC)
    * @param {string} options.prefix - Szoba szám prefix (pl. 'A')
+   * @param {string} options.gender - Diák neme ('férfi' vagy 'nő') - opcionális, ha megadva, csak azonos nemű szobákat ad vissza
    * @returns {Promise<Array>} - Elérhető szobák listája
    */
   async getAvailableRooms(options = {}) {
     try {
-      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
+      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix, gender } = options;
 
       // Generate cache key based on query parameters
       const cacheKey = cacheService.generateKey(cacheService.keyPatterns.ROOMS_AVAILABLE, {
-        limit, offset, sort, order, prefix: prefix || 'all'
+        limit, offset, sort, order, prefix: prefix || 'all', gender: gender || 'all'
       });
 
       return await cacheService.getOrCompute(cacheKey, async () => {

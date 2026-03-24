@@ -210,11 +210,12 @@ class SzobaRepository {
    * @param {string} options.sort - Rendezési mező
    * @param {string} options.order - Rendezési irány (ASC/DESC)
    * @param {string} options.prefix - Szoba szám prefix (pl. 'A')
+   * @param {string} options.gender - Diák neme ('férfi' vagy 'nő') - opcionális, ha megadva, csak azonos nemű szobákat ad vissza
    * @returns {Promise<Array>} - Elérhető szobák listája
    */
   async getAvailableRooms(options = {}) {
     try {
-      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix } = options;
+      const { limit = 10, offset = 0, sort = 'szoba_id', order = 'ASC', prefix, gender } = options;
 
       const where = {};
       if (prefix) {
@@ -231,7 +232,7 @@ class SzobaRepository {
         offset
       });
 
-      // OPTIMALIZÁLVA: Egyetlen GROUP BY lekérdezés az összes szoba aktuális foglaltságára (N+1 probléma megoldva)
+      // OPTIMALIZÁLVA: Egyetlen lekérdezés az összes szoba aktuális foglaltságára és lakóinak nemére
       const szobaIds = szobas.map(szoba => szoba.szoba_id);
       
       const occupancyData = await this.SzobaBekoltozes.findAll({
@@ -253,6 +254,34 @@ class SzobaRepository {
         occupancyMap.set(item.szoba_id, parseInt(item.occupancy) || 0);
       });
 
+      // Ha gender paraméter meg van adva, lekérdezzük a szobákban lakó diákok nemét
+      const roomGenderMap = new Map();
+      if (gender) {
+        const roomOccupants = await this.SzobaBekoltozes.findAll({
+          where: {
+            szoba_id: { [Op.in]: szobaIds },
+            kikoltozes_datum: null
+          },
+          include: [{
+            model: this.db.Diak,
+            as: 'diak',
+            attributes: ['nem']
+          }]
+        });
+
+        // Szobánként tároljuk a lakók nemét
+        roomOccupants.forEach(bekoltozes => {
+          const szobaId = bekoltozes.szoba_id;
+          const nem = bekoltozes.diak?.nem;
+          if (nem) {
+            if (!roomGenderMap.has(szobaId)) {
+              roomGenderMap.set(szobaId, new Set());
+            }
+            roomGenderMap.get(szobaId).add(nem);
+          }
+        });
+      }
+
       // Szűrjük és formázzuk az elérhető szobákat
       const availableRooms = [];
       
@@ -260,6 +289,22 @@ class SzobaRepository {
         const currentOccupancy = occupancyMap.get(szoba.szoba_id) || 0;
 
         if (currentOccupancy < szoba.osszes_hely) {
+          // Ha gender paraméter meg van adva, ellenőrizzük a nem kompatibilitást
+          if (gender) {
+            const roomGenders = roomGenderMap.get(szoba.szoba_id);
+            
+            // Ha van már lakó a szobában
+            if (roomGenders && roomGenders.size > 0) {
+              // Ellenőrizzük, hogy a szobában lévő diákok nem megegyezik-e a kérő nemével
+              // Ha többféle nem van a szobában (nem szabadna előfordulnia), akkor is kizárjuk
+              if (!roomGenders.has(gender) || roomGenders.size > 1) {
+                // A szoba nem kompatibilis - más nemű lakók vannak benne
+                continue;
+              }
+            }
+            // Ha a szoba üres vagy azonos nemű lakók vannak benne, hozzáadjuk
+          }
+
           availableRooms.push({
             ...szoba.toJSON(),
             aktualis_szam: currentOccupancy,

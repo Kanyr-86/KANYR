@@ -96,6 +96,18 @@
               <span v-show="!isCollapsed">Riportok</span>
             </router-link>
           </li>
+          <li class="nav-item">
+            <router-link 
+              to="/notifications" 
+              class="nav-link d-flex align-items-center"
+              :class="{ 'collapsed': isCollapsed }"
+              active-class="active"
+              exact-active-class="exact-active"
+            >
+              <i class="bi bi-bell me-3"></i>
+              <span v-show="!isCollapsed">Értesítések</span>
+            </router-link>
+          </li>
         </template>
 
         <!-- Student Navigation -->

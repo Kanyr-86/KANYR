@@ -36,6 +36,7 @@ const breadcrumbMap = {
   'Parents': { title: 'Szülők', to: '/parents' },
   'Rooms': { title: 'Szobák', to: '/rooms' },
   'Reports': { title: 'Riportok', to: '/reports' },
+  'AdminNotifications': { title: 'Értesítések', to: '/notifications' },
   
   // Student routes
   'StudentDashboard': { title: 'Diák Dashboard', to: '/student-dashboard' },

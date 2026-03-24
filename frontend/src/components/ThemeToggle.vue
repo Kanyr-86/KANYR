@@ -62,11 +62,6 @@ export default {
         value: 'dark',
         label: 'Sötét',
         icon: 'bi-moon-stars-fill'
-      },
-      {
-        value: 'high-contrast',
-        label: 'Nagy kontraszt',
-        icon: 'bi-eye-fill'
       }
     ]
     
@@ -192,10 +187,6 @@ export default {
   background: var(--secondary-500);
 }
 
-.theme-indicator-high-contrast {
-  background: var(--text-dark);
-}
-
 /* Dark theme adjustments */
 [data-theme="dark"] .theme-toggle {
   background: var(--bg-tertiary);
@@ -222,36 +213,6 @@ export default {
 
 [data-theme="dark"] .theme-btn-active:hover {
   background: rgba(99, 102, 241, 0.2);
-}
-
-/* High contrast theme adjustments */
-[data-theme="high-contrast"] .theme-toggle {
-  background: var(--bg-page);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .theme-btn {
-  background: var(--bg-page);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .theme-btn:hover {
-  background: var(--text-primary);
-  color: var(--text-inverse);
-  border-color: var(--border-primary);
-}
-
-[data-theme="high-contrast"] .theme-btn-active {
-  background: var(--text-primary);
-  color: var(--text-inverse);
-  border: 2px solid var(--border-primary);
-  box-shadow: none;
-}
-
-[data-theme="high-contrast"] .theme-indicator {
-  background: var(--text-dark);
-  height: 4px;
 }
 
 /* Responsive adjustments */

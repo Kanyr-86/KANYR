@@ -56,7 +56,11 @@ const validateQueryParams = [
 
   query('prefix')
     .optional()
-    .isString().withMessage('A prefix szövegnek kell lennie')
+    .isString().withMessage('A prefix szövegnek kell lennie'),
+
+  query('gender')
+    .optional()
+    .isIn(['férfi', 'nő']).withMessage('A nem csak "férfi" vagy "nő" lehet')
 ];
 
 // Validáció beköltözés létrehozásához

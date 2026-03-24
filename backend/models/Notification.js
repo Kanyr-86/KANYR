@@ -25,8 +25,30 @@ module.exports = (sequelize) => {
       }
     },
     tipus: {
-      type: DataTypes.ENUM('room_change_approved', 'room_change_denied', 'room_change_pending'),
+      type: DataTypes.ENUM(
+        'room_change_approved',
+        'room_change_denied',
+        'room_change_pending',
+        'system_announcement',
+        'student_notification',
+        'general_alert'
+      ),
       allowNull: false
+    },
+    cimzettkor: {
+      type: DataTypes.ENUM('admin', 'student', 'both'),
+      allowNull: false,
+      defaultValue: 'student'
+    },
+    prioritas: {
+      type: DataTypes.ENUM('low', 'medium', 'high', 'urgent'),
+      allowNull: false,
+      defaultValue: 'medium'
+    },
+    olvasva_datum: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     },
     uzenet: {
       type: DataTypes.TEXT,

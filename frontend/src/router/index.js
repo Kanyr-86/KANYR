@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../store/auth'
+import { secureStorage } from '../services/secureStorage'
 import { ref } from 'vue'
 
 // Track auth initialization state to prevent race conditions
@@ -79,8 +80,13 @@ function validateAllRoutesMeta(routes) {
  * @returns {Promise<boolean>} - True if initialization completed successfully
  */
 async function authInitializationGuard(to, from, authStore) {
-  // Only initialize if we have a token but no user data
-  if (!authStore.user && authStore.isAuthenticated && authStore.token) {
+  // Check if we have a token in secureStorage (persists across page refreshes)
+  // This is the key fix: we check storage, not just the store state which gets wiped on refresh
+  const hasStoredToken = await secureStorage.getToken()
+  
+  // Initialize auth if we have a stored token but store state is not initialized
+  // This handles the case where user refreshes the page and store state is reset
+  if (hasStoredToken && !authStore.isAuthenticated) {
     // If initialization is already in progress, wait for it
     if (authInitializationPromise) {
       try {
@@ -220,6 +226,12 @@ const router = createRouter({
       path: '/reports',
       name: 'Reports',
       component: () => import('../views/ReportsView.vue'),
+      meta: { requiresAuth: true, allowedRoles: ['admin'] }
+    },
+    {
+      path: '/notifications',
+      name: 'AdminNotifications',
+      component: () => import('../views/AdminNotificationsView.vue'),
       meta: { requiresAuth: true, allowedRoles: ['admin'] }
     },
     {

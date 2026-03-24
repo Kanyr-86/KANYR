@@ -106,4 +106,34 @@ router.put('/admin/notifications/:id/read', authenticate, isAdmin, validateId, (
   return controller.markNotificationAsReadByAdmin(req, res);
 });
 
+// Admin összes értesítésének megjelölése olvasottnak - csak admin
+router.put('/admin/notifications/read-all', authenticate, isAdmin, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.markAllNotificationsAsRead(req, res);
+});
+
+// Admin értesítés törlése - csak admin
+router.delete('/admin/notifications/:id', authenticate, isAdmin, validateId, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.deleteNotification(req, res);
+});
+
+// Admin értesítési statisztikák - csak admin
+router.get('/admin/notifications/statistics', authenticate, isAdmin, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.getNotificationStatistics(req, res);
+});
+
+// Új értesítés létrehozása - csak admin
+router.post('/admin/notifications', authenticate, isAdmin, [
+  body('tipus').isIn(['room_change_approved', 'room_change_denied', 'room_change_pending', 'system_announcement', 'student_notification', 'general_alert']).withMessage('Érvénytelen értesítés típus'),
+  body('uzenet').notEmpty().withMessage('Az üzenet megadása kötelező'),
+  body('cimzettkor').optional().isIn(['admin', 'student', 'both']).withMessage('Érvénytelen címzettkör'),
+  body('prioritas').optional().isIn(['low', 'medium', 'high', 'urgent']).withMessage('Érvénytelen prioritás'),
+  body('diak_id').optional().isInt({ min: 1 }).withMessage('A diák ID pozitív egész számnak kell legyen')
+], (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.createNotification(req, res);
+});
+
 module.exports = router;

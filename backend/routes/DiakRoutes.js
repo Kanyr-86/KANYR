@@ -112,9 +112,15 @@ router.get('/statistics', authenticate, isAdmin, asyncHandler(async (req, res) =
   return controller.getStatistics(req, res);
 }));
 
-// Student dashboard endpoint - gets current room for authenticated student
+// Student profile endpoint - gets authenticated student's profile including gender
 // FONTOS: Ezeknek a route-oknak a /:id ELŐTT kell lenniük,
 // különben az Express a "room" stb. szavakat ID-ként értelmezi!
+router.get('/profile', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+  const controller = req.app.locals.controllers.diakController;
+  return controller.getStudentProfile({ params: { id: req.diakId } }, res);
+}));
+
+// Student dashboard endpoint - gets current room for authenticated student
 router.get('/room', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.getStudentRoom({ params: { id: req.diakId } }, res);

@@ -205,8 +205,20 @@ export default {
     const getAvailableRooms = async () => {
       loadingRooms.value = true;
       try {
-        // /szobas/available already filters to rooms with free capacity
-        const response = await api.get('/rooms/available');
+        // Get student's gender to filter compatible rooms
+        let gender = null;
+        try {
+          const studentResponse = await studentApi.get('/profile');
+          if (studentResponse.data?.data?.diak?.nem) {
+            gender = studentResponse.data.data.diak.nem;
+          }
+        } catch (err) {
+          console.warn('Nem sikerült lekérni a diák nemét:', err);
+        }
+
+        // /szobas/available filters rooms with free capacity and gender compatibility
+        const params = gender ? { gender } : {};
+        const response = await api.get('/rooms/available', { params });
         availableRooms.value = response.data.data.map(room => ({
           ...room,
           isAvailable: true

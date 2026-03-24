@@ -302,6 +302,7 @@ class SzobaValtoztatasController {
             diak_id: kerelem.diak_id,
             szoba_valtoztatas_id: kerelem.valtoztatas_id,
             tipus: 'room_change_approved',
+            cimzettkor: 'student',
             uzenet: `Szobaváltási kérelme jóváhagyva lett. Új szobája: ${kivantSzobaInfo ? kivantSzobaInfo.szoba_szama : kerelem.kivant_szoba_id}`
           }, { transaction });
         });
@@ -314,6 +315,7 @@ class SzobaValtoztatasController {
           diak_id: kerelem.diak_id,
           szoba_valtoztatas_id: kerelem.valtoztatas_id,
           tipus: 'room_change_denied',
+          cimzettkor: 'student',
           uzenet: 'Szobaváltási kérelme elutasítva lett.'
         });
       }
@@ -443,6 +445,11 @@ class SzobaValtoztatasController {
   async getAdminNotifications(req, res, next) {
     try {
       const notifications = await this.db.Notification.findAll({
+        where: {
+          cimzettkor: {
+            [Op.in]: ['admin', 'both']
+          }
+        },
         include: [
           {
             model: this.db.Diak,
@@ -489,6 +496,7 @@ class SzobaValtoztatasController {
       }
 
       notification.elolvasva = true;
+      notification.olvasva_datum = new Date();
       await notification.save();
 
       res.json({
@@ -496,8 +504,163 @@ class SzobaValtoztatasController {
         data: {
           notification_id: notification.notification_id,
           elolvasva: notification.elolvasva,
+          olvasva_datum: notification.olvasva_datum,
           updated_at: notification.updated_at
         }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Admin összes értesítésének megjelölése olvasottnak
+  async markAllNotificationsAsRead(req, res, next) {
+    try {
+      const [updatedCount] = await this.db.Notification.update(
+        { 
+          elolvasva: true,
+          olvasva_datum: new Date()
+        },
+        {
+          where: {
+            elolvasva: false
+          }
+        }
+      );
+
+      res.json({
+        success: true,
+        data: {
+          updated_count: updatedCount
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Admin értesítés törlése (soft delete)
+  async deleteNotification(req, res, next) {
+    try {
+      const { id } = req.params;
+
+      const notification = await this.db.Notification.findByPk(id);
+      if (!notification) {
+        throw new NotFoundError('Értesítés');
+      }
+
+      await notification.destroy(); // Soft delete due to paranoid: true
+
+      res.json({
+        success: true,
+        message: 'Értesítés sikeresen törölve'
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Admin értesítési statisztikák
+  async getNotificationStatistics(req, res, next) {
+    try {
+      const totalCount = await this.db.Notification.count();
+      const unreadCount = await this.db.Notification.count({
+        where: { elolvasva: false }
+      });
+      const readCount = totalCount - unreadCount;
+
+      // Count by type
+      const typeCounts = await this.db.Notification.findAll({
+        attributes: [
+          'tipus',
+          [this.db.sequelize.fn('COUNT', this.db.sequelize.col('notification_id')), 'count']
+        ],
+        group: ['tipus']
+      });
+
+      // Count by priority
+      const priorityCounts = await this.db.Notification.findAll({
+        attributes: [
+          'prioritas',
+          [this.db.sequelize.fn('COUNT', this.db.sequelize.col('notification_id')), 'count']
+        ],
+        group: ['prioritas']
+      });
+
+      res.json({
+        success: true,
+        data: {
+          total: totalCount,
+          unread: unreadCount,
+          read: readCount,
+          by_type: typeCounts.reduce((acc, item) => {
+            acc[item.tipus] = parseInt(item.getDataValue('count'));
+            return acc;
+          }, {}),
+          by_priority: priorityCounts.reduce((acc, item) => {
+            acc[item.prioritas] = parseInt(item.getDataValue('count'));
+            return acc;
+          }, {})
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Új értesítés létrehozása (admin által)
+  async createNotification(req, res, next) {
+    try {
+      const { tipus, uzenet, cimzettkor, prioritas, diak_id } = req.body;
+
+      // Validate required fields
+      if (!tipus || !uzenet) {
+        throw new ValidationError('A típus és az üzenet megadása kötelező');
+      }
+
+      // If targeting specific student, validate diak_id
+      if (cimzettkor === 'student' && !diak_id) {
+        throw new ValidationError('Diák ID megadása kötelező diákoknak szóló értesítéshez');
+      }
+
+      const notificationData = {
+        tipus,
+        uzenet,
+        cimzettkor: cimzettkor || 'student',
+        prioritas: prioritas || 'medium'
+      };
+
+      // If creating notification for specific student
+      if (diak_id) {
+        notificationData.diak_id = diak_id;
+      } else if (cimzettkor === 'student') {
+        // If targeting all students, we need to create notifications for each
+        const allStudents = await this.db.Diak.findAll({
+          attributes: ['diak_id']
+        });
+
+        const notifications = await Promise.all(
+          allStudents.map(student => 
+            this.db.Notification.create({
+              ...notificationData,
+              diak_id: student.diak_id
+            })
+          )
+        );
+
+        return res.status(201).json({
+          success: true,
+          data: {
+            created_count: notifications.length
+          }
+        });
+      }
+
+      const notification = await this.db.Notification.create(notificationData);
+
+      res.status(201).json({
+        success: true,
+        data: notification
       });
     } catch (error) {
       next(error);

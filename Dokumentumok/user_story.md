@@ -104,13 +104,6 @@
 **Szeretném hogy** láthassam a beköltözések/kiköltözések teljes előzményét egy diákhoz,  
 **Hogy** biztosan nyomon követhetem az elhelyezéseket.
 
-## Archivált diákok
-
-### 17. User Story: Főtitkár lekérdezi végzett diákokat
-**Mint** kollégiumi titkár,   
-**Szeretném hogy** lekérdezhetem az archivált diákokat (végzett, kiköltözött),  
-**Hogy** statisztikákat tudjak készíteni.
-
 ## Havi kimutatás
 
 ### 18. User Story: Főtitkár generál havi kimutatást

@@ -215,14 +215,15 @@ class SzobaController {
    */
   async getAvailableRooms(req, res, next) {
     try {
-      const { limit, offset, sort, order, prefix } = req.query;
+      const { limit, offset, sort, order, prefix, gender } = req.query;
 
       const options = {
         limit: limit ? parseInt(limit) : 10,
         offset: offset ? parseInt(offset) : 0,
         sort: sort || 'szoba_id',
         order: order || 'ASC',
-        prefix: prefix
+        prefix: prefix,
+        gender: gender // 'férfi' vagy 'nő' - opcionális, ha megadva, csak azonos nemű szobákat ad vissza
       };
 
       const availableRooms = await this.SzobaService.getAvailableRooms(options);
