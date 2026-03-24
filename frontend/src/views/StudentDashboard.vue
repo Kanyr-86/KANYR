@@ -108,7 +108,7 @@ export default {
     const getCurrentRoom = async () => {
       loadingRoom.value = true;
       try {
-        const response = await studentApi.get('/students/room');
+        const response = await studentApi.get('/room');
         currentRoom.value = response.data.data;
       } catch (error) {
         console.error('Hiba a szoba lekérésekor:', error);
@@ -120,7 +120,7 @@ export default {
     const getRoomHistory = async () => {
       loadingHistory.value = true;
       try {
-        const response = await studentApi.get('/students/room-history');
+        const response = await studentApi.get('/room-history');
         roomHistory.value = response.data.data;
         
         // Ellenőrizzük a szobaváltási korlátot
@@ -141,7 +141,7 @@ export default {
     const getNotifications = async () => {
       loadingNotifications.value = true;
       try {
-        const response = await studentApi.get('/students/notifications');
+        const response = await studentApi.get('/notifications');
         notifications.value = response.data.data;
       } catch (error) {
         console.error('Hiba az értesítések lekérésekor:', error);
@@ -172,7 +172,7 @@ export default {
       }
 
       try {
-        await studentApi.post('/students/room-change', {
+        await studentApi.post('/room-change', {
           kivant_szoba_id: selectedRoomId.value,
           indok: reason.value
         });
@@ -190,7 +190,7 @@ export default {
 
     const markAsRead = async (notificationId) => {
       try {
-        await studentApi.put(`/students/notifications/${notificationId}/read`);
+        await studentApi.put(`/notifications/${notificationId}/read`);
         const notification = notifications.value.find(n => n.notification_id === notificationId);
         if (notification) {
           notification.elolvasva = true;

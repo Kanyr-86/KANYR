@@ -99,7 +99,7 @@ export default {
     const getNotifications = async () => {
       loadingNotifications.value = true;
       try {
-        const response = await studentApi.get('/students/notifications');
+        const response = await studentApi.get('/notifications');
         notifications.value.splice(0, notifications.value.length, ...response.data.data);
       } catch (error) {
         console.error('Hiba az értesítések lekérésekor:', error);
@@ -110,7 +110,7 @@ export default {
 
     const markAsRead = async (notificationId) => {
       try {
-        await studentApi.put(`/students/notifications/${notificationId}/read`);
+        await studentApi.put(`/notifications/${notificationId}/read`);
         const notification = notifications.value.find(n => n.notification_id === notificationId);
         if (notification) {
           notification.elolvasva = true;
@@ -122,7 +122,7 @@ export default {
 
     const markAllAsRead = async () => {
       try {
-        await studentApi.put('/students/notifications/read-all');
+        await studentApi.put('/notifications/read-all');
         notifications.value.forEach(notification => {
           notification.elolvasva = true;
         });

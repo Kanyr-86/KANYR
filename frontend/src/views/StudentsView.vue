@@ -194,117 +194,245 @@
     <BaseModal
       v-model:show="showEnrollModal"
       title="Diák felvétele"
-      size="lg"
+      size="xl"
       @close="closeEnrollModal"
     >
       <form @submit.prevent="submitEnrollment" id="enrollForm">
         <div class="row">
-          <!-- Személyes adatok -->
-          <div class="col-md-6">
-            <h6 class="mb-3 text-primary">
-              <i class="bi bi-person me-2"></i>Személyes adatok
-            </h6>
-            
-            <BaseInput
-              v-model="enrollForm.nev"
-              label="Teljes név"
-              placeholder="Add meg a diák teljes nevét"
-              :error="errors.nev"
-              required
-              @blur="validateFieldImmediate('nev', enrollForm.nev)"
-            />
-            
-            <BaseInput
-              v-model="enrollForm.email"
-              label="Email cím"
-              type="email"
-              placeholder="pelda@email.hu"
-              :error="errors.email"
-              required
-              @blur="validateFieldImmediate('email', enrollForm.email)"
-            />
-            
-            <BaseInput
-              v-model="enrollForm.telefonszam"
-              label="Telefonszám"
-              type="tel"
-              placeholder="+36 20 123 4567 vagy 06201234567"
-              :error="errors.telefonszam"
-              required
-              @blur="validateFieldImmediate('telefonszam', enrollForm.telefonszam)"
-            />
-            <small style="color: var(--text-muted)" class="d-block mb-2">
-              Formátum: +36 20 123 4567, 06 20 123 4567, vagy 06201234567
-            </small>
-            
-            <BaseInput
-              v-model="enrollForm.szuletesi_datum"
-              label="Születési dátum"
-              type="date"
-              :error="errors.szuletesi_datum"
-              required
-              @blur="validateFieldImmediate('szuletesi_datum', enrollForm.szuletesi_datum)"
-            />
-            
-            <BaseSelect
-              v-model="enrollForm.nem"
-              label="Nem"
-              :options="nemOptions"
-              placeholder="Válassz nemet"
-              :error="errors.nem"
-              required
-              @change="validateFieldImmediate('nem', enrollForm.nem)"
-            />
+          <!-- Personal Info Pillar -->
+          <div class="col-md-4">
+            <div class="pillar-card h-100">
+              <h6 class="mb-3 text-primary pillar-title">
+                <i class="bi bi-person me-2"></i>Személyes adatok
+              </h6>
+              
+              <BaseInput
+                v-model="enrollForm.nev"
+                label="Teljes név"
+                placeholder="Add meg a diák teljes nevét"
+                :error="errors.nev"
+                required
+                @blur="validateFieldImmediate('nev', enrollForm.nev)"
+              />
+              
+              <BaseInput
+                v-model="enrollForm.email"
+                label="Email cím"
+                type="email"
+                placeholder="pelda@email.hu"
+                :error="errors.email"
+                required
+                @blur="validateFieldImmediate('email', enrollForm.email)"
+              />
+              
+              <BaseInput
+                v-model="enrollForm.telefonszam"
+                label="Telefonszám"
+                type="tel"
+                placeholder="+36 20 123 4567"
+                :error="errors.telefonszam"
+                required
+                @blur="validateFieldImmediate('telefonszam', enrollForm.telefonszam)"
+              />
+              <small style="color: var(--text-muted)" class="d-block mb-2">
+                Formátum: +36 20 123 4567
+              </small>
+              
+              <BaseInput
+                v-model="enrollForm.szuletesi_datum"
+                label="Születési dátum"
+                type="date"
+                :error="errors.szuletesi_datum"
+                required
+                @blur="validateFieldImmediate('szuletesi_datum', enrollForm.szuletesi_datum)"
+              />
+              
+              <BaseSelect
+                v-model="enrollForm.nem"
+                label="Nem"
+                :options="nemOptions"
+                placeholder="Válassz nemet"
+                :error="errors.nem"
+                required
+                @change="validateFieldImmediate('nem', enrollForm.nem)"
+              />
+            </div>
           </div>
           
-          <!-- Azonosító adatok -->
-          <div class="col-md-6">
-            <h6 class="mb-3 text-primary">
-              <i class="bi bi-card-text me-2"></i>Azonosító adatok
-            </h6>
-            
-            <BaseInput
-              v-model="enrollForm.szemelyi_igazolvany_szam"
-              label="Személyi igazolvány szám"
-              placeholder="123456AA"
-              :error="errors.szemelyi_igazolvany_szam"
-              required
-              @blur="validateFieldImmediate('szemelyi_igazolvany_szam', enrollForm.szemelyi_igazolvany_szam)"
-            />
-            <small style="color: var(--text-muted)" class="d-block mb-2">
-              Formátum: 6 számjegy + 2 betű (pl: 123456AA)
-            </small>
-            
-            <BaseInput
-              v-model="enrollForm.taj_szam"
-              label="TAJ szám"
-              placeholder="123 456 789"
-              :error="errors.taj_szam"
-              required
-              @blur="validateFieldImmediate('taj_szam', enrollForm.taj_szam)"
-            />
-            <small style="color: var(--text-muted)" class="d-block mb-2">
-              Formátum: 9 számjegy (pl: 123456789)
-            </small>
-            
-            <BaseInput
-              v-model="enrollForm.diakigazolvany_szam"
-              label="Diákigazolvány szám"
-              placeholder="12345678"
-              :error="errors.diakigazolvany_szam"
-              required
-              @blur="validateFieldImmediate('diakigazolvany_szam', enrollForm.diakigazolvany_szam)"
-            />
-            
-            <BaseSelect
-              v-model="enrollForm.kapcsolat_tipusa"
-              label="Kapcsolat típusa"
-              :options="kapcsolatOptions"
-              placeholder="Válassz kapcsolat típust"
-              :error="errors.kapcsolat_tipusa"
-              required
-              @change="validateFieldImmediate('kapcsolat_tipusa', enrollForm.kapcsolat_tipusa)"
-            />
+          <!-- Identification Info Pillar -->
+          <div class="col-md-4">
+            <div class="pillar-card h-100">
+              <h6 class="mb-3 text-primary pillar-title">
+                <i class="bi bi-card-text me-2"></i>Azonosító adatok
+              </h6>
+              
+              <BaseInput
+                v-model="enrollForm.szemelyi_igazolvany_szam"
+                label="Személyi igazolvány szám"
+                placeholder="123456AA"
+                :error="errors.szemelyi_igazolvany_szam"
+                required
+                @blur="validateFieldImmediate('szemelyi_igazolvany_szam', enrollForm.szemelyi_igazolvany_szam)"
+              />
+              <small style="color: var(--text-muted)" class="d-block mb-2">
+                Formátum: 6 számjegy + 2 betű (pl: 123456AA)
+              </small>
+              
+              <BaseInput
+                v-model="enrollForm.taj_szam"
+                label="TAJ szám"
+                placeholder="123456789"
+                :error="errors.taj_szam"
+                required
+                @blur="validateFieldImmediate('taj_szam', enrollForm.taj_szam)"
+              />
+              <small style="color: var(--text-muted)" class="d-block mb-2">
+                Formátum: 9 számjegy (pl: 123456789)
+              </small>
+              
+              <BaseInput
+                v-model="enrollForm.diakigazolvany_szam"
+                label="Diákigazolvány szám"
+                placeholder="12345678"
+                :error="errors.diakigazolvany_szam"
+                required
+                @blur="validateFieldImmediate('diakigazolvany_szam', enrollForm.diakigazolvany_szam)"
+              />
+            </div>
+          </div>
+
+          <!-- Parents Pillar -->
+          <div class="col-md-4">
+            <div class="pillar-card h-100">
+              <h6 class="mb-3 text-primary pillar-title">
+                <i class="bi bi-people me-2"></i>Szülő / Gondviselő
+              </h6>
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Szülő kiválasztása</label>
+                <div class="d-flex gap-2 mb-2">
+                  <button 
+                    type="button" 
+                    class="btn btn-sm" 
+                    :class="parentSelectionMode === 'existing' ? 'btn-primary' : 'btn-outline-primary'"
+                    @click="parentSelectionMode = 'existing'"
+                  >
+                    <i class="bi bi-person-check me-1"></i>Meglévő
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm" 
+                    :class="parentSelectionMode === 'new' ? 'btn-primary' : 'btn-outline-primary'"
+                    @click="parentSelectionMode = 'new'"
+                  >
+                    <i class="bi bi-person-plus me-1"></i>Új
+                  </button>
+                </div>
+              </div>
+
+              <!-- Meglévő szülő választás -->
+              <div v-if="parentSelectionMode === 'existing'">
+                <BaseSelect
+                  v-model="selectedParentId"
+                  label="Válassz szülőt"
+                  :options="parentOptions"
+                  placeholder="Válassz a listából"
+                  :error="errors.szulo_id"
+                  required
+                  @change="onParentSelect"
+                />
+                <div v-if="loadingParents" class="text-muted small mt-1">
+                  <span class="spinner-border spinner-border-sm me-1"></span>Szülők betöltése...
+                </div>
+              </div>
+
+              <!-- Új szülő adatok -->
+              <div v-if="parentSelectionMode === 'new'">
+                <BaseInput
+                  v-model="newParentForm.nev"
+                  label="Szülő neve"
+                  placeholder="Add meg a szülő teljes nevét"
+                  :error="errors.szulo_nev"
+                  required
+                  @blur="validateParentField('nev', newParentForm.nev)"
+                />
+                
+                <BaseInput
+                  v-model="newParentForm.email"
+                  label="Szülő email címe"
+                  type="email"
+                  placeholder="szulo@email.hu"
+                  :error="errors.szulo_email"
+                  required
+                  @blur="validateParentField('email', newParentForm.email)"
+                />
+                
+                <BaseInput
+                  v-model="newParentForm.telefonszam"
+                  label="Szülő telefonszáma"
+                  type="tel"
+                  placeholder="+36 20 123 4567"
+                  :error="errors.szulo_telefonszam"
+                  required
+                  @blur="validateParentField('telefonszam', newParentForm.telefonszam)"
+                />
+                
+                <BaseInput
+                  v-model="newParentForm.szemelyi_igazolvany_szam"
+                  label="Szülő személyi igazolvány száma"
+                  placeholder="123456AA"
+                  :error="errors.szulo_szemelyi_igazolvany_szam"
+                  required
+                  @blur="validateParentField('szemelyi_igazolvany_szam', newParentForm.szemelyi_igazolvany_szam)"
+                />
+                
+                <h6 class="mb-2 mt-3 text-secondary">
+                  <i class="bi bi-house me-1"></i>Szülő lakcíme
+                </h6>
+                
+                <BaseInput
+                  v-model="newParentAddress.orszag"
+                  label="Ország"
+                  placeholder="Magyarország"
+                  :error="errors.orszag"
+                  required
+                />
+                
+                <BaseInput
+                  v-model="newParentAddress.iranyitoszam"
+                  label="Irányítószám"
+                  placeholder="1234"
+                  :error="errors.iranyitoszam"
+                  required
+                />
+                
+                <BaseInput
+                  v-model="newParentAddress.varos"
+                  label="Város"
+                  placeholder="Budapest"
+                  :error="errors.varos"
+                  required
+                />
+                
+                <BaseInput
+                  v-model="newParentAddress.utca_hazszam"
+                  label="Utca, házszám"
+                  placeholder="Petőfi utca 10."
+                  :error="errors.utca_hazszam"
+                  required
+                />
+              </div>
+              
+              <BaseSelect
+                v-model="enrollForm.kapcsolat_tipusa"
+                label="Kapcsolat típusa"
+                :options="kapcsolatOptions"
+                placeholder="Válassz kapcsolat típust"
+                :error="errors.kapcsolat_tipusa"
+                required
+                @change="validateFieldImmediate('kapcsolat_tipusa', enrollForm.kapcsolat_tipusa)"
+              />
+            </div>
           </div>
         </div>
 
@@ -685,7 +813,7 @@
           <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
             <div class="card mb-3 room-card" :class="{ 'border-primary': selectedRoomForTransfer?.szoba_id === room.szoba_id }">
               <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">{{ room.szoba_szama }}</h6>
+                <span class="mb-0" style="font-weight: normal;">{{ room.szoba_szama }}</span>
                 <div class="d-flex gap-1">
                   <span class="badge" :class="getTransferRoomBadgeClass(room)">
                     {{ getTransferRoomBadgeText(room) }}
@@ -694,13 +822,13 @@
               </div>
               <div class="card-body">
                 <p class="card-text mb-1">
-                  <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
+                  <small>Férőhely: {{ room.osszes_hely }} fő</small>
                 </p>
                 <p class="card-text mb-1">
-                  <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
+                  <small>Jelenlegi lakók: {{ room.currentOccupancy || 0 }}</small>
                 </p>
                 <p class="card-text mb-2">
-                  <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                  <small>Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
                 </p>
                 <div class="progress mb-3" style="height: 8px;">
                   <div class="progress-bar" 
@@ -890,7 +1018,7 @@ const VALIDATION_RULES = {
     return ''
   },
 
-  // TAJ szám validation - 9 digits
+  // TAJ szám validation - 9 digits (simplified - no check digit validation)
   taj_szam: (value) => {
     if (!value || value.trim() === '') return VALIDATION_MESSAGES.REQUIRED
     // Remove spaces
@@ -899,18 +1027,6 @@ const VALIDATION_RULES = {
     const tajRegex = /^[0-9]{9}$/
     if (!tajRegex.test(normalized)) {
       return 'A TAJ szám pontosan 9 számjegyből áll'
-    }
-    // Optional: TAJ checksum validation (CDV)
-    // TAJ checksum: multiply digits by 3,7,3,7,3,7,3,7 and sum, mod 10 should equal 9th digit
-    const digits = normalized.split('').map(Number)
-    const weights = [3, 7, 3, 7, 3, 7, 3, 7]
-    let sum = 0
-    for (let i = 0; i < 8; i++) {
-      sum += digits[i] * weights[i]
-    }
-    const checksum = sum % 10
-    if (checksum !== digits[8]) {
-      return 'Érvénytelen TAJ szám (hibás ellenőrző számjegy)'
     }
     return ''
   },
@@ -1023,6 +1139,28 @@ export default {
     const availableRoomsForTransfer = ref([])
     const transferStudentData = ref(null)
     const transferLoading = ref(false)
+    
+    // Szülő kiválasztás állapot
+    const parentSelectionMode = ref('existing') // 'existing' vagy 'new'
+    const selectedParentId = ref(null)
+    const loadingParents = ref(false)
+    const parentOptions = ref([])
+    
+    // Új szülő űrlap
+    const newParentForm = ref({
+      nev: '',
+      email: '',
+      telefonszam: '',
+      szemelyi_igazolvany_szam: ''
+    })
+    
+    // Új szülő lakcím
+    const newParentAddress = ref({
+      orszag: 'Magyarország',
+      iranyitoszam: '',
+      varos: '',
+      utca_hazszam: ''
+    })
     
     // Űrlap adatok
     const enrollForm = ref({
@@ -1262,11 +1400,49 @@ export default {
       return Object.values(editErrors.value).every(error => !error)
     })
 
+    // Szülők lekérése
+    const fetchParents = async () => {
+      loadingParents.value = true
+      try {
+        const response = await api.get('/parents')
+        if (response.data.success) {
+          const parentsData = response.data.data
+          parentOptions.value = parentsData.map(parent => ({
+            value: parent.szulo_id,
+            label: `${parent.nev} (${parent.email})`
+          }))
+        }
+      } catch (error) {
+        console.error('Hiba a szülők lekérése közben:', error)
+      } finally {
+        loadingParents.value = false
+      }
+    }
+    
+    // Szülő választás kezelése
+    const onParentSelect = () => {
+      if (selectedParentId.value) {
+        errors.value.szulo_id = ''
+      }
+    }
+    
+    // Szülő mező validálás
+    const validateParentField = (field, value) => {
+      const error = validateField(field, value)
+      if (field === 'nev') errors.value.szulo_nev = error
+      if (field === 'email') errors.value.szulo_email = error
+      if (field === 'telefonszam') errors.value.szulo_telefonszam = error
+      if (field === 'szemelyi_igazolvany_szam') errors.value.szulo_szemelyi_igazolvany_szam = error
+    }
+    
     // Modal metódusok - Felvétel
     const openEnrollModal = () => {
       showEnrollModal.value = true
       errors.value = {}
       showValidationSummary.value = false
+      parentSelectionMode.value = 'existing'
+      selectedParentId.value = null
+      fetchParents()
     }
     
     const closeEnrollModal = () => {
@@ -1283,15 +1459,43 @@ export default {
         diakigazolvany_szam: '',
         kapcsolat_tipusa: ''
       }
+      newParentForm.value = {
+        nev: '',
+        email: '',
+        telefonszam: '',
+        szemelyi_igazolvany_szam: ''
+      }
+      newParentAddress.value = {
+        orszag: 'Magyarország',
+        iranyitoszam: '',
+        varos: '',
+        utca_hazszam: ''
+      }
+      selectedParentId.value = null
       errors.value = {}
       showValidationSummary.value = false
     }
     
     const submitEnrollment = async () => {
-      // Validate all fields before submission
+      // Validate student fields
       const isFormValid = validateForm(enrollForm.value, errors.value)
       
-      if (!isFormValid) {
+      // Validate parent selection
+      if (parentSelectionMode.value === 'existing' && !selectedParentId.value) {
+        errors.value.szulo_id = 'Szülő kiválasztása kötelező'
+      }
+      
+      if (parentSelectionMode.value === 'new') {
+        if (!newParentForm.value.nev) errors.value.szulo_nev = 'Szülő neve kötelező'
+        if (!newParentForm.value.email) errors.value.szulo_email = 'Szülő email címe kötelező'
+        if (!newParentForm.value.telefonszam) errors.value.szulo_telefonszam = 'Szülő telefonszáma kötelező'
+        if (!newParentForm.value.szemelyi_igazolvany_szam) errors.value.szulo_szemelyi_igazolvany_szam = 'Szülő személyi igazolvány száma kötelező'
+        if (!newParentAddress.value.iranyitoszam) errors.value.iranyitoszam = 'Irányítószám kötelező'
+        if (!newParentAddress.value.varos) errors.value.varos = 'Város kötelező'
+        if (!newParentAddress.value.utca_hazszam) errors.value.utca_hazszam = 'Utca, házszám kötelező'
+      }
+      
+      if (!isFormValid || Object.values(errors.value).some(e => e)) {
         showValidationSummary.value = true
         handleValidationErrors(errors.value)
         return
@@ -1299,9 +1503,20 @@ export default {
       
       enrollLoading.value = true
       try {
-        const response = await api.post('/students', enrollForm.value)
+        // Prepare enrollment data
+        const enrollmentData = {
+          diakData: enrollForm.value,
+          szuloData: parentSelectionMode.value === 'existing' 
+            ? { szulo_id: selectedParentId.value }
+            : newParentForm.value,
+          lakcimData: parentSelectionMode.value === 'new' ? newParentAddress.value : null,
+          szoba_id: null,
+          bekoltozes_datum: new Date().toISOString().split('T')[0]
+        }
+        
+        const response = await api.post('/students/enroll', enrollmentData)
         if (response.data.success) {
-          handleSuccess(getSuccessMessage('ENROLL_SUCCESS'))
+          handleSuccess('Diák sikeresen felvéve!')
           closeEnrollModal()
           fetchStudents()
         }
@@ -1581,6 +1796,13 @@ export default {
       // Options
       nemOptions,
       kapcsolatOptions,
+      // Parent selection
+      parentSelectionMode,
+      selectedParentId,
+      loadingParents,
+      parentOptions,
+      newParentForm,
+      newParentAddress,
       // Computed
       studentsCount,
       activeStudentsCount,
@@ -1621,7 +1843,11 @@ export default {
       getKapcsolatLabel,
       getFieldLabel,
       validateFieldImmediate,
-      validateEditFieldImmediate
+      validateEditFieldImmediate,
+      // Parent methods
+      fetchParents,
+      onParentSelect,
+      validateParentField
     }
   }
 }
@@ -1632,6 +1858,27 @@ export default {
   background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
   color: var(--text-inverse, white);
   font-weight: bold;
+}
+
+/* Pillar card styling for enrollment modal */
+.pillar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pillar-title {
+  border-bottom: 2px solid var(--primary-600);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Smaller text for room card info */
+.room-card .card-body small {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 /* High contrast avatar */

@@ -85,49 +85,65 @@ class DiakService {
     const transaction = await this.db.sequelize.transaction();
     
     try {
-      // 1. Lakcím létrehozása vagy megtalálása
-      let lakcim = await this.Lakcim.findOne({
-        where: {
-          orszag: lakcimData.orszag,
-          iranyitoszam: lakcimData.iranyitoszam,
-          varos: lakcimData.varos,
-          utca_hazszam: lakcimData.utca_hazszam
-        }
-      });
+      // 1. Lakcím létrehozása vagy megtalálása (csak ha van lakcimData)
+      let lakcim = null;
+      if (lakcimData) {
+        lakcim = await this.Lakcim.findOne({
+          where: {
+            orszag: lakcimData.orszag,
+            iranyitoszam: lakcimData.iranyitoszam,
+            varos: lakcimData.varos,
+            utca_hazszam: lakcimData.utca_hazszam
+          }
+        });
 
-      if (!lakcim) {
-        lakcim = await this.Lakcim.create(lakcimData, { transaction });
+        if (!lakcim) {
+          lakcim = await this.Lakcim.create(lakcimData, { transaction });
+        }
       }
 
-      // 2. Szülő létrehozása vagy frissítése
-      let szulo = await this.Szulo.findOne({
-        where: { email: szuloData.email }
-      });
+      // 2. Szülő kezelése - lehet meglévő (szulo_id) vagy új (email alapján)
+      let szulo;
+      if (szuloData.szulo_id) {
+        // Meglévő szülő használata
+        szulo = await this.Szulo.findByPk(szuloData.szulo_id);
+        if (!szulo) {
+          throw new Error('A megadott szülő nem található!');
+        }
+      } else {
+        // Új szülő létrehozása vagy megtalálása email alapján
+        szulo = await this.Szulo.findOne({
+          where: { email: szuloData.email }
+        });
 
-      if (!szulo) {
-        szulo = await this.Szulo.create({
-          ...szuloData,
-          cim_id: lakcim.cim_id
-        }, { transaction });
+        if (!szulo) {
+          szulo = await this.Szulo.create({
+            ...szuloData,
+            cim_id: lakcim ? lakcim.cim_id : null
+          }, { transaction });
+        }
       }
 
       // 3. Diák létrehozása
       const diak = await this.Diak.create({
         ...diakData,
         szulo_id: szulo.szulo_id,
-        cim_id: lakcim.cim_id
+        cim_id: lakcim ? lakcim.cim_id : null
       }, { transaction });
 
-      // 4. Szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
-      await this.checkRoomAvailability(szoba_id, transaction);
+      // 4. Szoba kezelése (opcionális)
+      if (szoba_id) {
+        // Szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
+        await this.checkRoomAvailability(szoba_id, transaction);
 
-      // 5. Beköltözés rögzítése
-      await this.SzobaBekoltozes.create({
-        diak_id: diak.diak_id,
-        szoba_id: szoba_id,
-        bekoltozes_datum: bekoltozes_datum || new Date(),
-        kikoltozes_datum: null
-      }, { transaction });
+        // Beköltözés rögzítése
+        await this.SzobaBekoltozes.create({
+          diak_id: diak.diak_id,
+          szoba_id: szoba_id,
+          bekoltozes_datum: bekoltozes_datum || new Date(),
+          kikoltozes_datum: null
+        }, { transaction });
+      }
 
       await transaction.commit();
 

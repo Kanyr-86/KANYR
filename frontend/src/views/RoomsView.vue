@@ -331,9 +331,9 @@
       
       <div class="row" v-else>
         <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForBulkTransfer" :key="room.szoba_id">
-          <div class="card mb-3 room-card">
+            <div class="card mb-3 room-card">
             <div class="card-header d-flex justify-content-between align-items-center">
-              <h6 class="mb-0">{{ room.szoba_szama }}</h6>
+              <span class="mb-0" style="font-weight: normal;">{{ room.szoba_szama }}</span>
               <div class="d-flex gap-1">
                 <span class="badge" :class="getTransferRoomBadgeClass(room)">
                   {{ getTransferRoomBadgeText(room) }}
@@ -342,13 +342,13 @@
             </div>
             <div class="card-body">
               <p class="card-text mb-1">
-                <small><strong>Férőhely:</strong> {{ room.osszes_hely }} fő</small>
+                <small>Férőhely: {{ room.osszes_hely }} fő</small>
               </p>
               <p class="card-text mb-1">
-                <small><strong>Jelenlegi lakók:</strong> {{ room.currentOccupancy || 0 }}</small>
+                <small>Jelenlegi lakók: {{ room.currentOccupancy || 0 }}</small>
               </p>
               <p class="card-text mb-2">
-                <small><strong>Szabad helyek:</strong> {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
+                <small>Szabad helyek: {{ room.osszes_hely - (room.currentOccupancy || 0) }}</small>
               </p>
               <div class="progress mb-3" style="height: 8px;">
                 <div class="progress-bar" 
@@ -1419,6 +1419,12 @@ export default {
 </script>
 
 <style scoped>
+/* Smaller text for room card info */
+.room-card .card-body small {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 /* Virtual Scroller Styles */
 .rooms-container {
   height: 600px;

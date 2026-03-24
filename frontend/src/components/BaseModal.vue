@@ -409,6 +409,11 @@ export default defineComponent({
   width: auto !important;
 }
 
+/* Wider modal for xl size */
+.modal-dialog.modal-xl {
+  max-width: min(95vw, 1200px);
+}
+
 .modal-content {
   background-color: var(--bg-page);
   border-radius: 0.375rem;

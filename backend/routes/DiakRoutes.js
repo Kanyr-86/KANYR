@@ -79,7 +79,7 @@ const validatePagination = [
 const validateEnroll = [
   body('diakData').notEmpty().withMessage('A diák adatai kötelezők'),
   body('szuloData').notEmpty().withMessage('A szülő adatai kötelezők'),
-  body('szoba_id').isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell lennie')
+  body('szoba_id').optional({ nullable: true }).isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell lennie')
 ];
 
 // Controllers are now injected via app.locals.controllers
@@ -113,39 +113,39 @@ router.get('/statistics', authenticate, isAdmin, asyncHandler(async (req, res) =
 }));
 
 // Student dashboard endpoint - gets current room for authenticated student
-// FONTOS: Ezeknek a /students/* route-oknak a /:id ELŐTT kell lenniük,
-// különben az Express a "students" szót ID-ként értelmezi!
-router.get('/students/room', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+// FONTOS: Ezeknek a route-oknak a /:id ELŐTT kell lenniük,
+// különben az Express a "room" stb. szavakat ID-ként értelmezi!
+router.get('/room', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.getStudentRoom({ params: { id: req.diakId } }, res);
 }));
 
 // Student room history endpoint
-router.get('/students/room-history', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+router.get('/room-history', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.getStudentRoomHistory({ params: { id: req.diakId } }, res);
 }));
 
 // Student room change request endpoint
-router.post('/students/room-change', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+router.post('/room-change', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.submitRoomChangeRequest({ params: { id: req.diakId }, body: req.body }, res);
 }));
 
 // Student notifications endpoint
-router.get('/students/notifications', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+router.get('/notifications', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.getStudentNotifications({ params: { id: req.diakId } }, res);
 }));
 
 // Mark notification as read endpoint
-router.put('/students/notifications/:notificationId/read', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+router.put('/notifications/:notificationId/read', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.markNotificationAsRead({ params: { id: req.diakId, notificationId: req.params.notificationId } }, res);
 }));
 
 // Mark all notifications as read endpoint
-router.put('/students/notifications/read-all', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
+router.put('/notifications/read-all', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.markAllNotificationsAsRead({ params: { id: req.diakId } }, res);
 }));
