@@ -275,7 +275,7 @@
                       <span class="badge bg-success">{{ room.bekoltozesek?.length || 0 }}</span>
                     </td>
                     <td>
-                      <span class="badge bg-warning text-dark">{{ (room.osszes_hely || 0) - (room.bekoltozesek?.length || 0) }}</span>
+                      <span class="badge bg-warning">{{ (room.osszes_hely || 0) - (room.bekoltozesek?.length || 0) }}</span>
                     </td>
                     <td>
                       <div class="d-flex align-items-center gap-2">
@@ -344,7 +344,7 @@
                       <span v-else class="text-muted">-</span>
                     </td>
                     <td>
-                      <span class="badge bg-warning text-dark">{{ bekoltozes.napok_szama }}</span>
+                      <span class="badge bg-warning">{{ bekoltozes.napok_szama }}</span>
                     </td>
                     <td>
                       <span class="badge" :class="bekoltozes.kikoltozes_datum ? 'bg-secondary' : 'bg-success'">
@@ -436,7 +436,7 @@
                   <i class="bi bi-trophy-fill text-warning me-2"></i>
                   <div>
                     <strong>Legmagasabb foglaltságú szoba:</strong>
-                    <span class="badge bg-warning text-dark ms-2">{{ stats?.mostOccupiedRoom || 'N/A' }}</span>
+                    <span class="badge bg-warning ms-2">{{ stats?.mostOccupiedRoom || 'N/A' }}</span>
                   </div>
                 </div>
               </div>
@@ -656,11 +656,6 @@ export default defineComponent({
   color: var(--text-secondary);
 }
 
-/* High contrast theme adjustments */
-[data-theme="high-contrast"] .card-header h5 {
-  color: var(--text-primary);
-}
-
 /* Status Indicators (.status-indicator) - Pulse animations */
 .status-indicator {
   display: inline-flex;
@@ -740,31 +735,6 @@ export default defineComponent({
     box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
     transform: scale(1);
   }
-}
-
-/* High contrast theme adjustments for status indicators */
-[data-theme="high-contrast"] .status-indicator {
-  border: 2px solid var(--border-primary);
-  background-color: var(--bg-page);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .status-indicator.online {
-  background-color: var(--color-success);
-  color: white;
-  animation: none;
-}
-
-[data-theme="high-contrast"] .status-indicator.offline {
-  background-color: var(--color-secondary);
-  color: white;
-  animation: none;
-}
-
-[data-theme="high-contrast"] .status-indicator.warning {
-  background-color: var(--color-warning);
-  color: var(--text-dark);
-  animation: none;
 }
 
 /* Dark theme overrides for ReportsView */
@@ -906,7 +876,7 @@ export default defineComponent({
 
 [data-theme="dark"] .badge.bg-warning {
   background-color: var(--warning-500);
-  color: var(--text-dark);
+  color: var(--text-inverse);
 }
 
 [data-theme="dark"] .badge.bg-primary {
@@ -997,189 +967,4 @@ export default defineComponent({
   background-color: var(--danger-500);
 }
 
-/* High contrast theme overrides for ReportsView */
-[data-theme="high-contrast"] .container-fluid {
-  background-color: var(--bg-page);
-}
-
-[data-theme="high-contrast"] .card {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .card-header {
-  background-color: var(--bg-card);
-  border-bottom: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .card-body {
-  background-color: var(--bg-card);
-}
-
-[data-theme="high-contrast"] .btn-primary {
-  background-color: var(--color-primary);
-  border: 2px solid var(--border-primary);
-  color: white;
-}
-
-[data-theme="high-contrast"] .btn-primary:hover {
-  background-color: var(--color-primary-dark);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .btn-secondary {
-  background-color: var(--color-secondary);
-  border: 2px solid var(--border-primary);
-  color: white;
-}
-
-[data-theme="high-contrast"] .btn-secondary:hover {
-  background-color: var(--color-secondary-dark);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .btn-outline-secondary {
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-  background-color: var(--bg-card);
-}
-
-[data-theme="high-contrast"] .btn-outline-secondary:hover {
-  background-color: var(--bg-tertiary);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .table {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .table-hover tbody tr:hover {
-  background-color: var(--bg-tertiary);
-}
-
-[data-theme="high-contrast"] .table-light {
-  background-color: var(--bg-card);
-  border-bottom: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .badge {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .badge.bg-info {
-  background-color: var(--info-500);
-  color: var(--text-inverse);
-}
-
-[data-theme="high-contrast"] .badge.bg-secondary {
-  background-color: var(--secondary-600);
-  color: var(--text-inverse);
-}
-
-[data-theme="high-contrast"] .badge.bg-success {
-  background-color: var(--success-500);
-  color: var(--text-inverse);
-}
-
-[data-theme="high-contrast"] .badge.bg-warning {
-  background-color: var(--warning-500);
-  color: var(--text-dark);
-}
-
-[data-theme="high-contrast"] .badge.bg-primary {
-  background-color: var(--primary-600);
-  color: var(--text-inverse);
-}
-
-[data-theme="high-contrast"] .text-muted {
-  color: var(--text-primary) !important;
-}
-
-[data-theme="high-contrast"] .text-primary {
-  color: var(--primary-600) !important;
-}
-
-[data-theme="high-contrast"] .text-success {
-  color: var(--success-500) !important;
-}
-
-[data-theme="high-contrast"] .text-warning {
-  color: var(--warning-500) !important;
-}
-
-[data-theme="high-contrast"] .text-danger {
-  color: var(--danger-500) !important;
-}
-
-[data-theme="high-contrast"] .alert {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .alert.alert-danger {
-  background-color: var(--danger-500);
-  border: 2px solid var(--border-primary);
-  color: white;
-}
-
-[data-theme="high-contrast"] .alert.alert-info {
-  background-color: var(--info-500);
-  border: 2px solid var(--border-primary);
-  color: white;
-}
-
-[data-theme="high-contrast"] .form-control {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .form-control:focus {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="high-contrast"] .form-select {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .form-select:focus {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="high-contrast"] .input-group-text {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="high-contrast"] .progress {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-primary);
-}
-
-[data-theme="high-contrast"] .progress-bar {
-  background-color: var(--success-500);
-}
-
-[data-theme="high-contrast"] .progress-bar.bg-info {
-  background-color: var(--info-500);
-}
-
-[data-theme="high-contrast"] .progress-bar.bg-warning {
-  background-color: var(--warning-500);
-}
-
-[data-theme="high-contrast"] .progress-bar.bg-danger {
-  background-color: var(--danger-500);
-}
 </style>

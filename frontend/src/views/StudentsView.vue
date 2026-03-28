@@ -658,6 +658,14 @@
           >
             Szoba
           </button>
+          <span class="text-muted">|</span>
+          <button 
+            class="btn btn-sm" 
+            :class="activeViewTab === 'szulo' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="activeViewTab = 'szulo'; fetchParentForStudent()"
+          >
+            Szülő
+          </button>
         </div>
 
         <!-- Adatok tab -->
@@ -707,10 +715,6 @@
                     <span class="ms-2">{{ viewStudentData.diakigazolvany_szam }}</span>
                   </div>
                   <div class="mb-2">
-                    <strong>Kapcsolat típusa:</strong>
-                    <span class="ms-2">{{ getKapcsolatLabel(viewStudentData.kapcsolat_tipusa) }}</span>
-                  </div>
-                  <div class="mb-2">
                     <strong>Státusz:</strong>
                     <span class="ms-2">
                       <span class="badge" :class="viewStudentData.aktiv ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
@@ -742,6 +746,79 @@
             <div style="color: var(--text-muted)">
               <i class="bi bi-door-closed fs-1"></i>
               <p class="mt-2">Ehhez a diákhoz még nincs szoba hozzárendelve.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Szülő tab -->
+        <div v-if="activeViewTab === 'szulo'">
+          <div v-if="loadingParent" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Betöltés...</span>
+            </div>
+            <p class="mt-2" style="color: var(--text-muted)">Szülő adatainak betöltése...</p>
+          </div>
+          <div v-else-if="viewParentData">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="mb-3">Személyes adatok</h6>
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="mb-2">
+                      <strong>Név:</strong>
+                      <span class="ms-2">{{ viewParentData.nev }}</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong>Email:</strong>
+                      <span class="ms-2">{{ viewParentData.email }}</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong>Telefonszám:</strong>
+                      <span class="ms-2">{{ viewParentData.telefonszam }}</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong>Személyi igazolvány szám:</strong>
+                      <span class="ms-2">{{ viewParentData.szemelyi_igazolvany_szam }}</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong>Kapcsolat típusa:</strong>
+                      <span class="ms-2 badge">{{ getKapcsolatLabel(viewStudentData.kapcsolat_tipusa) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h6 class="mb-3">Lakcím</h6>
+                <div class="card">
+                  <div class="card-body">
+                    <div class="mb-2" v-if="viewParentData.lakcim">
+                      <strong>Ország:</strong>
+                      <span class="ms-2">{{ viewParentData.lakcim.orszag || '-' }}</span>
+                    </div>
+                    <div class="mb-2" v-if="viewParentData.lakcim">
+                      <strong>Irányítószám:</strong>
+                      <span class="ms-2">{{ viewParentData.lakcim.iranyitoszam || '-' }}</span>
+                    </div>
+                    <div class="mb-2" v-if="viewParentData.lakcim">
+                      <strong>Város:</strong>
+                      <span class="ms-2">{{ viewParentData.lakcim.varos || '-' }}</span>
+                    </div>
+                    <div class="mb-2" v-if="viewParentData.lakcim">
+                      <strong>Utca, házszám:</strong>
+                      <span class="ms-2">{{ viewParentData.lakcim.utca_hazszam || '-' }}</span>
+                    </div>
+                    <div v-if="!viewParentData.lakcim" style="color: var(--text-muted)">
+                      Nincs megadva lakcím
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-4">
+            <div style="color: var(--text-muted)">
+              <i class="bi bi-person fs-1"></i>
+              <p class="mt-2">Ehhez a diákhoz nincs szülő hozzárendelve.</p>
             </div>
           </div>
         </div>
@@ -1128,6 +1205,8 @@ export default {
     // Megtekintés modal adatok
     const viewStudentData = ref(null)
     const activeViewTab = ref('adatok')
+    const viewParentData = ref(null)
+    const loadingParent = ref(false)
     
     // Törlés modal adatok
     const deleteStudentData = ref(null)
@@ -1435,6 +1514,31 @@ export default {
       if (field === 'szemelyi_igazolvany_szam') errors.value.szulo_szemelyi_igazolvany_szam = error
     }
     
+    // Szülő lekérése diákhoz
+    const fetchParentForStudent = async () => {
+      if (!viewStudentData.value?.szulo_id) {
+        viewParentData.value = null
+        return
+      }
+      
+      loadingParent.value = true
+      const { signal } = createAbortController()
+      try {
+        const response = await api.get(`/parents/${viewStudentData.value.szulo_id}`, { signal })
+        if (response.data.success) {
+          viewParentData.value = response.data.data
+        } else {
+          viewParentData.value = null
+        }
+      } catch (error) {
+        if (isAbortError(error)) return
+        console.error('Hiba a szülő lekérése közben:', error)
+        viewParentData.value = null
+      } finally {
+        loadingParent.value = false
+      }
+    }
+    
     // Modal metódusok - Felvétel
     const openEnrollModal = () => {
       showEnrollModal.value = true
@@ -1670,8 +1774,8 @@ export default {
       transferLoading.value = true
       try {
         const response = await api.post(`/students/${transferStudentData.value.diak_id}/transfer`, {
-          szoba_id: selectedRoomForTransfer.value.szoba_id,
-          bekoltozes_datum: new Date().toISOString().split('T')[0]
+          uj_szoba_id: selectedRoomForTransfer.value.szoba_id,
+          atcsatolas_datum: new Date().toISOString().split('T')[0]
         })
         
         if (response.data.success) {
@@ -1784,6 +1888,8 @@ export default {
       viewStudentData,
       deleteStudentData,
       activeViewTab,
+      viewParentData,
+      loadingParent,
       // Transfer modal
       transferStep,
       selectedRoomForTransfer,
@@ -1852,7 +1958,8 @@ export default {
       // Parent methods
       fetchParents,
       onParentSelect,
-      validateParentField
+      validateParentField,
+      fetchParentForStudent
     }
   }
 }

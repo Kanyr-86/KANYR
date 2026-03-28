@@ -81,11 +81,12 @@
 .sidebar-nav .nav-link {
   padding-left: 0;
   margin-left: 0;
+  justify-content: center;
 }
 
 .sidebar-nav__link {
   color: var(--text-secondary);
-  padding: 10px 12px 10px 2px;
+  padding: 10px 12px;
   border-radius: var(--border-radius-sm);
   margin-bottom: 2px;
   transition: all 0.3s ease;
@@ -93,12 +94,13 @@
   font-weight: 500;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .sidebar-nav__link:hover {
   color: var(--text-primary);
   background-color: var(--sidebar-hover);
-  transform: translateX(4px);
+  transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, var(--shadow-alpha-sm));
 }
 

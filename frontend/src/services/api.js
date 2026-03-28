@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getErrorMessage } from '@/i18n'
 import { useToastStore } from '@/store/toast'
+import { useAuthStore } from '@/store/auth'
 import { secureStorage } from './secureStorage'
 import { dedupeRequest, generateRequestKey } from '@/composables/useRequestDeduplication'
 import { handleError, ErrorCategory } from '@/services/errorHandler'
@@ -77,6 +78,11 @@ function applyAuthInterceptors(instance) {
   // JWT és CSRF token csatolása minden kéréshez
   instance.interceptors.request.use(
     async (config) => {
+      // Generate deduplication key for GET requests (safe to dedupe)
+      if (ENABLE_DEDUPLICATION && config.method?.toLowerCase() === 'get') {
+        config.dedupeKey = generateRequestKey(config)
+      }
+
       // JWT token hozzáadása
       try {
         const token = await secureStorage.getToken()
@@ -118,12 +124,6 @@ function applyAuthInterceptors(instance) {
         
         return Promise.reject(error)
       }
-      // Generate deduplication key for GET requests (safe to dedupe)
-      if (ENABLE_DEDUPLICATION && config.method?.toLowerCase() === 'get') {
-        config.dedupeKey = generateRequestKey(config)
-      }
-      
-      return config
     },
     (error) => Promise.reject(error)
   )
@@ -267,18 +267,11 @@ function applyAuthInterceptors(instance) {
   async function handleTokenExpiration() {
     try {
       const toastStore = useToastStore()
-      // Check if this is a token revocation message
-      if (message && (
-        message.includes('visszavonva') ||
-        message.includes('érvénytelenné vált') ||
-        message.includes('lejárt')
-      )) {
-        toastStore.showToast({
-          type: 'warning',
-          message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
-          duration: 5000
-        })
-      }
+      toastStore.showToast({
+        type: 'warning',
+        message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
+        duration: 5000
+      })
     } catch (e) {
       // Toast store might not be available during initialization
     }

@@ -470,7 +470,7 @@
 
       <!-- Gyerekek tab -->
       <div v-if="activeViewTab === 'gyerekek' && viewParentData">
-        <div v-if="viewParentData.gyerekek && viewParentData.gyerekek.length > 0">
+        <div v-if="viewParentData.diaks && viewParentData.diaks.length > 0">
           <div class="table-responsive">
             <table class="table table-striped table-hover">
               <thead>
@@ -482,7 +482,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="diak in viewParentData.gyerekek" :key="diak.diak_id">
+                <tr v-for="diak in viewParentData.diaks" :key="diak.diak_id">
                   <td>{{ diak.nev }}</td>
                   <td>{{ diak.email }}</td>
                   <td>{{ formatDate(diak.szuletesi_datum) }}</td>
