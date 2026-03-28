@@ -636,7 +636,7 @@ async function handleSubmit() {
 - [ ] `.env` fájl production értékekkel
 - [ ] JWT_SECRET generálása (min 32 karakter)
 - [ ] Database backup stratégia
-- [ ] API rate limiting
+- [x] ~~API rate limiting~~ ✅ *Megvalósítva: 2026.03.05*
 
 ---
 
@@ -651,8 +651,10 @@ async function handleSubmit() {
 - ✅ HTTP biztonsági fejlécek (Helmet) - *2026.02.23*
 - ✅ Központi hibakezelés - *2026.02.23*
 - ✅ Validációs infrastruktúra - *2026.02.23*
+- ✅ API rate limiting - *2026.03.05*
+- ✅ CSRF protection - *2026.03.12*
+- ✅ Local Storage biztonság - *2026.03.17*
 - ⚠️ Production JWT_SECRET (TODO)
-- ⚠️ API rate limiting (TODO)
 
 ---
 
@@ -706,8 +708,223 @@ async function handleSubmit() {
 
 ---
 
-**Utolsó frissítés**: 2026.03.19  
+**Utolsó frissítés**: 2026.03.28  
 **Karbantartó**: KANYR Fejlesztő Csapat
+
+## [2026.03.28] - Minor Tweaks
+
+### Változások 📝
+- Apró finomítások és javítások
+
+---
+
+## [2026.03.24] - Notification System Refactor és Student Page Fixes
+
+### Változások 📝
+- **Értesítési rendszer refaktorálása** - Notification system átalakítása
+- **Student Page Fixes** - Diák oldal javítások
+
+---
+
+## [2026.03.23] - Dark Mode, Modal, Table és Breadcrumb Fixes
+
+### Javítva ✅
+- **Dark mode visibility** - Sötét téma láthatóság javítások
+- **Modal fixes** - Modal ablak javítások
+- **Table fixes** - Tábla komponens javítások
+- **Breadcrumb small fixes** - Breadcrumb navigáció apró javítások
+- **Login fix** - Bejelentkezés javítás development módban
+
+---
+
+## [2026.03.21] - CSS Refactor és Frontend Patches
+
+### Változások 📝
+- **CSS refactor** - Stíluslapok átszervezése és optimalizálása
+- **Frontend patches** - Frontend javítások és fejlesztések
+
+---
+
+## [2026.03.19] - Login UI Fixes, Bug Fixes és CSRF Protection
+
+### Javítva ✅
+- **Login UI fixes** - Bejelentkezési felület javítások
+- **Bug Fixes** - Hibajavítások
+- **CSRF Protection** - Client ID generálás javítása a CSRF védelemhez
+  - `fix: improve client ID generation for CSRF protection`
+
+---
+
+## [2026.03.17] - Accessibility, CSS Optimization, Security és Navigation Fixes
+
+### Biztonság 🔒
+- **Local Storage Issues** - Sensitive Data in localStorage, No Storage Quota Handling
+  - Biztonságos tárolás implementálása
+  - Tárhely kvóta kezelés
+
+### Javítva ✅
+- **Accessibility Issues** - Missing ARIA Labels, Keyboard Navigation, Color-Only Indicators
+  - ARIA címkék hozzáadása
+  - Billentyűzet navigáció javítás
+  - Szín-alapú indikátorok helyett egyéb jelzések
+
+- **CSS Optimization fix** - Stíluslap optimalizálás
+- **Card Component fix** - Kártya komponens javítás
+- **Feedback Issues** - Generic Loading States, Empty States
+  - Általános betöltési állapotok
+  - Üres állapot megjelenítés
+
+- **Navigation & Forms issue fixes** - Navigáció és űrlap javítások
+- **Button Inconsistencies fix** - Gomb inkonzisztenciák javítása
+- **Animation & Transition fix** - Animáció és átmenet javítások
+- **Modal Positioning fix** - Modal pozicionálás javítás
+- **Mobile Table Layout fix** - Mobil tábla elrendezés javítás
+- **Fixed Width Sidebar fix** - Fix szélességű oldalsáv javítás
+- **Dark Theme Variable fix** - Sötét téma változó javítás
+- **CSS Variable Coverage fix** - CSS változó lefedettség javítás
+- **Light Theme Contrast fix** - Világos téma kontraszt javítás
+- **Navigation UX fix** - Navigáció felhasználói élmény javítás
+- **Navigation Guards fix** - Navigációs őrök javítás
+- **Route Configuration fix** - Útvonal konfiguráció javítás
+- **Form Handling fix** - Űrlap kezelés javítás
+- **Dependency Issues fixed** - Függőségi problémák megoldva
+
+---
+
+## [2026.03.16] - Backend Fixes, Pinia Store és Component Architecture
+
+### Javítva ✅
+- **API Integration fix** - API integráció javítás
+- **Pinia Store Issues** - Auth Store Initialization Race Condition, No State Persistence, Cache Implementation Flaws
+  - Auth Store inicializáció race condition javítás
+  - Állapot perzisztencia implementálása
+  - Cache implementáció hibák javítása
+
+- **Reactivity Issues FIX** - Reaktivitási problémák javítása
+- **Component Architecture fix** - Komponens architektúra javítás
+
+### Backend Javítások 🔧
+- **Migration Management Issue** - No Migration Files
+  - Migrációs fájlok kezelése
+- **Data Integrity Issue** - No Unique Constraints on Business Keys, Date Handling
+  - Unique constraint-ek hozzáadása
+  - Dátum kezelés javítása
+- **Schema Design Issue** - Missing Foreign Key Constraints, No Soft Deletes, No Audit Trail
+  - Foreign key constraint-ek hozzáadása
+  - Soft delete implementálása
+  - Audit trail implementálása
+- **Controller Issue** - Controller Initialization Pattern
+  - Controller inicializációs minta javítás
+- **Route Organization Issue** - Route Order Dependency
+  - Útvonal sorrend függőség javítás
+- **Middleware Issue** - Rate Limiting Conflicts
+  - Rate limiting ütközések javítása
+- **Backend Error Handling** - Backend hibakezelés javítás
+
+---
+
+## [2026.03.12] - Performance, Data Exposure és CSRF Protection
+
+### Biztonság 🔒
+- **Data Exposure fixes** - Adat expozíció javítások
+- **CSRF Protection** - CSRF védelem implementálása
+  - `backend/middleware/csrfMiddleware.js`
+
+### Teljesítmény ⚡
+- **Database Performance fix 1** - Adatbázis teljesítmény javítás
+- **Backend Performance fixes** - Backend teljesítmény javítások
+- **Frontend Performance fixes** - Frontend teljesítmény javítások
+
+---
+
+## [2026.03.10] - Authentication, Race Condition és Memory Leak Fixes
+
+### Javítva ✅
+- **Input Validation fixes** - Bemeneti validáció javítások
+- **Authentication Issues fix** - Hitelesítési problémák javítása (1. és 2. rész)
+- **Race Condition fix** - Race condition javítás
+- **Memory Leak fix** - Memória szivárgás javítás
+- **Modal Form Render fix** - Modal űrlap megjelenítés javítás
+- **Runtime Error Crash fix** - Futási idejű hiba összeomlás javítás
+
+---
+
+## [2026.03.09] - Code Quality, Pagination és Database Indexing
+
+### Javítva ✅
+- **Await Usage fix** - Await használat javítás
+- **Unused Imports and Variables fix** - Nem használt importok és változók eltávolítása
+- **Console Logging fix** - Console log javítások
+- **Missing Pagination fix** - Hiányzó oldalszámozás implementálása
+- **Database Indexing fix** - Adatbázis indexelés javítás
+- **Performance Optimization fixes** - Teljesítmény optimalizáció javítások
+- **Comment Language Inconsistency fix** - Komment nyelv inkonzisztencia javítás
+- **Package.json Dependency Conflicts fix** - Package.json függőségi ütközések javítása
+- **Role Naming Inconsistency fix** - Szerepkör elnevezés inkonzisztencia javítás
+
+---
+
+## [2026.03.05] - Security, Validation és Error Handling
+
+### Biztonság 🔒
+- **Hardcoded JWT Secret Key fix** - Hardkódolt JWT titkos kulcs javítás
+  - Környezeti változó használata
+- **API Rate Limiting** - API sebesség korlátozás implementálása
+
+### Javítva ✅
+- **Missing Form Validation Feedback fix** - Hiányzó űrlap validációs visszajelzés
+- **Missing Loading States fix** - Hiányzó betöltési állapotok
+- **Missing Foreign Key Enforcement fix** - Hiányzó foreign key kényszerítés
+- **Inconsistent Error Types fix** - Inkonzisztens hiba típusok javítása
+- **Unused Transaction Parameter fix** - Nem használt tranzakciós paraméter javítás
+- **Async Route Handler fix** - Async útvonal kezelő javítás
+
+---
+
+## [2026.03.03] - CSS Refactoring
+
+### Változások 📝
+- **CSS moderate refactoring** - Közepes CSS refaktorálás phase 1-7 befejezve
+  - Fázis 8-9 még folyamatban
+
+---
+
+## [2026.03.02] - Bug Reports és Security Fixes
+
+### Biztonság 🔒
+- **Bug Reports: critical security fixes** - Kritikus biztonsági javítások
+
+### Javítva ✅
+- **Bug Reports: backend implementation fix** - Backend implementáció javítás
+- **Bug Reports: frontend implementation 4.1-3 fixed** - Frontend implementáció javítások
+- **Dark mode toast fix** - Sötét téma toast javítás
+- **Diák fix** - Diák modul javítások
+
+---
+
+## [2026.02.26] - Light/Dark Mode Implementation
+
+### Újdonságok ✨
+- **Light and Dark Mode** - Világos és sötét téma implementálása
+  - Téma váltás funkcionalitás
+  - localStorage perzisztencia
+
+---
+
+## [2026.02.25] - UI/UX Update
+
+### Változások 📝
+- **UI/UX update** - Felhasználói felület és élmény frissítés
+
+---
+
+## [2026.02.24] - Sidebar és Frontend Implementation Fixes
+
+### Változások 📝
+- **Navbar → Sidebar** - Navigációs sáv átalakítása oldalsávvá
+- **Frontend implementation issues fixes** - Frontend implementációs problémák javítása
+
+---
 
 ## [2026.03.19] - Frontend Komponenskönyvtár Bővítés és Dokumentáció Frissítés
 

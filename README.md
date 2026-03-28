@@ -115,11 +115,15 @@ A részletes dokumentáció a `Dokumentumok/` mappában található:
 
 ### Biztonság
 - **JWT token alapú hitelesítés**
-- **Role-based access control (RBAC)**
-- **Input sanitization** (NoSQL injection védelem)
+- **Role-based access control (RBAC)** - `backend/middleware/requireRole.js`
+- **Input sanitization** (NoSQL injection védelem) - `backend/middleware/sanitizer.js`
 - **CORS konfiguráció**
-- **HTTP biztonsági fejlécek** (Helmet)
-- **Központi hibakezelés**
+- **HTTP biztonsági fejlécek** (Helmet) - Content-Security-Policy, COEP
+- **Központi hibakezelés** - `backend/middleware/errorHandler.js`
+- **CSRF védelem** - `backend/middleware/csrfMiddleware.js`
+- **API rate limiting** - Túlterhelés elleni védelem
+- **Local Storage biztonság** - Biztonságos tárolás, kvóta kezelés
+- **Validációs infrastruktúra** - `backend/validators/`, `backend/middleware/validationHandler.js`
 
 ## 📊 API Végpontok
 
@@ -243,5 +247,5 @@ Ganz Ábrahám Szakközép és Technikum - 13.B osztály
 ---
 
 **Verzió**: 2.0.0  
-**Utolsó frissítés**: 2026.03.19  
+**Utolsó frissítés**: 2026.03.28  
 **Licenc**: MIT
