@@ -234,7 +234,7 @@
                 required
                 @blur="validateFieldImmediate('telefonszam', enrollForm.telefonszam)"
               />
-              <small style="color: var(--text-muted)" class="d-block mb-2">
+              <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block mb-2">
                 Formátum: +36 20 123 4567
               </small>
               
@@ -256,6 +256,21 @@
                 required
                 @change="validateFieldImmediate('nem', enrollForm.nem)"
               />
+              
+              <!-- Password field for user account -->
+              <div class="mb-3">
+                <BaseInput
+                  v-model="enrollForm.password"
+                  label="Jelszó (opcionális)"
+                  type="password"
+                  placeholder="Hagyja üresen az alapértelmezett jelszóhoz"
+                  :error="errors.password"
+                  @blur="validateFieldImmediate('password', enrollForm.password)"
+                />
+                <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block">
+                  Ha nem adsz meg jelszót, az alapértelmezett: Student123!
+                </small>
+              </div>
             </div>
           </div>
           
@@ -274,7 +289,7 @@
                 required
                 @blur="validateFieldImmediate('szemelyi_igazolvany_szam', enrollForm.szemelyi_igazolvany_szam)"
               />
-              <small style="color: var(--text-muted)" class="d-block mb-2">
+              <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block mb-2">
                 Formátum: 6 számjegy + 2 betű (pl: 123456AA)
               </small>
               
@@ -286,7 +301,7 @@
                 required
                 @blur="validateFieldImmediate('taj_szam', enrollForm.taj_szam)"
               />
-              <small style="color: var(--text-muted)" class="d-block mb-2">
+              <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block mb-2">
                 Formátum: 9 számjegy (pl: 123456789)
               </small>
               
@@ -513,7 +528,7 @@
               required
               @blur="validateEditFieldImmediate('telefonszam', editForm.telefonszam)"
             />
-            <small style="color: var(--text-muted)" class="d-block mb-2">
+            <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block mb-2">
               Formátum: +36 20 123 4567, 06 20 123 4567, vagy 06201234567
             </small>
             
@@ -551,7 +566,7 @@
               required
               @blur="validateEditFieldImmediate('szemelyi_igazolvany_szam', editForm.szemelyi_igazolvany_szam)"
             />
-            <small style="color: var(--text-muted)" class="d-block mb-2">
+            <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block mb-2">
               Formátum: 6 számjegy + 2 betű (pl: 123456AA)
             </small>
             
@@ -563,7 +578,7 @@
               required
               @blur="validateEditFieldImmediate('taj_szam', editForm.taj_szam)"
             />
-            <small style="color: var(--text-muted)" class="d-block mb-2">
+            <small style="color: var(--text-muted); font-size: 0.75rem;" class="d-block mb-2">
               Formátum: 9 számjegy (pl: 123456789)
             </small>
             
@@ -886,8 +901,8 @@
           Minden szoba tele van, vagy nincs elegendő szabad hely.
         </div>
         
-        <div class="row" v-else>
-          <div class="col-md-6 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
+        <div class="row room-grid" v-else>
+          <div class="col-md-12 col-lg-4" v-for="room in availableRoomsForTransfer" :key="room.szoba_id">
             <div class="card mb-3 room-card" :class="{ 'border-primary': selectedRoomForTransfer?.szoba_id === room.szoba_id }">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="mb-0" style="font-weight: normal;">{{ room.szoba_szama }}</span>
@@ -1264,7 +1279,8 @@ export default {
       szemelyi_igazolvany_szam: '',
       taj_szam: '',
       diakigazolvany_szam: '',
-      kapcsolat_tipusa: ''
+      kapcsolat_tipusa: '',
+      password: ''
     })
     
     const editForm = ref({
@@ -1628,7 +1644,8 @@ export default {
             : newParentForm.value,
           lakcimData: parentSelectionMode.value === 'new' ? newParentAddress.value : null,
           szoba_id: null,
-          bekoltozes_datum: new Date().toISOString().split('T')[0]
+          bekoltozes_datum: new Date().toISOString().split('T')[0],
+          password: enrollForm.value.password || undefined // Only include if provided
         }
         
         const response = await api.post('/students/enroll', enrollmentData)
@@ -2027,6 +2044,7 @@ export default {
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
 
 /* High contrast avatar */
 [data-theme="high-contrast"] .avatar {

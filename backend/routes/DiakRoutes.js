@@ -195,7 +195,7 @@ router.put('/:id', authenticate, canModify, updateDiakValidator, validationHandl
   return controller.updateDiak(req, res);
 }));
 
-router.delete('/:id', authenticate, isAdmin, validateId, validationHandler, asyncHandler(async (req, res) => {
+router.delete('/:id', authenticate, canModify, validateId, validationHandler, asyncHandler(async (req, res) => {
   const controller = req.app.locals.controllers.diakController;
   return controller.deleteDiak(req, res);
 }));

@@ -11,28 +11,31 @@ const logger = require('./utils/logger');
 
 async function seedDatabase(keepConnectionOpen = false) {
   try {
-    logger.info('🔄 Adatbázis szinkronizálása...');
+    logger.info('🔄 Adatbázis ellenőrzése...');
     
-    // Először szinkronizáljuk a sémát (létrehozzuk a táblákat)
-    await sequelize.sync({ force: true });
-    logger.info('✓ Adatbázis séma létrehozva');
+    // Szinkronizáljuk a sémát (létrehozzuk a táblákat, ha nem léteznek)
+    // Csak akkor hozzuk létre a táblákat, ha nem léteznek - nem próbáljuk módosítani a meglévőket
+    // Ez elkerüli a FOREIGN KEY constraint hibákat SQLite-ban
+    await sequelize.sync({ force: false });
+    logger.info('✓ Adatbázis séma szinkronizálva');
     
-    // Táblák törlése (fejlesztéshez) - csak akkor, ha a táblák már léteznek
-    // Megjegyzés: Csak szükség esetén töröljük az adatokat
-    try {
-      // Először ellenőrizzük, hogy léteznek-e a táblák
-      const tables = await sequelize.query("SELECT name FROM sqlite_master WHERE type='table'");
-      const tableNames = tables[0].map(row => row.name);
-      
-      if (tableNames.length > 0) {
-        await sequelize.truncate({ cascade: true, force: true });
-        logger.info('✓ Adatbázis tartalma törölve');
-      } else {
-        logger.info('ℹ Nincsenek meglévő táblák, új adatbázis létrehozása');
-      }
-    } catch (err) {
-      logger.warn('⚠ Adatbázis tartalom törlése sikertelen, folytatás a létező adatokkal', { error: err.message });
+    // Ellenőrizzük, hogy van-e már alapvető seed adat az adatbázisban
+    // Csak akkor hagyjuk ki a seed-elést, ha az alapvető adatok már léteznek
+    // Ez lehetővé teszi, hogy hiányzó adatok (pl. szülők) pótlásra kerüljenek
+    const existingAdmin = await db.Felhasznalo.findOne({ where: { username: 'admin' } });
+    const existingRooms = await db.Szoba.count();
+    
+    // Ha az admin felhasználó ÉS alapvető szobák léteznek, akkor a seed adatok már betöltve
+    if (existingAdmin && existingRooms >= 3) {
+      logger.info('ℹ Alapvető seed adatok már léteznek, tesztadatok betöltése kihagyva', {
+        admin: existingAdmin.username,
+        szobak: existingRooms
+      });
+      logger.info('✅ Adatbázis megőrizve, szerver indítása folytatódik');
+      return;
     }
+    
+    logger.info('ℹ Hiányos seed adatok észlelve, tesztadatok betöltése/pótlása...');
 
     // ========== LAKCÍMEK LÉTREHOZÁSA ==========
     logger.info('📍 Lakcímek létrehozása...');

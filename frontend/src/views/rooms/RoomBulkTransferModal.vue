@@ -18,8 +18,9 @@
         Minden szoba tele van, vagy nincs elegendő szabad hely.
       </div>
       
-      <div class="row" v-else>
-        <div class="col-md-6 col-lg-4" v-for="room in availableRooms" :key="room.szoba_id">
+      <div v-else>
+        <div class="row room-grid">
+          <div class="col-md-12 col-lg-6" v-for="room in availableRooms" :key="room.szoba_id">
           <div class="card mb-3 room-card">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h6 class="mb-0">{{ room.szoba_szama }}</h6>
@@ -389,3 +390,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Room card styling */
+.room-card .card-body small {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+</style>

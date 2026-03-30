@@ -406,7 +406,8 @@ export default defineComponent({
   margin: 0 !important;
   position: relative !important;
   pointer-events: auto !important;
-  width: auto !important;
+  width: 100% !important;
+  min-width: 300px !important;
 }
 
 /* Wider modal for xl size */

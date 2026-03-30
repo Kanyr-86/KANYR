@@ -31,7 +31,8 @@ module.exports = (sequelize) => {
         'room_change_pending',
         'system_announcement',
         'student_notification',
-        'general_alert'
+        'general_alert',
+        'password_reset_required'
       ),
       allowNull: false
     },

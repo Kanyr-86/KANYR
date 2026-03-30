@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const cacheService = require('./CacheService');
+const { hashPassword } = require('../utils/authUtils');
 
 class DiakService {
   constructor(db, options = {}) {
@@ -9,6 +10,8 @@ class DiakService {
     this.Lakcim = db.Lakcim;
     this.SzobaBekoltozes = db.SzobaBekoltozes;
     this.Szoba = db.Szoba;
+    this.Felhasznalo = db.Felhasznalo;
+    this.Notification = db.Notification;
     this.repository = options.repository;
   }
 
@@ -79,7 +82,8 @@ class DiakService {
       szuloData,
       lakcimData,
       szoba_id,
-      bekoltozes_datum
+      bekoltozes_datum,
+      password // Optional custom password for user account
     } = enrollmentData;
 
     const transaction = await this.db.sequelize.transaction();
@@ -131,7 +135,43 @@ class DiakService {
         cim_id: lakcim ? lakcim.cim_id : null
       }, { transaction });
 
-      // 4. Szoba kezelése (opcionális)
+      // 4. Felhasználói fiók létrehozása a diáknak
+      const defaultPassword = password || 'Student123!';
+      const hashedPassword = await hashPassword(defaultPassword);
+      
+      // Generate username from email (part before @)
+      const username = diakData.email.split('@')[0];
+      
+      // Check if username already exists, if so append student ID
+      let finalUsername = username;
+      const existingUser = await this.Felhasznalo.findOne({
+        where: { username: finalUsername },
+        transaction
+      });
+      
+      if (existingUser) {
+        finalUsername = `${username}_${diak.diak_id}`;
+      }
+
+      const felhasznalo = await this.Felhasznalo.create({
+        username: finalUsername,
+        email: diakData.email,
+        password: hashedPassword,
+        admin: false,
+        diak_id: diak.diak_id
+      }, { transaction });
+
+      // 5. Értesítés létrehozása a jelszó módosításáról
+      await this.Notification.create({
+        diak_id: diak.diak_id,
+        tipus: 'password_reset_required',
+        cimzettkor: 'student',
+        prioritas: 'high',
+        uzenet: `Üdvözlünk a kollégiumi rendszerben! A bejelentkezéshez használd az email címedet (${diakData.email}) és az ideiglenes jelszót: ${defaultPassword}. Kérjük, az első bejelentkezés után változtasd meg a jelszavadat a biztonság érdekében.`,
+        elolvasva: false
+      }, { transaction });
+
+      // 6. Szoba kezelése (opcionális)
       if (szoba_id) {
         // Szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
         await this.checkRoomAvailability(szoba_id, transaction);
@@ -176,7 +216,7 @@ class DiakService {
         throw new Error('A diák nem található!');
       }
 
-      // Aktív beköltözés lezárása
+      // Aktív beköltözés lezárása (ha létezik)
       const activeBekoltozes = await this.SzobaBekoltozes.findOne({
         where: {
           diak_id,
@@ -184,14 +224,12 @@ class DiakService {
         }
       });
 
-      if (!activeBekoltozes) {
-        throw new Error('A diáknak nincs aktív beköltözése!');
+      // Ha van aktív beköltözés, lezárjuk
+      if (activeBekoltozes) {
+        await activeBekoltozes.update({
+          kikoltozes_datum: atcsatolas_datum
+        }, { transaction });
       }
-
-      // Lezárjuk az aktív beköltözést
-      await activeBekoltozes.update({
-        kikoltozes_datum: atcsatolas_datum
-      }, { transaction });
 
       // Új szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
       await this.checkRoomAvailability(uj_szoba_id, transaction);

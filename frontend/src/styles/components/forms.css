@@ -26,6 +26,7 @@
 .form-control::placeholder,
 .form-textarea::placeholder {
   color: var(--text-muted);
+  font-style: italic;
 }
 
 /* Labels */
@@ -101,6 +102,7 @@
 [data-theme="dark"] .form-control::placeholder,
 [data-theme="dark"] .form-textarea::placeholder {
   color: var(--text-muted);
+  font-style: italic;
 }
 
 [data-theme="dark"] .form-check-input {
@@ -124,6 +126,12 @@
   box-shadow: none;
   outline: 2px solid #000000;
   outline-offset: 2px;
+}
+
+[data-theme="high-contrast"] .form-control::placeholder,
+[data-theme="high-contrast"] .form-textarea::placeholder {
+  color: #666666;
+  font-style: italic;
 }
 
 [data-theme="high-contrast"] .form-label {
