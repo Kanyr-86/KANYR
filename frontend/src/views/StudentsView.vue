@@ -172,7 +172,7 @@
                     title="Diák költöztetése"
                     :disabled="loading"
                   >
-                    <i class="bi bi-arrow-right me-1"></i>Áthelyezés
+                    <i class="bi bi-arrow-right me-1"></i>Költöztetés
                   </button>
                   <button 
                     class="btn btn-outline-danger btn-sm" 
@@ -987,16 +987,29 @@
         >
           {{ transferStep === 1 ? 'Mégse' : 'Vissza' }}
         </button>
-        <button 
-          v-if="transferStep === 2"
-          type="button" 
-          class="btn btn-primary" 
-          @click="confirmTransfer"
-          :disabled="transferLoading"
-        >
-          <span v-if="transferLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-          {{ transferLoading ? 'Áthelyezés...' : 'Áthelyezés megerősítése' }}
-        </button>
+        <div v-if="transferStep === 1" class="d-flex gap-2">
+          <button 
+            type="button" 
+            class="btn btn-danger" 
+            @click="moveOutStudent"
+            :disabled="transferLoading"
+          >
+            <span v-if="transferLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <i v-else class="bi bi-box-arrow-right me-1"></i>
+            {{ transferLoading ? 'Feldolgozás...' : 'Kiköltöztetés' }}
+          </button>
+        </div>
+        <div v-if="transferStep === 2" class="d-flex gap-2">
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            @click="confirmTransfer"
+            :disabled="transferLoading"
+          >
+            <span v-if="transferLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ transferLoading ? 'Áthelyezés...' : 'Áthelyezés megerősítése' }}
+          </button>
+        </div>
       </template>
     </BaseModal>
   </div>
@@ -1768,6 +1781,27 @@ export default {
       selectedRoomForTransfer.value = null
     }
     
+    const moveOutStudent = async () => {
+      if (!transferStudentData.value) return
+      
+      transferLoading.value = true
+      try {
+        const response = await api.post(`/students/${transferStudentData.value.diak_id}/move-out`, {
+          kikoltozes_datum: new Date().toISOString().split('T')[0]
+        })
+        
+        if (response.data.success) {
+          handleSuccess(`${transferStudentData.value.nev} sikeresen kiköltöztetve`)
+          closeTransferModal()
+          fetchStudents()
+        }
+      } catch (error) {
+        handleError(error, { context: 'StudentsView/moveOutStudent' })
+      } finally {
+        transferLoading.value = false
+      }
+    }
+    
     const confirmTransfer = async () => {
       if (!transferStudentData.value || !selectedRoomForTransfer.value) return
       
@@ -1940,6 +1974,7 @@ export default {
       closeTransferModal,
       selectRoomForTransfer,
       goBackToTransferStep1,
+      moveOutStudent,
       confirmTransfer,
       getTransferRoomOccupancyPercentage,
       getTransferRoomProgressClass,

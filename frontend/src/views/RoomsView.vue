@@ -123,6 +123,7 @@
           </div>
         </div>
         
+
         <!-- Szobák kártyák -->
         <div v-else class="row g-4">
           <div 
