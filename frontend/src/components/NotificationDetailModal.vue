@@ -28,35 +28,23 @@
       <!-- Full message content -->
       <div class="notification-message mb-4">
         <h6 class="text-muted mb-2">Üzenet</h6>
-        <div class="message-content p-3 bg-light rounded">
+        <div class="message-content p-3 bg-themed rounded">
           {{ notification.uzenet }}
         </div>
       </div>
 
-      <!-- Student information -->
+      <!-- Sender information -->
       <div v-if="notification.diak" class="notification-student mb-4">
-        <h6 class="text-muted mb-2">Diák adatok</h6>
-        <div class="student-info p-3 bg-light rounded">
-          <div class="row">
-            <div class="col-md-6">
-              <strong>Név:</strong> {{ notification.diak.nev }}
-            </div>
-            <div class="col-md-6" v-if="notification.diak.email">
-              <strong>Email:</strong> {{ notification.diak.email }}
-            </div>
-          </div>
-          <div class="row mt-2" v-if="notification.diak.telefonszam">
-            <div class="col-md-6">
-              <strong>Telefon:</strong> {{ notification.diak.telefonszam }}
-            </div>
-          </div>
+        <h6 class="text-muted mb-2">Feladó</h6>
+        <div class="student-info p-3 bg-themed rounded">
+          {{ notification.diak.nev }}
         </div>
       </div>
 
       <!-- Room change details -->
       <div v-if="notification.szoba_valtoztatas" class="notification-room-change mb-4">
         <h6 class="text-muted mb-2">Szobaváltás részletek</h6>
-        <div class="room-change-info p-3 bg-light rounded">
+        <div class="room-change-info p-3 bg-themed rounded">
           <div class="row">
             <div class="col-md-6">
               <strong>Jelenlegi szoba:</strong> 
@@ -73,7 +61,7 @@
       <!-- Timestamp -->
       <div class="notification-timestamp">
         <h6 class="text-muted mb-2">Időbélyeg</h6>
-        <div class="timestamp-info p-3 bg-light rounded">
+        <div class="timestamp-info p-3 bg-themed rounded">
           <div class="row">
             <div class="col-md-6">
               <strong>Létrehozva:</strong> {{ formatDate(notification.created_at) }}
@@ -255,5 +243,10 @@ h6 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.bg-themed {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 </style>

@@ -69,8 +69,7 @@
                   </div>
                   <p class="mb-1">{{ notification.uzenet }}</p>
                   <div v-if="notification.diak" class="text-muted small">
-                    <i class="bi bi-person"></i> {{ notification.diak.nev }}
-                    <span v-if="notification.diak.email"> • {{ notification.diak.email }}</span>
+                    <i class="bi bi-person"></i> Feladó: {{ notification.diak.nev }}
                   </div>
                   <div v-if="notification.szoba_valtoztatas" class="text-muted small mt-1">
                     <i class="bi bi-door-closed"></i> 

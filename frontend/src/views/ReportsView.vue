@@ -147,18 +147,25 @@
               <div class="col-md-4 text-end">
                 <div class="btn-group" role="group">
                   <button
+                    class="btn btn-primary"
+                    @click="handleExportAll('pdf')"
+                    :disabled="loading"
+                  >
+                    <i class="bi bi-file-pdf me-2"></i>Összes exportálása PDF-be
+                  </button>
+                  <button
                     class="btn btn-secondary"
                     @click="handleExport('pdf')"
-                    disabled
+                    :disabled="loading"
                   >
-                    <i class="bi bi-file-pdf me-2"></i>Exportálás PDF-be
+                    <i class="bi bi-file-pdf me-2"></i>Aktuális PDF
                   </button>
                   <button
                     class="btn btn-secondary"
                     @click="handleExport('csv')"
-                    disabled
+                    :disabled="loading"
                   >
-                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportálás CSV-be
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>CSV
                   </button>
                 </div>
               </div>
@@ -469,6 +476,7 @@ import { defineComponent, ref, onMounted, computed, defineAsyncComponent, watch 
 import { useAuthStore } from '../store/auth'
 import { useDebounce } from '../composables/useDebounce'
 import api from '../services/api'
+import { toast } from 'vue3-toastify'
 
 // Lazy load heavy components
 const LoadingOverlay = defineAsyncComponent(() => import('../components/LoadingOverlay.vue'))
@@ -616,7 +624,458 @@ export default defineComponent({
     }
 
     const handleExport = (format) => {
-      alert(`Exportálás ${format.toUpperCase()} formátumban - ez a funkció még fejlesztés alatt áll`)
+      if (format === 'csv') {
+        exportToCSV()
+      } else if (format === 'pdf') {
+        exportToPDF()
+      }
+    }
+
+    const handleExportAll = async (format) => {
+      if (format === 'pdf') {
+        await exportAllToPDF()
+      }
+    }
+
+    const exportAllToPDF = async () => {
+      // Ensure all data is loaded
+      if (bekoltozesek.value.length === 0) {
+        await fetchBekoltozesek()
+      }
+      
+      const generationDate = new Date().toLocaleDateString('hu-HU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      
+      // Build occupancy table
+      const occupancyRows = rooms.value.map(room => {
+        const occupied = room.bekoltozesek?.length || 0
+        const total = room.osszes_hely || 0
+        const available = total - occupied
+        const percentage = calculateOccupancyPercentage(room)
+        return `
+          <tr>
+            <td>${room.szoba_szama}</td>
+            <td>${total}</td>
+            <td>${occupied}</td>
+            <td>${available}</td>
+            <td>${percentage}%</td>
+          </tr>`
+      }).join('')
+      
+      // Build students table
+      const studentsRows = activeStudents.value.map(student => {
+        const room = student.bekoltozesek?.[0]?.szoba?.szoba_szama || 'Nincs'
+        const moveInDate = student.bekoltozesek?.[0]?.bekoltozes_datum 
+          ? formatDate(student.bekoltozesek[0].bekoltozes_datum) 
+          : 'N/A'
+        return `
+          <tr>
+            <td>${student.nev}</td>
+            <td>${student.email}</td>
+            <td>${student.telefonszam}</td>
+            <td>${room}</td>
+            <td>${moveInDate}</td>
+          </tr>`
+      }).join('')
+      
+      // Build bekoltozesek table
+      const bekoltozesekRows = bekoltozesek.value.map(b => {
+        const name = b.diak?.nev || 'N/A'
+        const room = b.szoba?.szoba_szama || 'N/A'
+        const moveIn = formatDate(b.bekoltozes_datum)
+        const moveOut = b.kikoltozes_datum ? formatDate(b.kikoltozes_datum) : '-'
+        const status = b.kikoltozes_datum ? 'Kiköltözött' : 'Jelenleg is lakik'
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${room}</td>
+            <td>${moveIn}</td>
+            <td>${moveOut}</td>
+            <td>${b.napok_szama}</td>
+            <td>${status}</td>
+          </tr>`
+      }).join('')
+      
+      const printWindow = window.open('', '_blank')
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="hu">
+        <head>
+          <meta charset="UTF-8">
+          <title>KANYR - Összesített jelentés</title>
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              padding: 40px; 
+              color: #1f2937;
+              line-height: 1.6;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+              padding-bottom: 20px;
+              border-bottom: 3px solid #3b82f6;
+            }
+            .header h1 {
+              font-size: 28px;
+              color: #1e40af;
+              margin-bottom: 8px;
+            }
+            .header .subtitle {
+              font-size: 14px;
+              color: #6b7280;
+            }
+            .section {
+              margin-bottom: 50px;
+              page-break-inside: avoid;
+            }
+            .section-header {
+              display: flex;
+              align-items: center;
+              margin-bottom: 20px;
+              padding: 12px 16px;
+              background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+              color: white;
+              border-radius: 8px;
+            }
+            .section-header h2 {
+              font-size: 18px;
+              font-weight: 600;
+            }
+            .section-header .icon {
+              margin-right: 12px;
+              font-size: 20px;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-top: 10px;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            thead { 
+              background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            }
+            th { 
+              padding: 14px 12px; 
+              text-align: left; 
+              font-weight: 600;
+              font-size: 13px;
+              color: #475569;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              border-bottom: 2px solid #cbd5e1;
+            }
+            td { 
+              padding: 12px; 
+              border-bottom: 1px solid #e5e7eb;
+              font-size: 14px;
+            }
+            tbody tr:nth-child(even) { 
+              background-color: #f9fafb; 
+            }
+            tbody tr:hover {
+              background-color: #f1f5f9;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              text-align: center;
+              font-size: 12px;
+              color: #9ca3af;
+            }
+            @media print {
+              body { padding: 20px; }
+              .section { page-break-after: always; }
+              .section:last-child { page-break-after: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>KANYR - Összesített jelentés</h1>
+            <div class="subtitle">Generálva: ${generationDate}</div>
+          </div>
+          
+          <div class="section">
+            <div class="section-header">
+              <span class="icon">📊</span>
+              <h2>Szobafoglaltsági jelentés</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Szoba száma</th>
+                  <th>Férőhelyek</th>
+                  <th>Foglalt</th>
+                  <th>Szabad</th>
+                  <th>Foglaltság (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${occupancyRows}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="section">
+            <div class="section-header">
+              <span class="icon">👥</span>
+              <h2>Diák jelentés</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Név</th>
+                  <th>Email</th>
+                  <th>Telefon</th>
+                  <th>Szoba</th>
+                  <th>Beköltözés</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${studentsRows}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="section">
+            <div class="section-header">
+              <span class="icon">🏠</span>
+              <h2>Beköltözési előzmények</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Diák neve</th>
+                  <th>Szoba</th>
+                  <th>Beköltözés</th>
+                  <th>Kiköltözés</th>
+                  <th>Napok</th>
+                  <th>Státusz</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${bekoltozesekRows}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="footer">
+            <p>KANYR Kollégiumi Adminisztrációs Rendszer | ${generationDate}</p>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                };
+              }, 500);
+            };
+          <\/script>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+      
+      toast.success('Összesített PDF jelentés megnyitva!')
+    }
+
+    const exportToCSV = () => {
+      let csvContent = ''
+      let filename = ''
+      
+      if (reportType.value === 'occupancy') {
+        filename = 'szobafoglaltsagi_jelentes.csv'
+        csvContent = 'ID,Szoba száma,Férőhelyek,Foglalt helyek,Szabad helyek,Foglaltsági arány (%)\n'
+        rooms.value.forEach(room => {
+          const occupied = room.bekoltozesek?.length || 0
+          const total = room.osszes_hely || 0
+          const available = total - occupied
+          const percentage = calculateOccupancyPercentage(room)
+          csvContent += `${room.szoba_id},${room.szoba_szama},${total},${occupied},${available},${percentage}\n`
+        })
+      } else if (reportType.value === 'students') {
+        filename = 'diak_jelentes.csv'
+        csvContent = 'ID,Név,Email,Telefon,Szoba,Beköltözés dátuma\n'
+        activeStudents.value.forEach(student => {
+          const room = student.bekoltozesek?.[0]?.szoba?.szoba_szama || 'Nincs szoba'
+          const moveInDate = student.bekoltozesek?.[0]?.bekoltozes_datum 
+            ? formatDate(student.bekoltozesek[0].bekoltozes_datum) 
+            : 'N/A'
+          csvContent += `${student.diak_id},"${student.nev}",${student.email},${student.telefonszam},${room},${moveInDate}\n`
+        })
+      } else if (reportType.value === 'bekoltozesek') {
+        filename = 'bekoltozesek_jelentes.csv'
+        csvContent = 'Diák neve,Email,Szoba,Beköltözés dátuma,Kiköltözés dátuma,Időtartam (nap),Státusz\n'
+        bekoltozesek.value.forEach(b => {
+          const name = b.diak?.nev || 'N/A'
+          const email = b.diak?.email || 'N/A'
+          const room = b.szoba?.szoba_szama || 'N/A'
+          const moveIn = formatDate(b.bekoltozes_datum)
+          const moveOut = b.kikoltozes_datum ? formatDate(b.kikoltozes_datum) : '-'
+          const status = b.kikoltozes_datum ? 'Kiköltözött' : 'Jelenleg is lakik'
+          csvContent += `"${name}",${email},${room},${moveIn},${moveOut},${b.napok_szama},${status}\n`
+        })
+      }
+      
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = filename
+      link.click()
+      URL.revokeObjectURL(link.href)
+      
+      toast.success('CSV fájl sikeresen letöltve!')
+    }
+
+    const exportToPDF = () => {
+      // Create a simple HTML-based PDF export
+      let content = ''
+      let title = ''
+      
+      if (reportType.value === 'occupancy') {
+        title = 'Szobafoglaltsági jelentés'
+        content = `
+          <h1>${title}</h1>
+          <p>Generálva: ${new Date().toLocaleDateString('hu-HU')}</p>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th>Szoba száma</th>
+                <th>Férőhelyek</th>
+                <th>Foglalt</th>
+                <th>Szabad</th>
+                <th>Foglaltság (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rooms.value.map(room => {
+                const occupied = room.bekoltozesek?.length || 0
+                const total = room.osszes_hely || 0
+                const available = total - occupied
+                const percentage = calculateOccupancyPercentage(room)
+                return `<tr>
+                  <td>${room.szoba_szama}</td>
+                  <td>${total}</td>
+                  <td>${occupied}</td>
+                  <td>${available}</td>
+                  <td>${percentage}%</td>
+                </tr>`
+              }).join('')}
+            </tbody>
+          </table>
+        `
+      } else if (reportType.value === 'students') {
+        title = 'Diák jelentés'
+        content = `
+          <h1>${title}</h1>
+          <p>Generálva: ${new Date().toLocaleDateString('hu-HU')}</p>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th>Név</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Szoba</th>
+                <th>Beköltözés</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${activeStudents.value.map(student => {
+                const room = student.bekoltozesek?.[0]?.szoba?.szoba_szama || 'Nincs'
+                const moveInDate = student.bekoltozesek?.[0]?.bekoltozes_datum 
+                  ? formatDate(student.bekoltozesek[0].bekoltozes_datum) 
+                  : 'N/A'
+                return `<tr>
+                  <td>${student.nev}</td>
+                  <td>${student.email}</td>
+                  <td>${student.telefonszam}</td>
+                  <td>${room}</td>
+                  <td>${moveInDate}</td>
+                </tr>`
+              }).join('')}
+            </tbody>
+          </table>
+        `
+      } else if (reportType.value === 'bekoltozesek') {
+        title = 'Beköltözési előzmények'
+        content = `
+          <h1>${title}</h1>
+          <p>Generálva: ${new Date().toLocaleDateString('hu-HU')}</p>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th>Diák neve</th>
+                <th>Szoba</th>
+                <th>Beköltözés</th>
+                <th>Kiköltözés</th>
+                <th>Napok</th>
+                <th>Státusz</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${bekoltozesek.value.map(b => {
+                const name = b.diak?.nev || 'N/A'
+                const room = b.szoba?.szoba_szama || 'N/A'
+                const moveIn = formatDate(b.bekoltozes_datum)
+                const moveOut = b.kikoltozes_datum ? formatDate(b.kikoltozes_datum) : '-'
+                const status = b.kikoltozes_datum ? 'Kiköltözött' : 'Jelenleg is lakik'
+                return `<tr>
+                  <td>${name}</td>
+                  <td>${room}</td>
+                  <td>${moveIn}</td>
+                  <td>${moveOut}</td>
+                  <td>${b.napok_szama}</td>
+                  <td>${status}</td>
+                </tr>`
+              }).join('')}
+            </tbody>
+          </table>
+        `
+      }
+      
+      const printWindow = window.open('', '_blank')
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #333; }
+            table { margin-top: 20px; }
+            th { background-color: #f3f4f6; padding: 10px; text-align: left; }
+            td { padding: 10px; border: 1px solid #ddd; }
+            tr:nth-child(even) { background-color: #f9fafb; }
+          </style>
+        </head>
+        <body>
+          ${content}
+          <` + `script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              };
+            };
+          </` + `script>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+      
+      toast.success('PDF nyomtatási ablak megnyitva!')
     }
 
     return {
@@ -636,7 +1095,8 @@ export default defineComponent({
       calculateOccupancyPercentage,
       getOccupancyProgressClass,
       handleGenerateReport,
-      handleExport
+      handleExport,
+      handleExportAll
     }
   }
 })

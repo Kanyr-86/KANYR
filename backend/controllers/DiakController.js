@@ -267,7 +267,7 @@ class DiakController {
    * GET /api/diaks/statistics
    * Diákok statisztikája
    */
-  getStatistics = asyncHandler(async (req, res) => {
+  getStatistics = asyncHandler(async (_req, res) => {
     const statistics = await this.diakService.getDetailedStatistics();
 
     res.json({
@@ -528,9 +528,15 @@ class DiakController {
         throw new ConflictError('Elérte a félévi szobaváltási korlátot (3 alkalom)');
       }
 
+      // Kívánt szoba lekérése az értesítéshez
+      const kivantSzoba = await this.db.Szoba.findByPk(parseInt(kivant_szoba_id), { transaction });
+      if (!kivantSzoba) {
+        throw new NotFoundError('A kívánt szoba nem található');
+      }
+
       // Létrehozzuk a szobaváltási kérelmet
       const SzobaValtoztatas = this.db.SzobaValtoztatas;
-      return await SzobaValtoztatas.create({
+      const newRoomChange = await SzobaValtoztatas.create({
         diak_id: parseInt(id),
         jelenlegi_szoba_id: currentBekoltozes.szoba_id,
         kivant_szoba_id: parseInt(kivant_szoba_id),
@@ -538,6 +544,18 @@ class DiakController {
         statusz: 'pending',
         academic_year: academicYear
       }, { transaction });
+
+      // Értesítés létrehozása az adminnak
+      await this.db.Notification.create({
+        diak_id: parseInt(id),
+        szoba_valtoztatas_id: newRoomChange.valtoztatas_id,
+        tipus: 'room_change_pending',
+        cimzettkor: 'admin',
+        prioritas: 'medium',
+        uzenet: `${student.nev} szobaváltási kérelmet nyújtott be. Jelenlegi szoba: ${currentBekoltozes.szoba.szoba_szama}, Kívánt szoba: ${kivantSzoba.szoba_szama}`
+      }, { transaction });
+
+      return newRoomChange;
     });
 
     res.status(201).json({
@@ -551,8 +569,8 @@ class DiakController {
    * GET /api/diaks/:id/notifications
    * Diák értesítéseinek lekérése
    */
-  getStudentNotifications = asyncHandler(async (_req, res) => {
-    const { id } = _req.params;
+  getStudentNotifications = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
     if (!id || isNaN(id)) {
       throw new ValidationError('Érvénytelen diák ID');

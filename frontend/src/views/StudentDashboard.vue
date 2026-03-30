@@ -73,37 +73,16 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, defineAsyncComponent } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../store/auth';
-import api from '../services/api';
+import { ref, onMounted } from 'vue';
 import { studentApi } from '../services/api';
 
 export default {
   name: 'StudentDashboard',
   setup() {
-    const router = useRouter();
-    const authStore = useAuthStore();
-    
     const currentRoom = ref(null);
-    const roomHistory = ref([]);
     const notifications = ref([]);
-    const availableRooms = ref([]);
     const loadingRoom = ref(false);
-    const loadingHistory = ref(false);
     const loadingNotifications = ref(false);
-    const loadingRooms = ref(false);
-    
-    const selectedRoomId = ref('');
-    const reason = ref('');
-    const roomChangeLimitReached = ref(false);
-
-    const user = computed(() => authStore.user);
-
-    const logout = () => {
-      authStore.logout();
-      router.push('/login');
-    };
 
     const getCurrentRoom = async () => {
       loadingRoom.value = true;
@@ -117,27 +96,6 @@ export default {
       }
     };
 
-    const getRoomHistory = async () => {
-      loadingHistory.value = true;
-      try {
-        const response = await studentApi.get('/room-history');
-        roomHistory.value = response.data.data;
-        
-        // Ellenőrizzük a szobaváltási korlátot
-        const currentYear = new Date().getFullYear();
-        const academicYear = `${currentYear}-${currentYear + 1}`;
-        const pendingOrApproved = roomHistory.value.filter(r => 
-          r.academic_year === academicYear && 
-          (r.statusz === 'pending' || r.statusz === 'approved')
-        );
-        roomChangeLimitReached.value = pendingOrApproved.length >= 3;
-      } catch (error) {
-        console.error('Hiba a szobaváltási történet lekérésekor:', error);
-      } finally {
-        loadingHistory.value = false;
-      }
-    };
-
     const getNotifications = async () => {
       loadingNotifications.value = true;
       try {
@@ -147,44 +105,6 @@ export default {
         console.error('Hiba az értesítések lekérésekor:', error);
       } finally {
         loadingNotifications.value = false;
-      }
-    };
-
-    const getAvailableRooms = async () => {
-      loadingRooms.value = true;
-      try {
-        const response = await api.get('/rooms');
-        availableRooms.value = response.data.data.map(room => ({
-          ...room,
-          isAvailable: room.osszes_hely > 0 // Egyszerűsített ellenőrzés
-        }));
-      } catch (error) {
-        console.error('Hiba a szobák lekérésekor:', error);
-      } finally {
-        loadingRooms.value = false;
-      }
-    };
-
-    const submitRoomChangeRequest = async () => {
-      if (!selectedRoomId.value) {
-        alert('Kérjük, válasszon szobát!');
-        return;
-      }
-
-      try {
-        await studentApi.post('/room-change', {
-          kivant_szoba_id: selectedRoomId.value,
-          indok: reason.value
-        });
-        
-        alert('Szobaváltási kérelem sikeresen benyújtva!');
-        selectedRoomId.value = '';
-        reason.value = '';
-        getRoomHistory(); // Frissítjük a történetet
-        getNotifications(); // Frissítjük az értesítéseket
-      } catch (error) {
-        console.error('Hiba a szobaváltási kérelem benyújtásakor:', error);
-        alert('Hiba történt a kérelem benyújtásakor!');
       }
     };
 
@@ -205,45 +125,18 @@ export default {
       return date.toLocaleDateString('hu-HU');
     };
 
-    const getStatusText = (status) => {
-      const statusMap = {
-        pending: 'Függőben',
-        approved: 'Jóváhagyva',
-        denied: 'Elutasítva'
-      };
-      return statusMap[status] || status;
-    };
-
-    const canSubmit = computed(() => {
-      return selectedRoomId.value && !roomChangeLimitReached.value;
-    });
-
     onMounted(() => {
       getCurrentRoom();
-      getRoomHistory();
       getNotifications();
-      getAvailableRooms();
     });
 
     return {
       currentRoom,
-      roomHistory,
       notifications,
-      availableRooms,
       loadingRoom,
-      loadingHistory,
       loadingNotifications,
-      loadingRooms,
-      selectedRoomId,
-      reason,
-      roomChangeLimitReached,
-      user,
-      logout,
-      submitRoomChangeRequest,
       markAsRead,
-      formatDate,
-      getStatusText,
-      canSubmit
+      formatDate
     };
   }
 };

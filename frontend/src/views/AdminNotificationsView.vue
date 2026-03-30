@@ -172,6 +172,23 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
+                    <!-- Szobaváltási kérelem jóváhagyás/elutasítás -->
+                    <template v-if="notification.tipus === 'room_change_pending' && notification.szoba_valtoztatas_id">
+                      <button 
+                        class="btn btn-success"
+                        @click.stop="approveRoomChange(notification)"
+                        title="Jóváhagyás"
+                      >
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                      <button 
+                        class="btn btn-danger"
+                        @click.stop="denyRoomChange(notification)"
+                        title="Elutasítás"
+                      >
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </template>
                     <button 
                       v-if="!notification.elolvasva"
                       class="btn btn-outline-success"
@@ -586,6 +603,44 @@ export default {
       markAsRead(notification);
     };
 
+    // Szobaváltási kérelem jóváhagyás
+    const approveRoomChange = async (notification) => {
+      if (!notification.szoba_valtoztatas_id) {
+        toast.error('Hiányzó kérelem azonosító');
+        return;
+      }
+      
+      try {
+        await api.put(`/room-changes/students/room-change-requests/${notification.szoba_valtoztatas_id}`, {
+          statusz: 'approved'
+        });
+        toast.success('Szobaváltás jóváhagyva');
+        await fetchNotifications();
+      } catch (error) {
+        console.error('Error approving room change:', error);
+        toast.error('Hiba a jóváhagyás során');
+      }
+    };
+
+    // Szobaváltási kérelem elutasítás
+    const denyRoomChange = async (notification) => {
+      if (!notification.szoba_valtoztatas_id) {
+        toast.error('Hiányzó kérelem azonosító');
+        return;
+      }
+      
+      try {
+        await api.put(`/room-changes/students/room-change-requests/${notification.szoba_valtoztatas_id}`, {
+          statusz: 'denied'
+        });
+        toast.success('Szobaváltás elutasítva');
+        await fetchNotifications();
+      } catch (error) {
+        console.error('Error denying room change:', error);
+        toast.error('Hiba az elutasítás során');
+      }
+    };
+
     // Helper functions
     const getTypeText = (type) => {
       const map = {
@@ -717,7 +772,9 @@ export default {
       getAudienceBadgeClass,
       formatDate,
       openNotificationDetail,
-      handleModalMarkAsRead
+      handleModalMarkAsRead,
+      approveRoomChange,
+      denyRoomChange
     };
   }
 };

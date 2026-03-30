@@ -134,8 +134,8 @@ router.get('/room-history', authenticate, resolveDiakId, asyncHandler(async (req
 
 // Student room change request endpoint
 router.post('/room-change', authenticate, resolveDiakId, asyncHandler(async (req, res) => {
-  const controller = req.app.locals.controllers.diakController;
-  return controller.submitRoomChangeRequest({ params: { id: req.diakId }, body: req.body }, res);
+  const controller = req.app.locals.controllers.szobaValtoztatasController;
+  return controller.requestRoomChange({ params: { id: req.diakId }, body: req.body, user: req.user }, res);
 }));
 
 // Student notifications endpoint

@@ -105,34 +105,6 @@
               </div>
             </div>
             
-            <!-- System Status -->
-            <div class="card">
-              <div class="card-header">
-                <h6><i class="bi bi-heart-pulse me-2"></i>Rendszer állapota</h6>
-              </div>
-              <div class="card-body">
-                <div class="row text-center">
-                  <div class="col-md-4">
-                    <div class="d-flex align-items-center justify-content-center">
-                      <i class="bi bi-circle-fill me-2"></i>
-                      <span>Adatbázis</span>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="d-flex align-items-center justify-content-center">
-                      <i class="bi bi-circle-fill me-2"></i>
-                      <span>Szerver</span>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="d-flex align-items-center justify-content-center">
-                      <i class="bi bi-circle-fill me-2"></i>
-                      <span>API</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
           
           <!-- Right Column - Notifications -->
@@ -378,6 +350,7 @@ export default {
         loading.value = false
       }
     }
+
 
     onMounted(() => {
       // Initialize auth state

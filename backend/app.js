@@ -331,6 +331,7 @@ const startServer = async () => {
     app.use('/api/room-changes', require('./routes/SzobaValtoztatasRoutes'));
     logger.info('✓ Room change route-ok inicializálva');
 
+
 // 404 kezelő - csak most regisztráljuk, miután minden route be van állítva
     app.use((_req, _res, _next) => {
       _next(new NotFoundError('Endpoint'));

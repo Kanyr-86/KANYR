@@ -1,5 +1,4 @@
 const { Op } = require('sequelize');
-const logger = require('../utils/logger');
 const { NotFoundError, ValidationError, ConflictError, ForbiddenError } = require('../utils/AppError');
 
 class SzobaValtoztatasController {
@@ -167,6 +166,16 @@ class SzobaValtoztatasController {
         indok: indok || null,
         academic_year: academicYear,
         semester_count: existingRequests + 1
+      });
+
+      // Értesítés létrehozása az adminnak
+      await this.db.Notification.create({
+        diak_id: diakId,
+        szoba_valtoztatas_id: ujKerelem.valtoztatas_id,
+        tipus: 'room_change_pending',
+        cimzettkor: 'admin',
+        prioritas: 'medium',
+        uzenet: `${diak.nev} szobaváltási kérelmet nyújtott be. Jelenlegi szoba: ${aktualisSzoba.szoba_szama}, Kívánt szoba: ${kivantSzoba.szoba_szama}`
       });
 
       res.status(201).json({
@@ -442,7 +451,7 @@ class SzobaValtoztatasController {
   }
 
   // Admin értesítéseinek lekérése
-  async getAdminNotifications(req, res, next) {
+  async getAdminNotifications(_req, res, next) {
     try {
       const notifications = await this.db.Notification.findAll({
         where: {
@@ -514,7 +523,7 @@ class SzobaValtoztatasController {
   }
 
   // Admin összes értesítésének megjelölése olvasottnak
-  async markAllNotificationsAsRead(req, res, next) {
+  async markAllNotificationsAsRead(_req, res, next) {
     try {
       const [updatedCount] = await this.db.Notification.update(
         { 
@@ -540,9 +549,9 @@ class SzobaValtoztatasController {
   }
 
   // Admin értesítés törlése (soft delete)
-  async deleteNotification(req, res, next) {
+  async deleteNotification(_req, res, next) {
     try {
-      const { id } = req.params;
+      const { id } = _req.params;
 
       const notification = await this.db.Notification.findByPk(id);
       if (!notification) {
@@ -561,7 +570,7 @@ class SzobaValtoztatasController {
   }
 
   // Admin értesítési statisztikák
-  async getNotificationStatistics(req, res, next) {
+  async getNotificationStatistics(_req, res, next) {
     try {
       const totalCount = await this.db.Notification.count();
       const unreadCount = await this.db.Notification.count({
@@ -609,9 +618,9 @@ class SzobaValtoztatasController {
   }
 
   // Új értesítés létrehozása (admin által)
-  async createNotification(req, res, next) {
+  async createNotification(_req, res, next) {
     try {
-      const { tipus, uzenet, cimzettkor, prioritas, diak_id } = req.body;
+      const { tipus, uzenet, cimzettkor, prioritas, diak_id } = _req.body;
 
       // Validate required fields
       if (!tipus || !uzenet) {
