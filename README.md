@@ -247,5 +247,5 @@ Ganz Ábrahám Szakközép és Technikum - 13.B osztály
 ---
 
 **Verzió**: 2.0.0  
-**Utolsó frissítés**: 2026.03.28  
+**Utolsó frissítés**: 2026.03.30  
 **Licenc**: MIT

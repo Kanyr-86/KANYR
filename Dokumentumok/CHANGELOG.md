@@ -4,6 +4,39 @@ Ez a dokumentum a KANYR (Kollégiumi Adatbázis Nyilvántartó Rendszer) összes
 
 ---
 
+## [2026.03.30] - Értesítési és Áthelyezési Rendszer
+
+### Újdonságok ✨
+
+#### Értesítési rendszer működőképes állapotba hozva
+- **Backend fejlesztések**
+  - `DiakController` - Diák áthelyezés és értesítés logika frissítése
+  - `SzobaValtoztatasController` - Szobaváltoztatás kezelés javítása
+  - `DiakRoutes` - Új végpontok az áthelyezési funkciókhoz
+  - `app.js` - Alkalmazás konfiguráció frissítése
+
+- **Frontend fejlesztések**
+  - `NotificationDetailModal.vue` - Értesítés részletező modal fejlesztése
+  - `NotificationInbox.vue` - Értesítési postaláda komponens
+  - `AdminNotificationsView.vue` - Admin értesítéskezelő felület
+  - `DashboardView.vue` - Dashboard átalakítások
+  - `ReportsView.vue` - Jelentések nézet jelentős bővítése (472+ sor)
+  - `StudentDashboard.vue` - Diák dashboard optimalizálás
+  - `bootstrap-optimized.css` - Bootstrap stílus optimalizációk
+
+#### Kisebb fejlesztések
+- **Dokumentáció frissítés** - `user_story.md` felhasználói történetek aktualizálása
+- **Nézet fejlesztések**
+  - `RoomsView.vue` - Szobák nézet kisebb kiegészítése
+  - `StudentsView.vue` - Diákok nézet jelentős fejlesztése (57+ sor)
+
+### Változások 📝
+- Értesítési és áthelyezési rendszer teljes implementálása
+- Admin és diák felületek összehangolása
+- API végpontok és szolgáltatások integrálása
+
+---
+
 ## [2026.02.23] - Frontend Komponenskönyvtár és Backend Infrastruktúra
 
 ### Újdonságok ✨
@@ -708,7 +741,7 @@ async function handleSubmit() {
 
 ---
 
-**Utolsó frissítés**: 2026.03.28  
+**Utolsó frissítés**: 2026.03.30  
 **Karbantartó**: KANYR Fejlesztő Csapat
 
 ## [2026.03.28] - Minor Tweaks
