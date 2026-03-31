@@ -210,7 +210,7 @@
                 </div>
               </div>
               <div class="card-footer border-0">
-                <div class="d-flex justify-content-between">
+              <div class="d-flex justify-content-between">
                   <button 
                     class="btn btn-outline-primary btn-sm" 
                     @click="viewRoomDetails(room)"
@@ -219,6 +219,14 @@
                     <i class="bi bi-eye me-1"></i>Részletek
                   </button>
                   <div class="btn-group" role="group">
+                    <button 
+                      class="btn btn-outline-info btn-sm" 
+                      @click="openSwapModal(room)"
+                      :disabled="loading || !hasOccupancy(room) || room.diakok.length < 2"
+                      title="Szobacsere"
+                    >
+                      <i class="bi bi-arrow-left-right me-1"></i>Csere
+                    </button>
                     <button 
                       class="btn btn-outline-warning btn-sm" 
                       @click="editRoom(room)"
@@ -648,6 +656,75 @@
         <button type="button" class="btn btn-secondary" @click="showDetailsModal = false">Bezárás</button>
       </template>
     </BaseModal>
+
+    <!-- SZOBACSERE modal -->
+    <BaseModal
+      v-model:show="showSwapModal"
+      title="Szobacsere"
+      size="lg"
+      @close="closeSwapModal"
+    >
+      <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle"></i>
+        Két diák szobáját cseréli fel. A(z) <strong>{{ selectedRoomForSwap?.szoba_szama }}</strong> szobából kerül egy diák egy másik szobába.
+      </div>
+
+      <form @submit.prevent="executeSwap">
+        <!-- Kicserélendő diák a szobából -->
+        <div class="mb-3">
+          <label class="form-label">Kicserélendő diák a szobából *</label>
+          <select v-model="swapData.kicserelendo_diak_id" class="form-select" required>
+            <option value="">Válasszon diákot...</option>
+            <option v-for="student in studentsInSelectedRoom" :key="student.diak_id" :value="student.diak_id">
+              {{ student.nev }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Új diák (aki átkerül) -->
+        <div class="mb-3">
+          <label class="form-label">A szobába átkerülő diák *</label>
+          <select v-model="swapData.uj_diak_id" class="form-select" required>
+            <option value="">Válasszon diákot...</option>
+            <option v-for="student in studentsForSwap" :key="student.diak_id" :value="student.diak_id">
+              {{ student.nev }} (Jelenlegi szoba: {{ student.jelenlegi_szoba.szoba_szama }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Csere dátuma -->
+        <div class="mb-3">
+          <BaseInput
+            v-model="swapData.csere_datum"
+            label="Csere dátuma"
+            type="date"
+            required
+          />
+        </div>
+
+        <!-- Összesítő -->
+        <div v-if="swapData.kicserelendo_diak_id && swapData.uj_diak_id" class="alert alert-warning">
+          <strong>Figyelem:</strong> A következő csere fog végrehajtódni:
+          <ul class="mb-0 mt-2">
+            <li v-if="selectedStudentForSwapOut"><strong>Kicserélendő:</strong> {{ selectedStudentForSwapOut.nev }} → {{ targetStudentRoomNumber }}</li>
+            <li v-if="selectedStudentForSwapIn"><strong>Átkerülő:</strong> {{ selectedStudentForSwapIn.nev }} → {{ selectedRoomForSwap?.szoba_szama }}</li>
+          </ul>
+        </div>
+      </form>
+      
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="closeSwapModal">Mégse</button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          @click="executeSwap"
+          :disabled="swapLoading || !canSwap"
+        >
+          <span v-if="swapLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ swapLoading ? 'Csere végrehajtása...' : 'Csere végrehajtása' }}
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -687,11 +764,13 @@ export default {
     const showDeleteModal = ref(false)
     const showBulkTransferModal = ref(false)
     const showDetailsModal = ref(false)
+    const showSwapModal = ref(false)
     const createLoading = ref(false)
     const updateLoading = ref(false)
     const deleteLoading = ref(false)
     const bulkTransferLoading = ref(false)
     const detailsLoading = ref(false)
+    const swapLoading = ref(false)
     
     const selectedRoomDetails = ref(null)
     
@@ -707,6 +786,16 @@ export default {
     
     const deleteRoomData = ref(null)
     const currentEditRoomId = ref(null)
+    
+    // Szobacsere állapotok
+    const selectedRoomForSwap = ref(null)
+    const studentsInSelectedRoom = ref([])
+    const studentsForSwap = ref([])
+    const swapData = ref({
+      kicserelendo_diak_id: '',
+      uj_diak_id: '',
+      csere_datum: new Date().toISOString().split('T')[0]
+    })
     
     // Tömeges beköltöztetés állapotok
     const bulkTransferStep = ref(1) // 1: szoba választás, 2: megerősítés, 3: diákok választása
@@ -1337,6 +1426,127 @@ export default {
       selectedStatus.value = ''
     }
 
+    // ─── Szobacsere függvények ───
+
+    // Ellenőrzi, hogy a szobában van-e diák
+    const hasOccupancy = (room) => {
+      return room.diakok && room.diakok.length > 0
+    }
+
+    // Ellenőrzi, hogy a szoba tele van-e
+    const isRoomFull = (room) => {
+      return (room.currentOccupancy || 0) >= room.osszes_hely
+    }
+
+    // Szobacsere modal megnyitása
+    const openSwapModal = async (room) => {
+      selectedRoomForSwap.value = room
+      swapData.value = {
+        kicserelendo_diak_id: '',
+        uj_diak_id: '',
+        csere_datum: new Date().toISOString().split('T')[0]
+      }
+      
+      // Betöltjük a szoba diákjait
+      studentsInSelectedRoom.value = room.diakok || []
+      
+      // Betöltjük a cserélhető diákokat (akik nem ebben a szobában vannak)
+      await fetchStudentsForSwap(room.szoba_id)
+      
+      showSwapModal.value = true
+    }
+
+    // Diákok betöltése szobacseréhez
+    const fetchStudentsForSwap = async (excludeRoomId) => {
+      try {
+        const response = await api.get(`/room-changes/students/for-swap`, {
+          params: { szoba_id: excludeRoomId }
+        })
+        if (response.data.success) {
+          studentsForSwap.value = response.data.data
+        }
+      } catch (error) {
+        console.error('Hiba a cserélhető diákok betöltésekor:', error)
+        toast.error('Hiba a cserélhető diákok betöltésekor')
+      }
+    }
+
+    // Szobacsere modal bezárása
+    const closeSwapModal = () => {
+      showSwapModal.value = false
+      selectedRoomForSwap.value = null
+      studentsInSelectedRoom.value = []
+      studentsForSwap.value = []
+      swapData.value = {
+        kicserelendo_diak_id: '',
+        uj_diak_id: '',
+        csere_datum: new Date().toISOString().split('T')[0]
+      }
+    }
+
+    // Kicserélendő diák kiválasztása
+    const selectedStudentForSwapOut = computed(() => {
+      if (!swapData.value.kicserelendo_diak_id) return null
+      return studentsInSelectedRoom.value.find(s => s.diak_id === swapData.value.kicserelendo_diak_id)
+    })
+
+    // Átkerülő diák kiválasztása
+    const selectedStudentForSwapIn = computed(() => {
+      if (!swapData.value.uj_diak_id) return null
+      return studentsForSwap.value.find(s => s.diak_id === swapData.value.uj_diak_id)
+    })
+
+    // Cél szoba száma (ahova a kicserélendő diák kerül)
+    const targetStudentRoomNumber = computed(() => {
+      if (!selectedStudentForSwapIn.value) return '-'
+      return selectedStudentForSwapIn.value.jelenlegi_szoba.szoba_szama
+    })
+
+    // Ellenőrzi, hogy végrehajtható-e a csere
+    const canSwap = computed(() => {
+      return swapData.value.kicserelendo_diak_id && 
+             swapData.value.uj_diak_id && 
+             swapData.value.csere_datum
+    })
+
+    // Szobacsere végrehajtása
+    const executeSwap = async () => {
+      if (!canSwap.value) {
+        toast.error('Kérjük, válassza ki mindkét diákot és a csere dátumát!')
+        return
+      }
+
+      // Megerősítés
+      const outStudent = selectedStudentForSwapOut.value
+      const inStudent = selectedStudentForSwapIn.value
+      const confirmed = window.confirm(
+        `Biztosan végre szeretné hajtani a szobacserét?\n\n` +
+        `${outStudent?.nev} → ${targetStudentRoomNumber.value}\n` +
+        `${inStudent?.nev} → ${selectedRoomForSwap.value?.szoba_szama}`
+      )
+      if (!confirmed) return
+
+      swapLoading.value = true
+      try {
+        const response = await api.put(`/room-changes/rooms/${selectedRoomForSwap.value.szoba_id}/swap-students`, {
+          kicserelendo_diak_id: swapData.value.kicserelendo_diak_id,
+          uj_diak_id: swapData.value.uj_diak_id,
+          csere_datum: swapData.value.csere_datum
+        })
+        if (response.data.success) {
+          closeSwapModal()
+          fetchRooms()
+          toast.success('Szobacsere sikeresen végrehajtva!')
+        }
+      } catch (error) {
+        console.error('Hiba a szobacsere végrehajtásakor:', error)
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Hiba történt a szobacsere végrehajtásakor'
+        toast.error(errorMsg)
+      } finally {
+        swapLoading.value = false
+      }
+    }
+
     onMounted(() => {
       fetchRooms()
       fetchAvailableRooms()
@@ -1354,11 +1564,13 @@ export default {
       showDeleteModal,
       showBulkTransferModal,
       showDetailsModal,
+      showSwapModal,
       createLoading,
       updateLoading,
       deleteLoading,
       bulkTransferLoading,
       detailsLoading,
+      swapLoading,
       roomData,
       editRoomData,
       deleteRoomData,
@@ -1396,6 +1608,20 @@ export default {
       getTransferRoomBadgeText,
       getTransferRoomProgressClass,
       getRoomGenderText,
+      // Szobacsere függvények
+      hasOccupancy,
+      isRoomFull,
+      openSwapModal,
+      closeSwapModal,
+      executeSwap,
+      selectedRoomForSwap,
+      studentsInSelectedRoom,
+      studentsForSwap,
+      swapData,
+      selectedStudentForSwapOut,
+      selectedStudentForSwapIn,
+      targetStudentRoomNumber,
+      canSwap,
       fetchRooms,
       createRoom,
       editRoom,

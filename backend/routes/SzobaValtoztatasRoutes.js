@@ -136,4 +136,30 @@ router.post('/admin/notifications', authenticate, isAdmin, [
   return controller.createNotification(req, res);
 });
 
+// Szobacsere: két diák cseréje - csak admin
+router.put('/rooms/:roomId/swap-students', authenticate, isAdmin, [
+  param('roomId').isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell legyen'),
+  body('kicserelendo_diak_id').isInt({ min: 1 }).withMessage('A kicserélendő diák ID kötelező'),
+  body('uj_diak_id').isInt({ min: 1 }).withMessage('Az új diák ID kötelező'),
+  body('csere_datum').optional().isISO8601().withMessage('A csere dátuma érvényes dátum kell legyen')
+], (req, res, next) => {
+  // Apply write limiter to swap operations
+  const writeLimiter = req.app.locals.limiters?.write;
+  if (writeLimiter) {
+    return writeLimiter(req, res, next);
+  }
+  next();
+}, (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.swapStudents(req, res);
+});
+
+// Diákok listája szobacseréhez (a kiválasztott szobán kívüli diákok)
+router.get('/students/for-swap', authenticate, isAdmin, [
+  query('szoba_id').optional().isInt({ min: 1 }).withMessage('A szoba ID pozitív egész számnak kell legyen')
+], (req, res) => {
+  const controller = initializeController(req.app.locals.db);
+  return controller.getStudentsForSwap(req, res);
+});
+
 module.exports = router;
