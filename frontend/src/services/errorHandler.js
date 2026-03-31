@@ -212,11 +212,8 @@ export function handleError(error, options = {}) {
       const toastType = severity === ErrorSeverity.INFO ? 'info' :
                         severity === ErrorSeverity.WARNING ? 'warning' : 'error'
       
-      toastStore.showToast({
-        type: toastType,
-        message: userMessage,
-        duration: severity === ErrorSeverity.CRITICAL ? 8000 : 5000
-      })
+      // Use addToast method which is the actual method name in the toast store
+      toastStore.addToast(userMessage, toastType, severity === ErrorSeverity.CRITICAL ? 8000 : 5000)
     } catch (e) {
       // Toast store might not be available during initialization
       console.warn('Could not show toast notification:', e)
@@ -258,11 +255,8 @@ export function handleSuccess(message, options = {}) {
   
   try {
     const toastStore = useToastStore()
-    toastStore.showToast({
-      type: 'success',
-      message,
-      duration
-    })
+    // Use success convenience method which internally calls addToast
+    toastStore.success(message, duration)
   } catch (e) {
     console.log('[Success]', message)
   }
@@ -288,11 +282,8 @@ export function handleValidationErrors(errors, options = {}) {
   if (showToast) {
     try {
       const toastStore = useToastStore()
-      toastStore.showToast({
-        type: 'warning',
-        message: `Kérjük, javítsa a következő hibákat:\n${messages}`,
-        duration: 5000
-      })
+      // Use addToast method which is the actual method name in the toast store
+      toastStore.addToast(`Kérjük, javítsa a következő hibákat:\n${messages}`, 'warning', 5000)
     } catch (e) {
       console.warn('[Validation Errors]', messages)
     }

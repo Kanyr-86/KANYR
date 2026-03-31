@@ -7,9 +7,10 @@ const { body, param, query } = require('express-validator');
 
 /**
  * Magyar telefonszám regex minta
- * Illeszkedik: +36 után 8-9 számjegy (mobil: 20, 30, 70; vezetékes: 1, stb.)
+ * Illeszkedik: +36 vagy 06 után 8-9 számjegy (mobil: 20, 30, 70; vezetékes: 1, stb.)
+ * Elfogadott formátumok: +36201234567, +36 20 123 4567, 06201234567, 06 20 123 4567
  */
-const HUNGARIAN_PHONE_REGEX = /^\+36[1-9][0-9]{7,8}$/;
+const HUNGARIAN_PHONE_REGEX = /^(\+36|06)[1-9][0-9]{7,8}$/;
 
 /**
  * Validátor tömb új diák létrehozásához

@@ -52,7 +52,7 @@ class SzuloRepository {
 
       return await this.Szulo.findAll(queryOptions);
     } catch (error) {
-      throw new Error(`Hiba a szülők lekérésében: ${error.message}`);
+      throw new Error(`Hiba a szülők lekérésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -83,7 +83,7 @@ class SzuloRepository {
 
       return await this.Szulo.findOne(queryOptions);
     } catch (error) {
-      throw new Error(`Hiba a szülő lekérésében (ID: ${id}): ${error.message}`);
+      throw new Error(`Hiba a szülő lekérésében (ID: ${id}): ${error.message}`, { cause: error });
     }
   }
 
@@ -98,7 +98,7 @@ class SzuloRepository {
         where: { email }
       });
     } catch (error) {
-      throw new Error(`Hiba a szülő keresésében (email: ${email}): ${error.message}`);
+      throw new Error(`Hiba a szülő keresésében (email: ${email}): ${error.message}`, { cause: error });
     }
   }
 
@@ -130,9 +130,9 @@ class SzuloRepository {
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const validationErrors = error.errors.map(e => e.message).join(', ');
-        throw new Error(`Validációs hiba: ${validationErrors}`);
+        throw new Error(`Validációs hiba: ${validationErrors}`, { cause: error });
       }
-      throw new Error(`Hiba a szülő létrehozásában: ${error.message}`);
+      throw new Error(`Hiba a szülő létrehozásában: ${error.message}`, { cause: error });
     }
   }
 
@@ -170,9 +170,9 @@ class SzuloRepository {
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const validationErrors = error.errors.map(e => e.message).join(', ');
-        throw new Error(`Validációs hiba: ${validationErrors}`);
+        throw new Error(`Validációs hiba: ${validationErrors}`, { cause: error });
       }
-      throw new Error(`Hiba a szülő frissítésében: ${error.message}`);
+      throw new Error(`Hiba a szülő frissítésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -200,7 +200,67 @@ class SzuloRepository {
       await szulo.destroy();
       return true;
     } catch (error) {
-      throw new Error(`Hiba a szülő törlésében: ${error.message}`);
+      throw new Error(`Hiba a szülő törlésében: ${error.message}`, { cause: error });
+    }
+  }
+
+  /**
+   * Soft-deleted szülő keresése egyedi mezők alapján
+   * @param {Object} params - keresési paraméterek (email, szemelyi_igazolvany_szam, lakcimData)
+   * @returns {Promise<Object|null>} - megtalált soft-deleted szülő vagy null
+   */
+  async findDeletedByUniqueFields(params) {
+    try {
+      const { Op } = require('sequelize');
+      const {
+        email,
+        szemelyi_igazolvany_szam,
+        lakcimData
+      } = params;
+
+      // Build where clause - match ANY of the provided unique fields
+      const whereConditions = {
+        deleted_at: { [Op.ne]: null } // Only search soft-deleted records
+      };
+
+      // Create OR conditions for unique field matching
+      const orConditions = [];
+      
+      if (email) {
+        orConditions.push({ email });
+      }
+      if (szemelyi_igazolvany_szam) {
+        orConditions.push({ szemelyi_igazolvany_szam });
+      }
+
+      // Address matching via associated Lakcim
+      if (lakcimData) {
+        orConditions.push({
+          '$lakcim.orszag$': lakcimData.orszag,
+          '$lakcim.iranyitoszam$': lakcimData.iranyitoszam,
+          '$lakcim.varos$': lakcimData.varos,
+          '$lakcim.utca_hazszam$': lakcimData.utca_hazszam
+        });
+      }
+
+      // If no unique fields provided, return null (can't match anything)
+      if (orConditions.length === 0) {
+        return null;
+      }
+
+      whereConditions[Op.or] = orConditions;
+
+      return await this.Szulo.findOne({
+        paranoid: false, // Include soft-deleted records
+        where: whereConditions,
+        include: [{
+          model: this.Lakcim,
+          as: 'lakcim',
+          required: false
+        }]
+      });
+    } catch (error) {
+      throw new Error(`Hiba a soft-deleted szülő keresésében: ${error.message}`, { cause: error });
     }
   }
 

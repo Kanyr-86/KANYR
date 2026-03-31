@@ -67,12 +67,18 @@ class DiakService {
         });
       }, cacheService.defaultTTL);
     } catch (error) {
-      throw new Error(`Hiba a diák teljes profiljának lekérésében: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a diák teljes profiljának lekérésében: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
   /**
    * Teljes diák beiratkozás folyamat
+   * Ha már létezik soft-deleted diák azonos egyedi mezőkkel (email, szemelyi_igazolvany_szam,
+   * taj_szam, diakigazolvany_szam), akkor nem új diák jön létre, hanem a soft-delete állapot
+   * megszűnik, és a régi diák adatai frissülnek az új adatokkal. A szülő és lakcím is
+   * lecserélődik az új beiratkozási adatokra.
    * @param {Object} enrollmentData - beiratkozási adatok
    * @returns {Promise<Object>} - beiratkozott diák
    */
@@ -87,102 +93,263 @@ class DiakService {
     } = enrollmentData;
 
     const transaction = await this.db.sequelize.transaction();
-    
+    let useRestoredDiak = null; // Ha találtunk soft-deleted diákot
+
     try {
-      // 1. Lakcím létrehozása vagy megtalálása (csak ha van lakcimData)
-      let lakcim = null;
-      if (lakcimData) {
-        lakcim = await this.Lakcim.findOne({
-          where: {
+      // 0. Ellenőrizzük, hogy van-e soft-deleted diák az egyedi mezők alapján
+      const deletedDiak = await this.repository.findDeletedByUniqueFields({
+        email: diakData.email,
+        szemelyi_igazolvany_szam: diakData.szemelyi_igazolvany_szam,
+        taj_szam: diakData.taj_szam,
+        diakigazolvany_szam: diakData.diakigazolvany_szam
+      });
+
+      if (deletedDiak) {
+        // Soft-deleted diák találat - visszaállítjuk frissítéssel
+        // --- Szülő és lakcím előkészítése ---
+        // Lakcím létrehozása vagy megtalálása
+        let lakcim = null;
+        if (lakcimData) {
+          lakcim = await this.Lakcim.findOne({ where: {
             orszag: lakcimData.orszag,
             iranyitoszam: lakcimData.iranyitoszam,
             varos: lakcimData.varos,
             utca_hazszam: lakcimData.utca_hazszam
+          }, transaction });
+
+          if (!lakcim) {
+            lakcim = await this.Lakcim.create(lakcimData, { transaction });
           }
+        }
+
+        // Szülő létrehozása vagy megtalálása (ellenőrizzük a soft-deleted szülőket is)
+        let szulo;
+        
+        // 1) Először ellenőrizzük, van-e soft-deleted szülő azonos adatokkal (tranzakción kívül, hogy elkerüljük a lock-ot)
+        const deletedSzulo = deletedDiak ? null : await this.Szulo.findOne({
+          where: { email: szuloData.email },
+          paranoid: false
         });
 
-        if (!lakcim) {
-          lakcim = await this.Lakcim.create(lakcimData, { transaction });
-        }
-      }
-
-      // 2. Szülő kezelése - lehet meglévő (szulo_id) vagy új (email alapján)
-      let szulo;
-      if (szuloData.szulo_id) {
-        // Meglévő szülő használata
-        szulo = await this.Szulo.findByPk(szuloData.szulo_id);
-        if (!szulo) {
-          throw new Error('A megadott szülő nem található!');
-        }
-      } else {
-        // Új szülő létrehozása vagy megtalálása email alapján
-        szulo = await this.Szulo.findOne({
-          where: { email: szuloData.email }
-        });
-
-        if (!szulo) {
-          szulo = await this.Szulo.create({
+        if (szuloData.szulo_id) {
+          // Explicit szulo_id használata
+          szulo = await this.Szulo.findByPk(szuloData.szulo_id, { transaction });
+          if (!szulo) {
+            throw new Error('A megadott szülő nem található!');
+          }
+        } else if (deletedSzulo && deletedSzulo.deleted_at) {
+          // Soft-deleted szülő találat - visszaállítás (manuális deleted_at nullázás)
+          await this.Szulo.update({
             ...szuloData,
-            cim_id: lakcim ? lakcim.cim_id : null
+            deleted_at: null
+          }, {
+            where: { szulo_id: deletedSzulo.szulo_id },
+            transaction,
+            paranoid: false
+          });
+          szulo = await this.Szulo.findByPk(deletedSzulo.szulo_id, { transaction });
+        } else {
+          // Ellenőrizzük, van-e meglévő aktív szülő
+          szulo = deletedSzulo; // Ha aktív szülő talált
+
+          if (!szulo) {
+            // Új szülő létrehozása
+            if (!lakcim) {
+              throw new Error('Új szülő létrehozásához lakcím megadása kötelező!');
+            }
+            szulo = await this.Szulo.create({
+              ...szuloData,
+              cim_id: lakcim.cim_id
+            }, { transaction });
+          } else {
+            // Meglévő szülő frissítése az új adatokkal
+            await szulo.update({
+              ...szuloData,
+              cim_id: lakcim ? lakcim.cim_id : szulo.cim_id
+            }, { transaction });
+          }
+        }
+
+        // --- A soft-deleted diák visszaállítása és frissítése ---
+        // Manuális deleted_at nullázás a restore() helyett, hogy a tranzakcióban maradjunk
+        await this.Diak.update({
+          ...diakData,
+          szulo_id: szulo.szulo_id,
+          cim_id: lakcim ? lakcim.cim_id : deletedDiak.cim_id,
+          deleted_at: null
+        }, {
+          where: { diak_id: deletedDiak.diak_id },
+          transaction,
+          paranoid: false
+        });
+
+        // --- Felhasználói fiók kezelése ---
+        let felhasznalo = await this.Felhasznalo.findOne({
+          where: { diak_id: deletedDiak.diak_id },
+          transaction
+        });
+
+        if (felhasznalo) {
+          // Ha volt már felhasználói fiók, frissítjük az email-t és jelszót
+          const hashedPassword = password ? await hashPassword(password) : felhasznalo.password;
+          await felhasznalo.update({
+            email: diakData.email,
+            password: hashedPassword
+          }, { transaction });
+        } else {
+          // Ha nem volt felhasználói fiók, létrehozzuk
+          const defaultPassword = password || 'Student123!';
+          const hashedPassword = await hashPassword(defaultPassword);
+          const username = diakData.email.split('@')[0];
+          let finalUsername = username;
+          const existingUser = await this.Felhasznalo.findOne({
+            where: { username: finalUsername },
+            transaction
+          });
+          if (existingUser) {
+            finalUsername = `${username}_${deletedDiak.diak_id}`;
+          }
+          await this.Felhasznalo.create({
+            username: finalUsername,
+            email: diakData.email,
+            password: hashedPassword,
+            admin: false,
+            diak_id: deletedDiak.diak_id
           }, { transaction });
         }
+
+        // --- Értesítés (csak ha új jelszó lett beállítva alapértelmezettként) ---
+        if (!password) {
+          await this.Notification.create({
+            diak_id: deletedDiak.diak_id,
+            tipus: 'password_reset_required',
+            cimzettkor: 'student',
+            prioritas: 'high',
+            uzenet: `A diákod visszaállításra került az archive-ból. A bejelentkezéshez használd az email címedet (${diakData.email}) és az ideiglenes jelszót: Student123!. Kérjük, változtasd meg a jelszavadat.`,
+            elolvasva: false
+          }, { transaction });
+        }
+
+        // --- Szoba kezelése ---
+        if (szoba_id) {
+          await this.checkRoomAvailability(szoba_id, transaction);
+          await this.SzobaBekoltozes.create({
+            diak_id: deletedDiak.diak_id,
+            szoba_id,
+            bekoltozes_datum: bekoltozes_datum || new Date(),
+            kikoltozes_datum: null
+          }, { transaction });
+        }
+
+        useRestoredDiak = deletedDiak; // Mentés a visszatéréshez
       }
 
-      // 3. Diák létrehozása
-      const diak = await this.Diak.create({
-        ...diakData,
-        szulo_id: szulo.szulo_id,
-        cim_id: lakcim ? lakcim.cim_id : null
-      }, { transaction });
+      // Ha Nincs soft-deleted találat, normál beiratkozás
+      if (!useRestoredDiak) {
+        // 1. Lakcím létrehozása vagy megtalálása (csak ha van lakcimData)
+        let lakcim = null;
+        if (lakcimData) {
+          lakcim = await this.Lakcim.findOne({
+            where: {
+              orszag: lakcimData.orszag,
+              iranyitoszam: lakcimData.iranyitoszam,
+              varos: lakcimData.varos,
+              utca_hazszam: lakcimData.utca_hazszam
+            }
+          });
 
-      // 4. Felhasználói fiók létrehozása a diáknak
-      const defaultPassword = password || 'Student123!';
-      const hashedPassword = await hashPassword(defaultPassword);
-      
-      // Generate username from email (part before @)
-      const username = diakData.email.split('@')[0];
-      
-      // Check if username already exists, if so append student ID
-      let finalUsername = username;
-      const existingUser = await this.Felhasznalo.findOne({
-        where: { username: finalUsername },
-        transaction
-      });
-      
-      if (existingUser) {
-        finalUsername = `${username}_${diak.diak_id}`;
-      }
+          if (!lakcim) {
+            lakcim = await this.Lakcim.create(lakcimData, { transaction });
+          }
+        }
 
-      const felhasznalo = await this.Felhasznalo.create({
-        username: finalUsername,
-        email: diakData.email,
-        password: hashedPassword,
-        admin: false,
-        diak_id: diak.diak_id
-      }, { transaction });
+        // 2. Szülő kezelése - lehet meglévő (szulo_id) vagy új (email alapján)
+        let szulo;
+        if (szuloData.szulo_id) {
+          // Meglévő szülő használata
+          szulo = await this.Szulo.findByPk(szuloData.szulo_id);
+          if (!szulo) {
+            throw new Error('A megadott szülő nem található!');
+          }
+        } else {
+          // Új szülő létrehozása vagy megtalálása email alapján
+          szulo = await this.Szulo.findOne({
+            where: { email: szuloData.email }
+          });
 
-      // 5. Értesítés létrehozása a jelszó módosításáról
-      await this.Notification.create({
-        diak_id: diak.diak_id,
-        tipus: 'password_reset_required',
-        cimzettkor: 'student',
-        prioritas: 'high',
-        uzenet: `Üdvözlünk a kollégiumi rendszerben! A bejelentkezéshez használd az email címedet (${diakData.email}) és az ideiglenes jelszót: ${defaultPassword}. Kérjük, az első bejelentkezés után változtasd meg a jelszavadat a biztonság érdekében.`,
-        elolvasva: false
-      }, { transaction });
+          if (!szulo) {
+            // Új szülő létrehozása - kötelező lakcím
+            if (!lakcim) {
+              throw new Error('Új szülő létrehozásához lakcím megadása kötelező!');
+            }
+            
+            szulo = await this.Szulo.create({
+              ...szuloData,
+              cim_id: lakcim.cim_id
+            }, { transaction });
+          }
+        }
 
-      // 6. Szoba kezelése (opcionális)
-      if (szoba_id) {
-        // Szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
-        await this.checkRoomAvailability(szoba_id, transaction);
-
-        // Beköltözés rögzítése
-        await this.SzobaBekoltozes.create({
-          diak_id: diak.diak_id,
-          szoba_id: szoba_id,
-          bekoltozes_datum: bekoltozes_datum || new Date(),
-          kikoltozes_datum: null
+        // 3. Diák létrehozása
+        const diak = await this.Diak.create({
+          ...diakData,
+          szulo_id: szulo.szulo_id,
+          cim_id: lakcim ? lakcim.cim_id : null
         }, { transaction });
+
+        // 4. Felhasználói fiók létrehozása a diáknak
+        const defaultPassword = password || 'Student123!';
+        const hashedPassword = await hashPassword(defaultPassword);
+        
+        // Generate username from email (part before @)
+        const username = diakData.email.split('@')[0];
+        
+        // Check if username already exists, if so append student ID
+        let finalUsername = username;
+        const existingUser = await this.Felhasznalo.findOne({
+          where: { username: finalUsername },
+          transaction
+        });
+        
+        if (existingUser) {
+          finalUsername = `${username}_${diak.diak_id}`;
+        }
+
+        const _felhasznalo = await this.Felhasznalo.create({
+          username: finalUsername,
+          email: diakData.email,
+          password: hashedPassword,
+          admin: false,
+          diak_id: diak.diak_id
+        }, { transaction });
+
+        // 5. Értesítés létrehozása a jelszó módosításáról (csak ha alapértelmezett jelszót használ)
+        if (!password) {
+          await this.Notification.create({
+            diak_id: diak.diak_id,
+            tipus: 'password_reset_required',
+            cimzettkor: 'student',
+            prioritas: 'high',
+            uzenet: `Üdvözlünk a kollégiumi rendszerben! A bejelentkezéshez használd az email címedet (${diakData.email}) és az ideiglenes jelszót: ${defaultPassword}. Kérjük, az első bejelentkezés után változtasd meg a jelszavadat a biztonság érdekében.`,
+            elolvasva: false
+          }, { transaction });
+        }
+
+        // 6. Szoba kezelése (opcionális)
+        if (szoba_id) {
+          // Szoba elérhetőség ellenőrzése (tranzakcióban, a race condition elkerüléséhez)
+          await this.checkRoomAvailability(szoba_id, transaction);
+
+          // Beköltözés rögzítése
+          await this.SzobaBekoltozes.create({
+            diak_id: diak.diak_id,
+            szoba_id: szoba_id,
+            bekoltozes_datum: bekoltozes_datum || new Date(),
+            kikoltozes_datum: null
+          }, { transaction });
+        }
+
+        useRestoredDiak = diak; // Használd az új diákot a visszatéréshez
       }
 
       await transaction.commit();
@@ -193,10 +360,33 @@ class DiakService {
       cacheService.invalidateStatisticsCache();
 
       // Teljes profil visszaadása
-      return await this.getStudentWithFullHistory(diak.diak_id);
+      return await this.getStudentWithFullHistory(useRestoredDiak.diak_id);
     } catch (error) {
       await transaction.rollback();
-      throw new Error(`Hiba a beiratkozás során: ${error.message}`);
+      
+      // Provide more detailed error information
+      let errorMessage = error.message;
+      
+      // Check for Sequelize validation errors
+      if (error.errors && error.errors.length > 0) {
+        const validationErrors = error.errors.map(e => `${e.path}: ${e.message}`).join(', ');
+        errorMessage = `Validációs hiba: ${validationErrors}`;
+      }
+      
+      // Check for unique constraint violations
+      if (error.name === 'SequelizeUniqueConstraintError' && error.errors.length > 0) {
+        const fieldErrors = error.errors.map(e => `${e.path}: ${e.value} már létezik`).join(', ');
+        errorMessage = `Egyedi mező hiba: ${fieldErrors}`;
+      }
+      
+      // Check for foreign key errors
+      if (error.name === 'SequelizeForeignKeyConstraintError') {
+        errorMessage = `Hivatkozási hiba: A megadott ${error.table || 'elem'} nem található`;
+      }
+      
+      const errorToThrow = new Error(`Hiba a beiratkozás során: ${errorMessage}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -252,7 +442,9 @@ class DiakService {
       return await this.getStudentWithFullHistory(diak_id);
     } catch (error) {
       await transaction.rollback();
-      throw new Error(`Hiba az átcsatolás során: ${error.message}`);
+      const errorToThrow = new Error(`Hiba az átcsatolás során: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -291,7 +483,9 @@ class DiakService {
       return await this.getStudentWithFullHistory(diak_id);
     } catch (error) {
       await transaction.rollback();
-      throw new Error(`Hiba a kiköltöztetés során: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a kiköltöztetés során: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -327,7 +521,9 @@ class DiakService {
 
       return true;
     } catch (error) {
-      throw new Error(`Hiba a szoba elérhetőségének ellenőrzésében: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a szoba elérhetőségének ellenőrzésében: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -357,7 +553,9 @@ class DiakService {
         });
       }, cacheService.defaultTTL);
     } catch (error) {
-      throw new Error(`Hiba a szoba diákjainak lekérésében: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a szoba diákjainak lekérésében: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -470,7 +668,9 @@ class DiakService {
         cacheService.statisticsTTL
       );
     } catch (error) {
-      throw new Error(`Hiba a részletes statisztikák lekérésében: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a részletes statisztikák lekérésében: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -556,7 +756,9 @@ class DiakService {
         };
       }, cacheService.listsTTL);
     } catch (error) {
-      throw new Error(`Hiba a diákok keresése során: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a diákok keresése során: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -655,7 +857,9 @@ class DiakService {
         };
       }, cacheService.listsTTL);
     } catch (error) {
-      throw new Error(`Hiba a diák jelentés generálásában: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a diák jelentés generálásában: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 
@@ -702,7 +906,11 @@ class DiakService {
         }
 
         if (!szulo) {
-          // Új szülő létrehozása
+          // Új szülő létrehozása - kötelező lakcím
+          if (!cimId) {
+            throw new Error('Új szülő létrehozásához lakcím megadása kötelező!');
+          }
+          
           szulo = await this.Szulo.create({
             ...updates.szuloData,
             cim_id: cimId
@@ -759,7 +967,9 @@ class DiakService {
       if (error.message.includes('nem található')) {
         throw error;
       }
-      throw new Error(`Hiba a diák frissítésében: ${error.message}`);
+      const errorToThrow = new Error(`Hiba a diák frissítésében: ${error.message}`);
+      errorToThrow.cause = error;
+      throw errorToThrow;
     }
   }
 }

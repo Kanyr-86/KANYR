@@ -43,7 +43,7 @@ class LakcimRepository {
 
       return await this.Lakcim.findAll(queryOptions);
     } catch (error) {
-      throw new Error(`Hiba a lakcímek lekérésében: ${error.message}`);
+      throw new Error(`Hiba a lakcímek lekérésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -74,7 +74,7 @@ class LakcimRepository {
 
       return await this.Lakcim.findOne(queryOptions);
     } catch (error) {
-      throw new Error(`Hiba a lakcím lekérésében (ID: ${id}): ${error.message}`);
+      throw new Error(`Hiba a lakcím lekérésében (ID: ${id}): ${error.message}`, { cause: error });
     }
   }
 
@@ -96,7 +96,7 @@ class LakcimRepository {
         }
       });
     } catch (error) {
-      throw new Error(`Hiba a lakcím keresésében: ${error.message}`);
+      throw new Error(`Hiba a lakcím keresésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -114,9 +114,9 @@ class LakcimRepository {
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const validationErrors = error.errors.map(e => e.message).join(', ');
-        throw new Error(`Validációs hiba: ${validationErrors}`);
+        throw new Error(`Validációs hiba: ${validationErrors}`, { cause: error });
       }
-      throw new Error(`Hiba a lakcím létrehozásában: ${error.message}`);
+      throw new Error(`Hiba a lakcím létrehozásában: ${error.message}`, { cause: error });
     }
   }
 
@@ -138,9 +138,9 @@ class LakcimRepository {
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const validationErrors = error.errors.map(e => e.message).join(', ');
-        throw new Error(`Validációs hiba: ${validationErrors}`);
+        throw new Error(`Validációs hiba: ${validationErrors}`, { cause: error });
       }
-      throw new Error(`Hiba a lakcím frissítésében: ${error.message}`);
+      throw new Error(`Hiba a lakcím frissítésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -173,7 +173,7 @@ class LakcimRepository {
       await lakcim.destroy();
       return true;
     } catch (error) {
-      throw new Error(`Hiba a lakcím törlésében: ${error.message}`);
+      throw new Error(`Hiba a lakcím törlésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -214,7 +214,7 @@ class LakcimRepository {
         ]
       });
     } catch (error) {
-      throw new Error(`Hiba a lakcímek város szerinti keresésében: ${error.message}`);
+      throw new Error(`Hiba a lakcímek város szerinti keresésében: ${error.message}`, { cause: error });
     }
   }
 }

@@ -85,7 +85,7 @@ class DiakRepository {
         count: totalCount
       };
     } catch (error) {
-      throw new Error(`Hiba a diákok lekérésében: ${error.message}`);
+      throw new Error(`Hiba a diákok lekérésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -129,7 +129,7 @@ class DiakRepository {
 
       return await this.Diak.findOne(queryOptions);
     } catch (error) {
-      throw new Error(`Hiba a diák lekérésében (ID: ${id}): ${error.message}`);
+      throw new Error(`Hiba a diák lekérésében (ID: ${id}): ${error.message}`, { cause: error });
     }
   }
 
@@ -164,7 +164,7 @@ class DiakRepository {
 
       return await this.Diak.findOne(queryOptions);
     } catch (error) {
-      throw new Error(`Hiba a diák keresésében (email: ${email}): ${error.message}`);
+      throw new Error(`Hiba a diák keresésében (email: ${email}): ${error.message}`, { cause: error });
     }
   }
 
@@ -200,9 +200,9 @@ class DiakRepository {
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const validationErrors = error.errors.map(e => e.message).join(', ');
-        throw new Error(`Validációs hiba: ${validationErrors}`);
+        throw new Error(`Validációs hiba: ${validationErrors}`, { cause: error });
       }
-      throw new Error(`Hiba a diák létrehozásában: ${error.message}`);
+      throw new Error(`Hiba a diák létrehozásában: ${error.message}`, { cause: error });
     }
   }
 
@@ -248,14 +248,14 @@ class DiakRepository {
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const validationErrors = error.errors.map(e => e.message).join(', ');
-        throw new Error(`Validációs hiba: ${validationErrors}`);
+        throw new Error(`Validációs hiba: ${validationErrors}`, { cause: error });
       }
-      throw new Error(`Hiba a diák frissítésében: ${error.message}`);
+      throw new Error(`Hiba a diák frissítésében: ${error.message}`, { cause: error });
     }
   }
 
   /**
-   * Diák törlése
+   * Diák törlése (soft delete)
    * @param {number} id - diák ID
    * @returns {Promise<boolean>} - sikeres törlés esetén true
    */
@@ -275,13 +275,223 @@ class DiakRepository {
       });
 
       if (activeBekoltozes) {
-        throw new Error('A diák nem törölhető, mert aktív beköltözése van!');
+        throw new Error('A diák nem törölhető, mert aktív beköltözése van! Előbb ki kell költöztetni a diákot.');
       }
 
+      // Soft delete - only sets deleted_at timestamp
+      // This preserves referential integrity with related tables (notifications, users, etc.)
       await diak.destroy();
       return true;
     } catch (error) {
-      throw new Error(`Hiba a diák törlésében: ${error.message}`);
+      throw new Error(`Hiba a diák törlésében: ${error.message}`, { cause: error });
+    }
+  }
+
+  /**
+   * Véglegesen törölt diákok lekérése (soft-deleted records)
+   * @param {Object} options - lekérdezési opciók
+   * @returns {Promise<Array>} - törölt diákok listája
+   */
+  async findDeleted(options = {}) {
+    try {
+      const { Op } = require('sequelize');
+      const { limit = 100, offset = 0, sort = 'deleted_at', order = 'DESC' } = options;
+
+      return await this.Diak.findAll({
+        paranoid: false, // Include soft-deleted records
+        where: {
+          deleted_at: { [Op.ne]: null }
+        },
+        order: [[sort, order]],
+        limit,
+        offset
+      });
+    } catch (error) {
+      throw new Error(`Hiba a törölt diákok lekérésében: ${error.message}`, { cause: error });
+    }
+  }
+
+  /**
+   * Soft-deleted diák visszaállítása (undelete)
+   * @param {number} id - diák ID
+   * @returns {Promise<Object>} - visszaállított diák
+   */
+  async restore(id) {
+    try {
+      const { Op } = require('sequelize');
+      const diak = await this.Diak.findByPk(id, {
+        paranoid: false, // Include soft-deleted records
+        where: {
+          deleted_at: { [Op.ne]: null }
+        }
+      });
+
+      if (!diak) {
+        throw new Error('A diák nem található a törölt rekordok között!');
+      }
+
+      await diak.restore();
+      return await this.findById(id);
+    } catch (error) {
+      throw new Error(`Hiba a diák visszaállításában: ${error.message}`, { cause: error });
+    }
+  }
+
+  /**
+   * Végleges törlés (hard delete) - CSAK ADMIN HASZNÁLATRA!
+   * Először törli a kapcsolódó rekordokat, majd magát a diákot.
+   * @param {number} id - diák ID
+   * @returns {Promise<boolean>} - sikeres törlés esetén true
+   */
+  async hardDelete(id) {
+    try {
+      const diak = await this.Diak.findByPk(id, { paranoid: false });
+      if (!diak) {
+        throw new Error('A diák nem található!');
+      }
+
+      // 1. Delete all related notifications
+      await this.Diak.sequelize.models.Notification.destroy({
+        where: { diak_id: id }
+      });
+
+      // 2. Clear diak_id from felhasznalos table
+      await this.Diak.sequelize.models.Felhasznalo.update(
+        { diak_id: null },
+        { where: { diak_id: id } }
+      );
+
+      // 3. Delete all related room change requests
+      const szobaValtoztatas = this.Diak.sequelize.models.SzobaValtoztatas;
+      if (szobaValtoztatas) {
+        await szobaValtoztatas.destroy({
+          where: { diak_id: id }
+        });
+      }
+
+      // 4. Delete all related SzobaBekoltozes records
+      await this.Diak.sequelize.models.SzobaBekoltozes.destroy({
+        where: { diak_id: id }
+      });
+
+      // 5. Finally, hard delete the student
+      await diak.destroy({ force: true });
+      return true;
+    } catch (error) {
+      throw new Error(`Hiba a diák végleges törlésében: ${error.message}`, { cause: error });
+    }
+  }
+
+  /**
+   * Soft-deleted diák keresése egyedi mezők alapján
+   * @param {Object} params - keresési paraméterek (email, szemelyi_igazolvany_szam, taj_szam, diakigazolvany_szam)
+   * @returns {Promise<Object|null>} - megtalált soft-deleted diák vagy null
+   */
+  async findDeletedByUniqueFields(params) {
+    try {
+      const { Op } = require('sequelize');
+      const {
+        email,
+        szemelyi_igazolvany_szam,
+        taj_szam,
+        diakigazolvany_szam
+      } = params;
+
+      // Build where clause - match ANY of the provided unique fields
+      const whereConditions = {
+        deleted_at: { [Op.ne]: null } // Only search soft-deleted records
+      };
+
+      // Create OR conditions for unique field matching
+      const orConditions = [];
+      
+      if (email) {
+        orConditions.push({ email });
+      }
+      if (szemelyi_igazolvany_szam) {
+        orConditions.push({ szemelyi_igazolvany_szam });
+      }
+      if (taj_szam) {
+        orConditions.push({ taj_szam });
+      }
+      if (diakigazolvany_szam) {
+        orConditions.push({ diakigazolvany_szam });
+      }
+
+      // If no unique fields provided, return null (can't match anything)
+      if (orConditions.length === 0) {
+        return null;
+      }
+
+      whereConditions[Op.or] = orConditions;
+
+      return await this.Diak.findOne({
+        paranoid: false, // Include soft-deleted records
+        where: whereConditions
+      });
+    } catch (error) {
+      throw new Error(`Hiba a soft-deleted diák keresésében: ${error.message}`, { cause: error });
+    }
+  }
+
+  /**
+   * Összes soft-deleted rekord végleges törlése (cleanup)
+   * Hasznos tesztelés után az adatbázis tisztításához.
+   * @returns {Promise<number>} - hány rekord lett törölve
+   */
+  async cleanupDeleted(options = {}) {
+    try {
+      const { Op } = require('sequelize');
+      const { olderThan = null } = options; // Pass null to delete all soft-deleted
+
+      let whereCondition = {
+        deleted_at: { [Op.ne]: null }
+      };
+
+      // Only delete records older than a certain time if specified
+      if (olderThan) {
+        whereCondition.deleted_at = {
+          [Op.lt]: olderThan
+        };
+      }
+
+      // First, delete related records for soft-deleted students
+      const deletedStudents = await this.Diak.findAll({
+        paranoid: false,
+        where: whereCondition,
+        attributes: ['diak_id']
+      });
+
+      const studentIds = deletedStudents.map(s => s.diak_id);
+
+      if (studentIds.length > 0) {
+        // Delete related notifications
+        await this.Diak.sequelize.models.Notification.destroy({
+          where: { diak_id: studentIds }
+        });
+
+        // Clear diak_id from felhasznalos
+        await this.Diak.sequelize.models.Felhasznalo.update(
+          { diak_id: null },
+          { where: { diak_id: studentIds } }
+        );
+
+        // Delete related SzobaBekoltozes records
+        await this.Diak.sequelize.models.SzobaBekoltozes.destroy({
+          where: { diak_id: studentIds }
+        });
+      }
+
+      // Finally, hard delete all soft-deleted students
+      const result = await this.Diak.destroy({
+        where: whereCondition,
+        force: true, // Hard delete
+        paranoid: false // Include soft-deleted records
+      });
+
+      return result;
+    } catch (error) {
+      throw new Error(`Hiba a törölt rekordok tisztításában: ${error.message}`, { cause: error });
     }
   }
 
@@ -344,7 +554,7 @@ class DiakRepository {
         count: totalCount
       };
     } catch (error) {
-      throw new Error(`Hiba az aktív diákok lekérésében: ${error.message}`);
+      throw new Error(`Hiba az aktív diákok lekérésében: ${error.message}`, { cause: error });
     }
   }
 
@@ -372,7 +582,7 @@ class DiakRepository {
         inactive: total - active
       };
     } catch (error) {
-      throw new Error(`Hiba a statisztikák lekérésében: ${error.message}`);
+      throw new Error(`Hiba a statisztikák lekérésében: ${error.message}`, { cause: error });
     }
   }
 

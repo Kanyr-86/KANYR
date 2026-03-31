@@ -29,13 +29,13 @@ class FelhasznaloRepository {
     } catch (error) {
       if (error.name === 'SequelizeUniqueConstraintError') {
         if (error.fields.username) {
-          throw new Error('A felhasználónév már foglalt');
+          throw new Error('A felhasználónév már foglalt', { cause: error });
         }
         if (error.fields.email) {
-          throw new Error('Az email cím már foglalt');
+          throw new Error('Az email cím már foglalt', { cause: error });
         }
       }
-      throw new Error(`Hiba a felhasználó létrehozása közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó létrehozása közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -51,7 +51,7 @@ class FelhasznaloRepository {
       });
       return user;
     } catch (error) {
-      throw new Error(`Hiba a felhasználó keresése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó keresése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -67,7 +67,7 @@ class FelhasznaloRepository {
       });
       return user;
     } catch (error) {
-      throw new Error(`Hiba a felhasználó keresése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó keresése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -83,7 +83,7 @@ class FelhasznaloRepository {
       });
       return user;
     } catch (error) {
-      throw new Error(`Hiba a felhasználó keresése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó keresése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -105,7 +105,7 @@ class FelhasznaloRepository {
 
       return users;
     } catch (error) {
-      throw new Error(`Hiba a felhasználók listázása közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználók listázása közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -137,7 +137,7 @@ class FelhasznaloRepository {
       if (error.message === 'Felhasználó nem található') {
         throw error;
       }
-      throw new Error(`Hiba a felhasználó frissítése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó frissítése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -160,12 +160,14 @@ class FelhasznaloRepository {
       if (error.message === 'Felhasználó nem található') {
         throw error;
       }
-      throw new Error(`Hiba a felhasználó törlése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó törlése közben: ${error.message}`, { cause: error });
     }
   }
 
   /**
    * Felhasználó hitelesítése
+   * Ellenőrzi a jelszót, valamint azt is, hogy a felhasználóhoz tartozó diák
+   * és maga a felhasználó nincs-e soft-delete állapotban.
    * @param {string} email - Felhasználó email címe
    * @param {string} password - Felhasználó jelszava
    * @returns {Promise<Object>} - Hitelesített felhasználó
@@ -184,14 +186,32 @@ class FelhasznaloRepository {
         throw new Error('Érvénytelen email vagy jelszó');
       }
 
+      // Check if the user itself is soft-deleted
+      if (user.deleted_at) {
+        throw new Error('A felhasználói fiók törölve lett. A bejelentkezés nem lehetséges.');
+      }
+
+      // Check if linked student is soft-deleted
+      if (user.diak_id) {
+        const Diak = this.db.Diak;
+        const diak = await Diak.findByPk(user.diak_id, {
+          paranoid: false // Include soft-deleted records
+        });
+
+        if (diak && diak.deleted_at) {
+          throw new Error('A diák fiók törölve lett. A bejelentkezés nem lehetséges.');
+        }
+      }
+
       // Felhasználó visszaadása jelszó nélkül
       const { password: _, ...userWithoutPassword } = user.toJSON();
       return userWithoutPassword;
     } catch (error) {
-      if (error.message === 'Érvénytelen email vagy jelszó') {
+      if (error.message === 'Érvénytelen email vagy jelszó' ||
+          error.message.includes('törölve')) {
         throw error;
       }
-      throw new Error(`Hiba a bejelentkezés közben: ${error.message}`);
+      throw new Error(`Hiba a bejelentkezés közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -208,7 +228,7 @@ class FelhasznaloRepository {
       });
       return !!user;
     } catch (error) {
-      throw new Error(`Hiba a felhasználó létezésének ellenőrzése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó létezésének ellenőrzése közben: ${error.message}`, { cause: error });
     }
   }
 
@@ -225,7 +245,7 @@ class FelhasznaloRepository {
       });
       return !!user;
     } catch (error) {
-      throw new Error(`Hiba a felhasználó létezésének ellenőrzése közben: ${error.message}`);
+      throw new Error(`Hiba a felhasználó létezésének ellenőrzése közben: ${error.message}`, { cause: error });
     }
   }
 }

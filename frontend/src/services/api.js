@@ -111,11 +111,11 @@ function applyAuthInterceptors(instance) {
           
           if (storageErrorCount >= MAX_STORAGE_ERRORS) {
             const toastStore = useToastStore()
-            toastStore.showToast({
-              type: 'error',
-              message: 'Tárhely hiba észlelve. Kérjük, töröljön néhány adatot vagy forduljon a rendszergazdához.',
-              duration: 8000
-            })
+            toastStore.addToast(
+              'Tárhely hiba észlelve. Kérjük, töröljön néhány adatot vagy forduljon a rendszergazdához.',
+              'error',
+              8000
+            )
           }
           
           // Continue with request even if storage fails for non-sensitive operations
@@ -215,11 +215,11 @@ function applyAuthInterceptors(instance) {
               await fetchCsrfToken()
               // Toast értesítés megjelenítése
               const toastStore = useToastStore()
-              toastStore.showToast({
-                type: 'warning',
-                message: 'Biztonsági token lejárt. Az oldal újratöltése...',
-                duration: 3000
-              })
+              toastStore.addToast(
+                'Biztonsági token lejárt. Az oldal újratöltése...',
+                'warning',
+                3000
+              )
               // Kis késleltetés után frissítjük az oldalt
               setTimeout(() => {
                 window.location.reload()
@@ -267,11 +267,11 @@ function applyAuthInterceptors(instance) {
   async function handleTokenExpiration() {
     try {
       const toastStore = useToastStore()
-      toastStore.showToast({
-        type: 'warning',
-        message: 'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
-        duration: 5000
-      })
+      toastStore.addToast(
+        'A munkamenet lejárt. Kérjük, jelentkezzen be újra.',
+        'warning',
+        5000
+      )
     } catch (e) {
       // Toast store might not be available during initialization
     }
