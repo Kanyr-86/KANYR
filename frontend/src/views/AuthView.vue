@@ -76,6 +76,16 @@
 .card-header h5 {
   font-size: 1.1rem;
   line-height: 1.2;
+  color: var(--text-primary);
+}
+
+/* Sötét módban fehér szín */
+[data-theme="dark"] .card-header h5 {
+  color: var(--text-inverse);
+}
+
+/* High contrast módban is fehér */
+[data-theme="high-contrast"] .card-header h5 {
   color: var(--text-inverse);
 }
 
