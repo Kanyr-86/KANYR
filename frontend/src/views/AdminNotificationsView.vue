@@ -320,15 +320,6 @@
       </template>
     </BaseModal>
 
-    <!-- Confirm Dialog -->
-    <ConfirmDialog 
-      v-model="showConfirmDialog"
-      :title="confirmDialog.title"
-      :message="confirmDialog.message"
-      :type="confirmDialog.type"
-      @confirm="confirmDialog.onConfirm"
-    />
-
     <!-- Notification Detail Modal -->
     <NotificationDetailModal
       v-model="showNotificationDetail"
@@ -341,10 +332,10 @@
 <script>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '../store/auth';
+import { useConfirm } from '../composables/useConfirm';
 import api from '../services/api';
 import { toast } from 'vue3-toastify';
 import BaseModal from '../components/BaseModal.vue';
-import ConfirmDialog from '../components/ConfirmDialog.vue';
 import LoadingOverlay from '../components/LoadingOverlay.vue';
 import NotificationDetailModal from '../components/NotificationDetailModal.vue';
 
@@ -352,12 +343,12 @@ export default {
   name: 'AdminNotificationsView',
   components: {
     BaseModal,
-    ConfirmDialog,
     LoadingOverlay,
     NotificationDetailModal
   },
   setup() {
     const authStore = useAuthStore();
+    const confirm = useConfirm().confirm;
     
     // State
     const loading = ref(false);
@@ -378,15 +369,8 @@ export default {
     
     // Modal state
     const showCreateModal = ref(false);
-    const showConfirmDialog = ref(false);
     const showNotificationDetail = ref(false);
     const selectedNotification = ref(null);
-    const confirmDialog = ref({
-      title: '',
-      message: '',
-      type: 'danger',
-      onConfirm: () => {}
-    });
     
     // New notification form
     const newNotification = ref({
@@ -523,47 +507,51 @@ export default {
       }
     };
 
-    const deleteNotification = (notification) => {
-      confirmDialog.value = {
+    const deleteNotification = async (notification) => {
+      const confirmed = await confirm({
         title: 'Értesítés törlése',
         message: `Biztosan törölni szeretné ezt az értesítést?`,
-        type: 'danger',
-        onConfirm: async () => {
-          try {
-            await api.delete(`/room-changes/admin/notifications/${notification.notification_id}`);
-            await fetchNotifications();
-            toast.success('Értesítés törölve');
-          } catch (error) {
-            console.error('Error deleting notification:', error);
-            toast.error('Hiba a törlés során');
-          }
+        confirmText: 'Törlés',
+        cancelText: 'Mégse',
+        variant: 'danger'
+      });
+      
+      if (confirmed) {
+        try {
+          await api.delete(`/room-changes/admin/notifications/${notification.notification_id}`);
+          await fetchNotifications();
+          toast.success('Értesítés törölve');
+        } catch (error) {
+          console.error('Error deleting notification:', error);
+          toast.error('Hiba a törlés során');
         }
-      };
-      showConfirmDialog.value = true;
+      }
     };
 
-    const deleteSelected = () => {
-      confirmDialog.value = {
+    const deleteSelected = async () => {
+      const confirmed = await confirm({
         title: 'Értesítések törlése',
         message: `Biztosan törölni szeretné a kiválasztott ${selectedNotifications.value.length} értesítést?`,
-        type: 'danger',
-        onConfirm: async () => {
-          try {
-            await Promise.all(
-              selectedNotifications.value.map(id => 
-                api.delete(`/room-changes/admin/notifications/${id}`)
-              )
-            );
-            selectedNotifications.value = [];
-            await fetchNotifications();
-            toast.success('Kiválasztott értesítések törölve');
-          } catch (error) {
-            console.error('Error deleting selected:', error);
-            toast.error('Hiba a törlés során');
-          }
+        confirmText: 'Törlés',
+        cancelText: 'Mégse',
+        variant: 'danger'
+      });
+      
+      if (confirmed) {
+        try {
+          await Promise.all(
+            selectedNotifications.value.map(id => 
+              api.delete(`/room-changes/admin/notifications/${id}`)
+            )
+          );
+          selectedNotifications.value = [];
+          await fetchNotifications();
+          toast.success('Kiválasztott értesítések törölve');
+        } catch (error) {
+          console.error('Error deleting selected:', error);
+          toast.error('Hiba a törlés során');
         }
-      };
-      showConfirmDialog.value = true;
+      }
     };
 
     const createNotification = async () => {
@@ -742,8 +730,6 @@ export default {
       currentPage,
       filters,
       showCreateModal,
-      showConfirmDialog,
-      confirmDialog,
       newNotification,
       showNotificationDetail,
       selectedNotification,

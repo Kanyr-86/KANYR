@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { NotFoundError, ValidationError, ConflictError, ForbiddenError } = require('../utils/AppError');
+const cacheService = require('../services/CacheService');
 
 class SzobaValtoztatasController {
   constructor(db) {
@@ -676,149 +677,164 @@ class SzobaValtoztatasController {
     }
   }
 
-  // Szobacsere: két diák cseréje két szoba között (titkár számára)
-  async swapStudents(req, res, next) {
+  // Szobacsere: két diák cseréje két szoba között (admin/titkár számára)
+  async swapStudents(req, res, _next) {
     try {
-      const { szoba_id } = req.params;
+      const { roomId } = req.params;
       const { kicserelendo_diak_id, uj_diak_id, csere_datum } = req.body;
 
       // Validálás
       if (!kicserelendo_diak_id || !uj_diak_id) {
-        throw new ValidationError('Mindkét diák ID megadása kötelező');
+        return res.status(400).json({
+          success: false,
+          error: 'Mindkét diák ID megadása kötelező'
+        });
       }
 
       if (kicserelendo_diak_id === uj_diak_id) {
-        throw new ValidationError('Nem cserélhet egy diákot saját magával');
+        return res.status(400).json({
+          success: false,
+          error: 'Nem cserélhet egy diákot saját magával'
+        });
       }
 
-      await this.db.sequelize.transaction({
-        isolationLevel: this.db.sequelize.constructor.Transaction.ISOLATION_LEVELS.SERIALIZABLE
-      }, async (transaction) => {
-        // 1. Cél szoba (amibe a kicserelendo_diak_id benne van) lekérése - LOCK-kal
-        const celSzoba = await this.db.Szoba.findByPk(szoba_id, {
-          transaction,
-          lock: transaction.LOCK.UPDATE
-        });
-        if (!celSzoba) {
-          throw new NotFoundError('Cél szoba');
-        }
+      // A szoba_id a route-ból roomId-ként jön
+      const szoba_id = roomId;
+      const csereDatum = csere_datum || new Date().toISOString().split('T')[0];
 
-        // 2. Kicserélendő diák ellenőrzése - ebben a szobában van-e
-        const kicserelendoAktivBekoltozes = await this.db.SzobaBekoltozes.findOne({
-          where: {
-            diak_id: kicserelendo_diak_id,
-            kikoltozes_datum: null
-          },
-          transaction
-        });
-        if (!kicserelendoAktivBekoltozes) {
-          throw new ValidationError('A kicserélendő diák nem található ebben a szobában');
-        }
+      console.log('[swapStudents] Starting swap:', { szoba_id, kicserelendo_diak_id, uj_diak_id, csereDatum });
 
-        // Ellenőrizzük, hogy a kicserélendő diák valóban ebben a szobában van-e
-        if (kicserelendoAktivBekoltozes.szoba_id !== parseInt(szoba_id)) {
-          throw new ValidationError('A kicserélendő diák nem ebben a szobában tartózkodik');
-        }
+      // 1. Cél szoba lekérése
+      const celSzoba = await this.db.Szoba.findByPk(szoba_id);
+      console.log('[swapStudents] celSzoba:', celSzoba ? celSzoba.szoba_szama : 'NOT FOUND');
+      if (!celSzoba) {
+        return res.status(404).json({ success: false, error: 'Cél szoba nem található' });
+      }
 
-        // 3. Új diák ellenőrzése - van-e aktív beköltözése és melyik szobában
-        const ujDiakAktivBekoltozes = await this.db.SzobaBekoltozes.findOne({
-          where: {
-            diak_id: uj_diak_id,
-            kikoltozes_datum: null
-          },
-          include: [{
-            model: this.db.Szoba,
-            as: 'szoba'
-          }],
-          transaction
-        });
-        if (!ujDiakAktivBekoltozes) {
-          throw new ValidationError('Az új diáknak nincs aktív szobája');
-        }
-
-        // Ellenőrizzük, hogy az új diák nincs benne a cél szobában
-        if (ujDiakAktivBekoltozes.szoba_id === celSzoba.szoba_id) {
-          throw new ValidationError('Az új diák már ebben a szobában van');
-        }
-
-        const regiszoba = ujDiakAktivBekoltozes.szoba;
-        const csereDatum = csere_datum || new Date().toISOString().split('T')[0];
-
-        // 4. A diákok nevének lekérése az értesítéshez
-        const kicserelendoDiak = await this.db.Diak.findByPk(kicserelendo_diak_id, {
-          attributes: ['nev'],
-          transaction
-        });
-        const ujDiak = await this.db.Diak.findByPk(uj_diak_id, {
-          attributes: ['nev'],
-          transaction
-        });
-
-        // 5. Szobacsere végrehajtása:
-        // 5a. Kicserélendő diák kiköltöztetése a cél szobából
-        await kicserelendoAktivBekoltozes.update({
-          kikoltozes_datum: csereDatum
-        }, { transaction });
-
-        // 5b. Új diák kiköltöztetése az eredeti szobájából
-        await ujDiakAktivBekoltozes.update({
-          kikoltozes_datum: csereDatum
-        }, { transaction });
-
-        // 5c. Kicserélendő diák beköltöztetése az új diák eredeti szobájába
-        await this.db.SzobaBekoltozes.create({
+      // 2. Kicserélendő diák ellenőrzése
+      const kicserelendoAktivBekoltozes = await this.db.SzobaBekoltozes.findOne({
+        where: {
           diak_id: kicserelendo_diak_id,
-          szoba_id: regiszoba.szoba_id,
-          bekoltozes_datum: csereDatum,
           kikoltozes_datum: null
-        }, { transaction });
+        }
+      });
+      console.log('[swapStudents] kicserelendoAktivBekoltozes:', kicserelendoAktivBekoltozes ? 'FOUND' : 'NOT FOUND');
+      if (!kicserelendoAktivBekoltozes) {
+        return res.status(400).json({ success: false, error: 'A kicserélendő diák nem található aktív beköltözéssel' });
+      }
 
-        // 5d. Új diák beköltöztetése a cél szobába
-        await this.db.SzobaBekoltozes.create({
+      // 3. Új diák ellenőrzése
+      const ujDiakAktivBekoltozes = await this.db.SzobaBekoltozes.findOne({
+        where: {
           diak_id: uj_diak_id,
-          szoba_id: celSzoba.szoba_id,
-          bekoltozes_datum: csereDatum,
           kikoltozes_datum: null
-        }, { transaction });
+        },
+        include: [{
+          model: this.db.Szoba,
+          as: 'szoba'
+        }]
+      });
+      console.log('[swapStudents] ujDiakAktivBekoltozes:', ujDiakAktivBekoltozes ? 'FOUND' : 'NOT FOUND');
+      if (!ujDiakAktivBekoltozes) {
+        return res.status(400).json({ success: false, error: 'Az új diáknak nincs aktív szobája' });
+      }
 
-        // 6. Szobaváltoztatás rekord létrehozása mindkét diáknak
-        await this.db.SzobaValtoztatas.create({
-          diak_id: kicserelendo_diak_id,
-          jelenlegi_szoba_id: celSzoba.szoba_id,
-          kivant_szoba_id: regiszoba.szoba_id,
-          indok: `Szobacsere: ${kicserelendoDiak.nev} → ${regiszoba.szoba_szama} (csere: ${ujDiak.nev})`,
-          statusz: 'approved',
-          academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
-        }, { transaction });
+      if (ujDiakAktivBekoltozes.szoba_id === celSzoba.szoba_id) {
+        return res.status(400).json({ success: false, error: 'Az új diák már ebben a szobában van' });
+      }
 
-        await this.db.SzobaValtoztatas.create({
-          diak_id: uj_diak_id,
-          jelenlegi_szoba_id: regiszoba.szoba_id,
-          kivant_szoba_id: celSzoba.szoba_id,
-          indok: `Szobacsere: ${ujDiak.nev} → ${celSzoba.szoba_szama} (csere: ${kicserelendoDiak.nev})`,
-          statusz: 'approved',
-          academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
-        }, { transaction });
+      const regiszoba = ujDiakAktivBekoltozes.szoba;
+      console.log('[swapStudents] regiszoba:', regiszoba ? regiszoba.szoba_szama : 'NOT FOUND');
 
-        // 7. Értesítések létrehozása a diákoknak
-        await this.db.Notification.create({
-          diak_id: kicserelendo_diak_id,
-          tipus: 'room_change_approved',
-          cimzettkor: 'student',
-          prioritas: 'medium',
-          uzenet: `Szobacserével átkerült ebbe a szobába: ${regiszoba.szoba_szama}. Cserelő partner: ${ujDiak.nev}`
-        }, { transaction });
+      // 4. Diákok nevének lekérése
+      const kicserelendoDiak = await this.db.Diak.findByPk(kicserelendo_diak_id, { attributes: ['nev'] });
+      const ujDiak = await this.db.Diak.findByPk(uj_diak_id, { attributes: ['nev'] });
 
-        await this.db.Notification.create({
-          diak_id: uj_diak_id,
-          tipus: 'room_change_approved',
-          cimzettkor: 'student',
-          prioritas: 'medium',
-          uzenet: `Szobacserével átkerült ebbe a szobába: ${celSzoba.szoba_szama}. Cserelő partner: ${kicserelendoDiak.nev}`
-        }, { transaction });
+      const kicserelendoNev = kicserelendoDiak?.nev || `Diák #${kicserelendo_diak_id}`;
+      const ujDiakNev = ujDiak?.nev || `Diák #${uj_diak_id}`;
+
+      // 5. Szobacsere végrehajtása (nem tranzakcióban SQLite miatt, de sequentially)
+      // 5a. Kicserélendő diák kiköltöztetése
+      console.log('[swapStudents] 5a. Kicserélendő diák kiköltöztetése');
+      await kicserelendoAktivBekoltozes.update({ kikoltozes_datum: csereDatum });
+
+      // 5b. Új diák kiköltöztetése
+      console.log('[swapStudents] 5b. Új diák kiköltöztetése');
+      await ujDiakAktivBekoltozes.update({ kikoltozes_datum: csereDatum });
+
+      // 5c. Kicserélendő diák beköltöztetése az új diák eredeti szobájába
+      console.log('[swapStudents] 5c. Kicserélendő diák beköltöztetése a régi szobába:', regiszoba.szoba_id);
+      await this.db.SzobaBekoltozes.create({
+        diak_id: kicserelendo_diak_id,
+        szoba_id: regiszoba.szoba_id,
+        bekoltozes_datum: csereDatum,
+        kikoltozes_datum: null
       });
 
-      res.json({
+      // 5d. Új diák beköltöztetése a cél szobába
+      console.log('[swapStudents] 5d. Új diák beköltöztetése a cél szobába:', celSzoba.szoba_id);
+      await this.db.SzobaBekoltozes.create({
+        diak_id: uj_diak_id,
+        szoba_id: celSzoba.szoba_id,
+        bekoltozes_datum: csereDatum,
+        kikoltozes_datum: null
+      });
+
+      // 6. Szobaváltoztatás rekordok
+      const currentYear = new Date().getFullYear();
+      const academicYear = `${currentYear}-${currentYear + 1}`;
+
+      console.log('[swapStudents] 6. Szobaváltoztatás rekordok létrehozása');
+      const szobaValtoztatas1 = await this.db.SzobaValtoztatas.create({
+        diak_id: kicserelendo_diak_id,
+        jelenlegi_szoba_id: celSzoba.szoba_id,
+        kivant_szoba_id: regiszoba.szoba_id,
+        indok: `Szobacsere: ${kicserelendoNev} → ${regiszoba.szoba_szama} (csere: ${ujDiakNev})`,
+        statusz: 'approved',
+        academic_year: academicYear,
+        semester_count: 1
+      });
+
+      const szobaValtoztatas2 = await this.db.SzobaValtoztatas.create({
+        diak_id: uj_diak_id,
+        jelenlegi_szoba_id: regiszoba.szoba_id,
+        kivant_szoba_id: celSzoba.szoba_id,
+        indok: `Szobacsere: ${ujDiakNev} → ${celSzoba.szoba_szama} (csere: ${kicserelendoNev})`,
+        statusz: 'approved',
+        academic_year: academicYear,
+        semester_count: 1
+      });
+
+      // 7. Értesítések
+      // 7. Értesítések lérehozása
+      console.log('[swapStudents] 7. Értesítések létrehozása');
+      await this.db.Notification.create({
+        diak_id: kicserelendo_diak_id,
+        szoba_valtoztatas_id: szobaValtoztatas1.valtoztatas_id,
+        tipus: 'room_change_approved',
+        cimzettkor: 'student',
+        prioritas: 'medium',
+        uzenet: `Szobacserével átkerült ebbe a szobába: ${regiszoba.szoba_szama}. Cserelő partner: ${ujDiakNev}`,
+        elolvasva: false
+      });
+
+      await this.db.Notification.create({
+        diak_id: uj_diak_id,
+        szoba_valtoztatas_id: szobaValtoztatas2.valtoztatas_id,
+        tipus: 'room_change_approved',
+        cimzettkor: 'student',
+        prioritas: 'medium',
+        uzenet: `Szobacserével átkerült ebbe a szobába: ${celSzoba.szoba_szama}. Cserelő partner: ${kicserelendoNev}`,
+        elolvasva: false
+      });
+
+      // 8. Cache invalidation - invalidate all room and student caches
+      console.log('[swapStudents] 8. Cache invalidation');
+      cacheService.invalidateRoomCache();
+      cacheService.invalidateStatisticsCache();
+
+      console.log('[swapStudents] Swap completed successfully');
+      return res.json({
         success: true,
         message: 'Szobacsere sikeresen végrehajtva',
         data: {
@@ -828,7 +844,65 @@ class SzobaValtoztatasController {
         }
       });
     } catch (error) {
-      next(error);
+      // Log the full error for debugging
+      console.error('[SzobaValtoztatasController.swapStudents] Hiba:');
+      console.error('  Message:', error.message);
+      console.error('  Name:', error.name);
+      console.error('  Stack:', error.stack);
+      console.error('  Original:', error.original);
+      console.error('  Parent:', error.parent);
+      console.error('  SQL:', error.sql);
+
+      // Handle AppError instances (NotFoundError, ValidationError, ConflictError, etc.)
+      if (error.statusCode) {
+        return res.status(error.statusCode).json({
+          success: false,
+          error: error.message,
+          status: error.statusCode
+        });
+      }
+
+      // Handle Sequelize validation errors
+      if (error.name === 'SequelizeValidationError') {
+        return res.status(400).json({
+          success: false,
+          error: 'Érvényesítési hiba',
+          details: error.errors?.map(e => e.message) || error.message
+        });
+      }
+
+      // Handle Sequelize unique constraint errors
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({
+          success: false,
+          error: 'Egyedi megszorítás hiba',
+          details: error.errors?.map(e => e.message) || error.message
+        });
+      }
+
+      // Handle Sequelize foreign key constraint errors
+      if (error.name === 'SequelizeForeignKeyConstraintError') {
+        return res.status(400).json({
+          success: false,
+          error: 'Idegen kulcs megszorítás hiba',
+          details: error.message
+        });
+      }
+
+      // Handle transaction serialization failures - retry
+      if (error.original?.code === '40001' || error.name === 'SequelizeTransactionError') {
+        return res.status(409).json({
+          success: false,
+          error: 'A műveletet nem lehetett végrehajtani egyidejű adatbázis művelet miatt. Kérjük, próbálja újra.'
+        });
+      }
+
+      // Default 500 error
+      return res.status(500).json({
+        success: false,
+        error: 'Szerver hiba történt a szobacsere végrehajtása közben',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Belső szerver hiba'
+      });
     }
   }
 
